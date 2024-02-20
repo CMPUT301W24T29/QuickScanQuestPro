@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">QuickScanQuestPro</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_qr_scanner">Scan QR</string>
+    <string name="title_profile">Profile</string>
 </resources>
