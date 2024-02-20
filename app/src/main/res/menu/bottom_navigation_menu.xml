@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_dashboard"
+        android:icon="@android:drawable/ic_menu_today"
+        android:title="@string/title_dashboard"/>
+    <item
+        android:id="@+id/navigation_qr_scanner"
+        android:icon="@drawable/qr"
+        android:title="@string/title_qr_scanner" />
+
+    <item
+        android:id="@+id/navigation_profile"
+        android:icon="@drawable/user_profile"
+        android:title="@string/title_profile" />
+
+</menu>
