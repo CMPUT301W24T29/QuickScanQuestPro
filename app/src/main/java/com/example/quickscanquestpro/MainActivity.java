@@ -16,6 +16,8 @@ import java.util.Objects;
 public class MainActivity extends AppCompatActivity {
 
     private QRCodeScanner qrCodeScanner;
+    private int newEventID = 0;
+    private Event testEvent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
 
+            // create fragment of the type selected
             Fragment fragment1;
             if (Objects.equals(pressedTitle, dashboardTitle)) {
                 fragment1 = new EventDashboardFragment();
@@ -62,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
                 fragment1 = new HomeViewFragment();
             }
 
+            // actually display the fragment, using a tag with the same name as the button that was pressed
             FragmentTransaction fragmentTransaction1 = getSupportFragmentManager().beginTransaction();
             fragmentTransaction1.replace(R.id.content, fragment1, pressedTitle);
             fragmentTransaction1.commit();
@@ -70,4 +74,18 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public int getNewEventID() {
+        return this.newEventID++;
+    }
+
+    public void setTestEvent(Event event) {
+        this.testEvent = event;
+    }
+
+    public Event getTestEvent() {
+        if (this.testEvent == null) {
+            setTestEvent(new Event(getNewEventID()));
+        }
+        return this.testEvent;
+    }
 }
