@@ -15,6 +15,8 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
+    private QRCodeScanner qrCodeScanner;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
