@@ -2,9 +2,6 @@ package com.example.quickscanquestpro;
 
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.camera.view.PreviewView;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -59,14 +56,9 @@ public class EventDashboardFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_event_dashboard, container, false);
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        PreviewView previewView = getView().findViewById(R.id.cameraFeed);
-        new QRCodeScanner(getContext(), this, previewView);
     }
 }

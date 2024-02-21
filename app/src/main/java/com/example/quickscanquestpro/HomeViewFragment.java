@@ -2,6 +2,9 @@ package com.example.quickscanquestpro;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.camera.view.PreviewView;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -14,6 +17,8 @@ import android.view.ViewGroup;
  * create an instance of this fragment.
  */
 public class HomeViewFragment extends Fragment {
+
+    private QRCodeScanner qrCodeScanner;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -60,5 +65,18 @@ public class HomeViewFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_home_view, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        PreviewView previewView = view.findViewById(R.id.cameraFeed);
+        qrCodeScanner = new QRCodeScanner(getContext(), previewView);
+        qrCodeScanner.startCamera();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        qrCodeScanner.shutdown();
     }
 }
