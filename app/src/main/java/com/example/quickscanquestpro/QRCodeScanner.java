@@ -72,14 +72,28 @@ public class QRCodeScanner {
                 imageAnalysis.setAnalyzer(cameraExecutor, image -> {
                     try
                     {
+                        Log.d("QRCodeScanner","Try block of ImageAnalysis");
                         InputImage inputImage = InputImage.fromMediaImage(image.getImage(), image.getImageInfo().getRotationDegrees());
                         scanner.process(inputImage)
-                                .addOnSuccessListener(barcodes -> processBarcodes(barcodes))
+                                .addOnSuccessListener(barcodes -> {
+                                    Log.d("QRCodeScanner", "Barcodes detected: " + barcodes.size());
+                                    processBarcodes(barcodes);
+                                })
                                 .addOnFailureListener(e -> {})
-                                .addOnCompleteListener(task -> image.close());
+                                .addOnCompleteListener(task -> {
+                                    if(task.isSuccessful()){
+                                        Log.d("QRCodeScanner", "Attendee checked-in successfully");
+                                    }
+                                    else
+                                    {
+                                        Log.e("QRCodeScanner", "Error checking-in attendee", task.getException());
+                                    }
+                                    image.close();
+                                });
                     }
                     catch (Exception e)
                     {
+                        Log.e("QRCodeScanner", "Failed to process image",e);
                         image.close();
                     }
                 });
@@ -87,6 +101,7 @@ public class QRCodeScanner {
                 cameraProvider.unbindAll();
 
                 cameraProvider.bindToLifecycle((LifecycleOwner) context, cameraSelector, preview);
+                Log.d("QRCodeScanner", "Camera started and bound to lifecycle");
             } catch (Exception e) {
                 e.printStackTrace();
             }

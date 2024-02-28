@@ -1,15 +1,20 @@
 package com.example.quickscanquestpro;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.camera.view.PreviewView;
 import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.camera.view.PreviewView;
+import androidx.core.content.ContextCompat;
+import android.widget.Toast;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -19,6 +24,19 @@ import android.view.ViewGroup;
 public class HomeViewFragment extends Fragment {
 
     private QRCodeScanner qrCodeScanner;
+
+    // Invokes the user to allow runtime permission for Camera Access
+    private ActivityResultLauncher<String> requestCameraPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted ->{
+                if (isGranted)
+                {
+                    setupCamera();
+                }
+                else
+                {
+                    Toast.makeText(getContext(), "Camera permission denied, QR Scanner cannot be used", Toast.LENGTH_LONG).show();
+                }
+            });
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -69,9 +87,26 @@ public class HomeViewFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        PreviewView previewView = view.findViewById(R.id.cameraFeed);
-        qrCodeScanner = new QRCodeScanner(getContext(), previewView);
-        qrCodeScanner.startCamera();
+        super.onViewCreated(view, savedInstanceState);
+
+        // If the app already has run time permission for camera it will start setupCamera otherwise invoke requestCameraPermissionLauncher
+        if(ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
+            setupCamera();
+        }
+        else{
+            requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+        }
+
+    }
+
+    private void setupCamera()
+    {
+        View view = getView();
+        if (view != null) {
+            PreviewView previewView = view.findViewById(R.id.cameraFeed);
+            qrCodeScanner = new QRCodeScanner(getContext(), previewView);
+            qrCodeScanner.startCamera();
+        }
     }
 
     @Override
