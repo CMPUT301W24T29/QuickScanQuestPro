@@ -88,5 +88,13 @@ public class EventDashboardFragment extends Fragment {
             fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.events_list_title));
             fragmentTransaction.commit();
         });
+
+        // set the event list to open the event details fragment when an event is clicked
+        eventList.setOnItemClickListener((parent, view1, position, id) -> {
+            EventDetailsFragment fragment = new EventDetailsFragment();
+            FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.events_list_title));
+            fragmentTransaction.commit();
+        });
     }
 }
