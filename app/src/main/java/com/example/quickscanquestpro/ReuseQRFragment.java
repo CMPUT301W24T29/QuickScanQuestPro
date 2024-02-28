@@ -30,10 +30,7 @@ public class ReuseQRFragment extends Fragment {
 
         PreviewView previewView = view.findViewById(R.id.cameraFeed);
         qrCodeScanner = new QRCodeScanner(getContext(), previewView);
-
-        view.findViewById(R.id.scanningIndicator).setOnClickListener(v -> {
-            qrCodeScanner.startCamera(); // Start camera and prepare for scanning
-        });
+        qrCodeScanner.startCamera(); // Start camera and prepare for scanning
 
 
         view.findViewById(R.id.backButton).setOnClickListener(v -> {
