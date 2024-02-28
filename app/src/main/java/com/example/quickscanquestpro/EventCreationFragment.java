@@ -81,5 +81,25 @@ public class EventCreationFragment extends Fragment {
             fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.title_dashboard));
             fragmentTransaction.commit();
         });
+        view.findViewById(R.id.reuse_checkin_button).setOnClickListener(v -> showReuseFragment("checkin"));
+        // Reuse speaker button
+        view.findViewById(R.id.reuse_promo_button).setOnClickListener(v -> showReuseFragment("promo"));
+
     }
+
+    private void showReuseFragment(String reuseType) {
+        // Pass the reuse type to the ReuseFragment using arguments
+        Bundle args = new Bundle();
+        args.putString("REUSE_TYPE", reuseType);
+        ReuseQRFragment reuseFragment = new ReuseQRFragment();
+        reuseFragment.setArguments(args);
+
+        // Perform the fragment transaction to display the ReuseFragment
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+        transaction.replace(R.id.content, reuseFragment);
+        transaction.addToBackStack(null); // Optional: Add transaction to back stack
+        transaction.commit();
+    }
+
+
 }
