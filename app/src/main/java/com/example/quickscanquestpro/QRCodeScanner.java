@@ -114,23 +114,30 @@ public class QRCodeScanner {
      * @param barcodes The list of barcodes detected in the frame.
      */
     private void processBarcodes(List<Barcode> barcodes) {
-        for (Barcode barcode: barcodes) {
+        for (Barcode barcode : barcodes) {
             String rawValue = barcode.getRawValue();
-            String yourEventId = "yourEventId";
+            Log.d("QRCodeScanner", "Barcode detected: " + rawValue);
 
-            DocumentReference attendeeRef = db.collection("events")
-                    .document(yourEventId)
-                    .collection("attendees")
-                    .document(rawValue);
-            Map<String, Object> checkedInData = new HashMap<>();
-            checkedInData.put("checkedIn", true);
+            if(rawValue.startsWith("c") || rawValue.startsWith("p")) {
+                // Extracting the prefix and ID from the QR code
+                String type = rawValue.substring(0, 1); // "c" for check-in, "p" for promo
+                String eventId = rawValue.substring(1);
 
-            attendeeRef.set(checkedInData, SetOptions.merge())
-                    .addOnCompleteListener(aVoid -> Log.d("QRCodeScanner", "Attendee checked-in successfully"))
-                    .addOnFailureListener(e -> Log.e("QRCodeScanner", "Error checking-in attendee",e));
+                String collectionPath = type.equals("c") ? "checkIns" : "promos";
 
+                DocumentReference eventRef = db.collection("events").document(eventId).collection(collectionPath).document("someIdentifier");
+                Map<String, Object> updateData = new HashMap<>();
+                updateData.put("processed", true);
+
+                eventRef.set(updateData, SetOptions.merge())
+                        .addOnSuccessListener(aVoid -> Log.d("QRCodeScanner", "QR Code processed successfully: " + type + " for event ID: " + eventId))
+                        .addOnFailureListener(e -> Log.e("QRCodeScanner", "Error processing QR Code", e));
+            } else {
+                Log.e("QRCodeScanner", "Unknown QR Code format: " + rawValue);
+            }
         }
     }
+
 
     /**
      * Shuts down the executor service used for running image analysis to release resources
