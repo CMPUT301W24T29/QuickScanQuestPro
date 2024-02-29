@@ -70,33 +70,44 @@ public class QRCodeScanner {
                         .build();
 
                 imageAnalysis.setAnalyzer(cameraExecutor, image -> {
-                    try
-                    {
-                        Log.d("QRCodeScanner","Try block of ImageAnalysis");
+                    try {
+                        Log.d("QRCodeScanner", "ImageAnalysis analyzer is called");
+
+                        if (image.getImage() == null) {
+                            Log.e("QRCodeScanner", "Received image is null, skipping barcode scanning");
+                            return;
+                        }
+
+                        Log.d("QRCodeScanner", "Processing image for barcode scanning");
                         InputImage inputImage = InputImage.fromMediaImage(image.getImage(), image.getImageInfo().getRotationDegrees());
+
+                        // Before calling scanner.process
+                        Log.d("QRCodeScanner", "Calling scanner.process(inputImage)");
+
                         scanner.process(inputImage)
                                 .addOnSuccessListener(barcodes -> {
                                     Log.d("QRCodeScanner", "Barcodes detected: " + barcodes.size());
                                     processBarcodes(barcodes);
                                 })
-                                .addOnFailureListener(e -> {})
+                                .addOnFailureListener(e -> Log.e("QRCodeScanner", "Error detecting QR Code", e))
                                 .addOnCompleteListener(task -> {
-                                    if(task.isSuccessful()){
-                                        Log.d("QRCodeScanner", "Attendee checked-in successfully");
+                                    if (task.isSuccessful()) {
+                                        Log.d("QRCodeScanner", "Barcode scanning task completed successfully");
+                                    } else {
+                                        Log.e("QRCodeScanner", "Barcode scanning task failed", task.getException());
                                     }
-                                    else
-                                    {
-                                        Log.e("QRCodeScanner", "Error checking-in attendee", task.getException());
-                                    }
-                                    image.close();
+                                    image.close(); // Ensure to close the image
                                 });
-                    }
-                    catch (Exception e)
-                    {
-                        Log.e("QRCodeScanner", "Failed to process image",e);
-                        image.close();
+
+                        // After scanner.process is called
+                        Log.d("QRCodeScanner", "scanner.process(inputImage) has been called");
+
+                    } catch (Exception e) {
+                        Log.e("QRCodeScanner", "Failed to process image", e);
+                        image.close(); // Ensure to close the image in case of failure
                     }
                 });
+
 
                 cameraProvider.unbindAll();
 
