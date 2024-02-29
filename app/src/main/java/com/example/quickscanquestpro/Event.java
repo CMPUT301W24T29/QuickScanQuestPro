@@ -20,6 +20,8 @@ import com.google.zxing.common.BitMatrix;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Objects;
@@ -32,10 +34,10 @@ public class Event {
     private Bitmap promoQRImage;
     private String title;
     private String description;
-    private Date startDate;
-    private Date endDate;
-    private Time startTime;
-    private Time endTime;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private LocalTime startTime;
+    private LocalTime endTime;
     private String location;
     private User organizer;
     private ArrayList<String> announcements;
@@ -115,16 +117,16 @@ public class Event {
     public String getDescription() {
         return description;
     }
-    public Date getStartDate() {
+    public LocalDate getStartDate() {
         return startDate;
     }
-    public Date getEndDate() {
+    public LocalDate getEndDate() {
         return endDate;
     }
-    public Time getStartTime() {
+    public LocalTime getStartTime() {
         return startTime;
     }
-    public Time getEndTime() {
+    public LocalTime getEndTime() {
         return endTime;
     }
     public String getLocation() {
@@ -135,5 +137,45 @@ public class Event {
     }
     public Bitmap getEventBanner() {
         return eventBanner;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public void setOrganizer(User organizer) {
+        this.organizer = organizer;
+    }
+
+    public void setAnnouncements(ArrayList<String> announcements) {
+        this.announcements = announcements;
+    }
+
+    public void setEventBanner(Bitmap eventBanner) {
+        this.eventBanner = eventBanner;
     }
 }
