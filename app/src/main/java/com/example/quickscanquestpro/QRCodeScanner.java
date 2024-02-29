@@ -36,25 +36,30 @@ public class QRCodeScanner {
     private Context context;
     private BarcodeScanner scanner;
 
+    private LifecycleOwner lifecycleOwner;
+
     /**
      * Constructor for QRCodeScanner
      * @param context The application context used for accessing the camera.
      * @param previewView The view into which the camera preview is rendered
      */
-    public QRCodeScanner(Context context, PreviewView previewView)
+    public QRCodeScanner(Context context, PreviewView previewView, LifecycleOwner lifecycleOwner)
     {
         this.context = context;
         this.previewView = previewView;
         this.cameraExecutor = Executors.newSingleThreadExecutor();
         this.scanner = BarcodeScanning.getClient();
+        this.lifecycleOwner = lifecycleOwner;
+
     }
 
     /**
      * This method sets ups the camera a PreviewView and an ImageAnalysis
      * use case to process frames in real-time and perform barcode scanning
      */
-    @OptIn(markerClass = ExperimentalGetImage.class) public void startCamera() {
-        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(context);
+    @OptIn(markerClass = ExperimentalGetImage.class)
+    public void startCamera() {
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(previewView.getContext());
 
         cameraProviderFuture.addListener(() ->{;
             try {
@@ -111,7 +116,7 @@ public class QRCodeScanner {
 
                 cameraProvider.unbindAll();
 
-                cameraProvider.bindToLifecycle((LifecycleOwner) context, cameraSelector, preview);
+                cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview, imageAnalysis);
                 Log.d("QRCodeScanner", "Camera started and bound to lifecycle");
             } catch (Exception e) {
                 e.printStackTrace();

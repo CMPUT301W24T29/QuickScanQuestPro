@@ -104,8 +104,30 @@ public class HomeViewFragment extends Fragment {
         View view = getView();
         if (view != null) {
             PreviewView previewView = view.findViewById(R.id.cameraFeed);
-            qrCodeScanner = new QRCodeScanner(getContext(), previewView);
+            qrCodeScanner = new QRCodeScanner(getContext(), previewView, this);
             qrCodeScanner.startCamera();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Restart camera if permissions are granted
+        if(ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            if (qrCodeScanner != null) {
+                qrCodeScanner.startCamera();
+            } else {
+                setupCamera();
+            }
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Consider stopping or pausing camera here instead of onDestroy
+        if (qrCodeScanner != null) {
+            qrCodeScanner.shutdown();
         }
     }
 
