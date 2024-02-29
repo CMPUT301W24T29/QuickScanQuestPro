@@ -11,6 +11,8 @@ import android.view.MenuItem;
 
 import com.google.android.material.navigation.NavigationBarView;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
@@ -85,6 +87,13 @@ public class MainActivity extends AppCompatActivity {
     public Event getTestEvent() {
         if (this.testEvent == null) {
             setTestEvent(new Event(getNewEventID()));
+            this.testEvent.setTitle("Title");
+            this.testEvent.setDescription("Description");
+            this.testEvent.setLocation("Location");
+            this.testEvent.setStartDate(LocalDate.now());
+            this.testEvent.setStartTime(LocalTime.now());
+            this.testEvent.setEndDate(LocalDate.now().plusDays(1));
+            this.testEvent.setEndTime(LocalTime.now());
         }
         return this.testEvent;
     }

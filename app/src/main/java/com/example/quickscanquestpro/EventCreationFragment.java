@@ -8,10 +8,13 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.google.zxing.MultiFormatWriter;
@@ -76,6 +79,14 @@ public class EventCreationFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         MainActivity mainActivity = (MainActivity) this.getActivity();
 
+        // adds textwatchers that update the Event whenever text is changed
+        EditText titleEditText = view.findViewById(R.id.edit_text_event_title);
+        EditText descriptionEditText = view.findViewById(R.id.edit_text_event_description);
+        EditText locationEditText = view.findViewById(R.id.edit_text_event_address);
+        titleEditText.addTextChangedListener(getTextWatcher(titleEditText));
+        descriptionEditText.addTextChangedListener(getTextWatcher(descriptionEditText));
+        locationEditText.addTextChangedListener(getTextWatcher(locationEditText));
+
         // setting time pickers for start / end times
         TextView startTimeText = view.findViewById(R.id.text_event_start_time);
         startTimeText.setOnClickListener(v -> {
@@ -108,5 +119,31 @@ public class EventCreationFragment extends Fragment {
             fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.title_dashboard));
             fragmentTransaction.commit();
         });
+    }
+
+    private TextWatcher getTextWatcher(final EditText editText) {
+        return new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                int editId = editText.getId();
+                if (editId == R.id.edit_text_event_title) {
+                    creatingEvent.setTitle(editable.toString());
+                } else if (editId == R.id.edit_text_event_description) {
+                    creatingEvent.setDescription(editable.toString());
+                } else if (editId == R.id.edit_text_event_address) {
+                    creatingEvent.setLocation(editable.toString());
+                }
+            }
+        };
     }
 }
