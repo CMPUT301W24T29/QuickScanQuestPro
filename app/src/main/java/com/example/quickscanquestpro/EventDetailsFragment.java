@@ -26,6 +26,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.sql.Time;
 import java.text.DateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -99,10 +100,10 @@ public class EventDetailsFragment extends Fragment {
         String testTitle = "Old Strathcona Summer Rib Fest";
         String testDescription = "Come join us for the 2021 Old Strathcona Summer Rib Fest! Enjoy a variety of delicious ribs, live music, and more!";
 
-        Time testStartTime = new Time(11, 0, 0);
-        Time testEndTime = new Time(21, 0, 0);
-        Date testStartDate = new Date(2021, 7, 16);
-        Date testEndDate = new Date(2021, 7, 18);
+        LocalTime testStartTime = LocalTime.of(11, 0, 0);
+        LocalTime testEndTime = LocalTime.of(21, 0, 0);
+        LocalDate testStartDate = LocalDate.of(2021, 7, 16);
+        LocalDate testEndDate = LocalDate.of(2021, 7, 18);
         String testLocation = "Edmonton, AB - 10310 83 Ave NW, Edmonton, AB T6E 2C6";
         announcementList = new ArrayList<String>();
         announcementList.add("• The Old Strathcona Summer Rib Fest is now open! Come join us for a day of fun and delicious ribs!");

@@ -1,13 +1,20 @@
 package com.example.quickscanquestpro;
 
+import android.content.ContentResolver;
+import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
+import android.os.Build;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -79,6 +86,33 @@ public class EventCreationFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         MainActivity mainActivity = (MainActivity) this.getActivity();
 
+        // onclick listener for the button to upload a profile picture
+        ActivityResultLauncher<String> mGetContent = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
+            if (result != null) {
+                Bitmap newBitmap = null;
+                ContentResolver contentResolver = mainActivity.getContentResolver();
+                try {
+                    if(Build.VERSION.SDK_INT < 28) {
+                        newBitmap = MediaStore.Images.Media.getBitmap(contentResolver, result);
+                    } else {
+                        ImageDecoder.Source source = ImageDecoder.createSource(contentResolver, result);
+                        newBitmap = ImageDecoder.decodeBitmap(source);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                creatingEvent.setEventBanner(newBitmap);
+            }
+        });
+
+        Button uploadImageButton = view.findViewById(R.id.banner_upload_button);
+        uploadImageButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                mGetContent.launch("image/*");
+            }
+        });
+
         // adds textwatchers that update the Event whenever text is changed
         EditText titleEditText = view.findViewById(R.id.edit_text_event_title);
         EditText descriptionEditText = view.findViewById(R.id.edit_text_event_description);
@@ -109,6 +143,7 @@ public class EventCreationFragment extends Fragment {
             new DatePickerFragment(endDateText, creatingEvent).show(mainActivity.getSupportFragmentManager(), "endDatePicker");
         });
 
+        // final button that creates event and stores it
         Button createButton = view.findViewById(R.id.create_event_confirm_button);
         createButton.setOnClickListener(v -> {
             mainActivity.setTestEvent(this.creatingEvent);

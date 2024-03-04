@@ -48,7 +48,7 @@ public class Event {
         this.id = id;
         generateQR("both", id);
     }
-    public Event(Integer id, String title, String description, Date startDate, Date endDate, Time startTime, Time endTime, String location, Integer organizer, ArrayList<String> announcements) {
+    public Event(Integer id, String title, String description, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, String location, Integer organizer, ArrayList<String> announcements) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -191,14 +191,11 @@ public class Event {
     }
 
     public void setOrganizer(User organizer) {
-        this.organizer = organizer;
+        // TODO: MAKE THIS A REAL ID
+        this.organizerId = 1;
     }
 
     public void setAnnouncements(ArrayList<String> announcements) {
         this.announcements = announcements;
-    }
-
-    public void setEventBanner(Bitmap eventBanner) {
-        this.eventBanner = eventBanner;
     }
 }
