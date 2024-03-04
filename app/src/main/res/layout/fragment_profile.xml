@@ -1,111 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:tools="http://schemas.android.com/tools"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-tools:context=".ProfileFragment">
-
-    <TextView
-        android:id="@+id/event_dashboard_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/events_list_title"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf=""
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-<!-- Profile Image and Edit Icon -->
-<FrameLayout
-    android:id="@+id/profile_image_container"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="16dp"
-    tools:ignore="ExtraText">
+    android:layout_height="match_parent"
+    tools:context=".ProfileFragment">
 
-    <ImageView
-        android:id="@+id/profile_image"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_gravity="center_horizontal"
-        android:contentDescription="the profile"
-        android:src="@drawable/user_profile"/> <!-- Replace with your image source -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
 
 
     <ImageButton
-        android:id="@+id/edit_image_button"
+        android:id="@+id/backButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="the edit image button"
-        android:src="@drawable/user_profile"/> <!-- Replace with your edit icon source -->
+        android:src="@drawable/ic_arrow_back"
+        android:contentDescription="@string/back"
+        android:layout_alignParentTop="true"/>
+
+    <TextView
+        android:id="@+id/editProfileTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Edit Profile"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_toEndOf="@id/backButton"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="16dp"/>
+
+    <ImageView
+        android:id="@+id/profilePicturePlaceholder"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_below="@id/editProfileTitle"
+        android:layout_marginTop="24dp"
+        android:background="@android:color/darker_gray"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_profile_picture_placeholder" />
+
+    <Button
+        android:id="@+id/uploadProfilePictureButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@id/profilePicturePlaceholder"
+        android:layout_alignBottom="@id/profilePicturePlaceholder"
+        android:layout_margin="10dp"
+        android:text="+"
+        android:contentDescription="@string/upload_picture"/>
 
 
-</FrameLayout>
 
-<!-- Full Name -->
-<EditText
-    android:id="@+id/full_name"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:hint="Joseph Du"
-    android:layout_below="@id/profile_image_container"
-    android:inputType="textPersonName"
-    android:layout_margin="16dp"/>
+    <EditText
+        android:id="@+id/fullNameInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profilePicturePlaceholder"
+        android:layout_marginTop="24dp"
+        android:hint="Full Name"
+        android:inputType="textPersonName"/>
 
-<!-- Homepage URL -->
-<EditText
-    android:id="@+id/homepage_url"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:hint="homepage.com"
-    android:inputType="textWebEditText"
-    android:layout_below="@id/full_name"
-    android:layout_margin="16dp"/>
+    <EditText
+        android:id="@+id/homepageInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/fullNameInput"
+        android:layout_marginTop="16dp"
+        android:hint="Homepage"
+        android:inputType="textUri"/>
 
-<!-- Contact Information Section -->
-<TextView
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="Contact Information"
-    android:layout_below="@id/homepage_url"
-    android:layout_marginLeft="16dp"
-    android:layout_marginTop="8dp" />
+    <TextView
+        android:id="@+id/contactInfoText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/homepageInput"
+        android:layout_marginTop="16dp"
+        android:text="Contact Information"
+        android:textStyle="bold"/>
 
-<!-- Mobile Number -->
-<EditText
-    android:id="@+id/mobile_number"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:hint="604-618-1169"
-    android:inputType="phone"
-    android:layout_below="@id/homepage_url"
-    android:layout_margin="16dp"/>
+    <EditText
+        android:id="@+id/mobileNumberInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/contactInfoText"
+        android:layout_marginTop="16dp"
+        android:hint="Mobile Number"
+        android:inputType="phone"/>
 
-<!-- Email Address -->
-<EditText
-    android:id="@+id/email_address"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:hint="joseph.kj.du@gmail.com"
-    android:inputType="textEmailAddress"
-    android:layout_below="@id/mobile_number"
-    android:layout_margin="16dp"/>
+    <EditText
+        android:id="@+id/emailAddressInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/mobileNumberInput"
+        android:layout_marginTop="16dp"
+        android:hint="Email Address"
+        android:inputType="textEmailAddress"/>
 
-<!-- Geolocation Button -->
-<ImageButton
-    android:id="@+id/geolocation_button"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackgroundBorderless"
-    android:contentDescription="the geolocation"
-    android:layout_alignParentBottom="true"
-    android:layout_centerHorizontal="true"
-    android:src="@drawable/user_profile"/> <!-- Replace with your geolocation icon source -->
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/geolocationSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/emailAddressInput"
+        android:layout_marginTop="16dp"
+        android:layout_alignParentStart="true"
+        android:text=" Geolocation"/>
 
+    </RelativeLayout>
 
-</RelativeLayout>
+</ScrollView>
