@@ -108,10 +108,10 @@ public class ProfileFragment extends Fragment {
         Button uploadProfilePictureButton = view.findViewById(R.id.uploadProfilePictureButton);
 
         uploadProfilePictureButton.setOnClickListener(v -> {
-            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
                 openGallery();
             } else {
-                requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+                requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES);
             }
         });
     }
