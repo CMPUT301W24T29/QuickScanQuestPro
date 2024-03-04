@@ -2,6 +2,7 @@ package com.example.quickscanquestpro;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.location.Location;
 import android.media.Image;
 import android.os.Bundle;
 import android.view.inputmethod.InputMethodManager;
@@ -39,12 +40,25 @@ public class Event {
     private LocalTime startTime;
     private LocalTime endTime;
     private String location;
-    private User organizer;
+    private Integer organizerId;
     private ArrayList<String> announcements;
     private Bitmap eventBanner = null;
 
     public Event(Integer id) {
         this.id = id;
+        generateQR("both", id);
+    }
+    public Event(Integer id, String title, String description, Date startDate, Date endDate, Time startTime, Time endTime, String location, Integer organizer, ArrayList<String> announcements) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.location = location;
+        this.organizerId = organizer;
+        this.announcements = announcements;
         generateQR("both", id);
     }
 
@@ -111,9 +125,15 @@ public class Event {
     public void setPromoQRImage(Bitmap promoQRImage) {
         this.promoQRImage = promoQRImage;
     }
+
+    public void setEventBanner(Bitmap eventBanner) {
+        this.eventBanner = eventBanner;
+    }
+
     public String getTitle() {
         return title;
     }
+
     public String getDescription() {
         return description;
     }
@@ -129,12 +149,15 @@ public class Event {
     public LocalTime getEndTime() {
         return endTime;
     }
+
     public String getLocation() {
         return location;
     }
+
     public ArrayList<String> getAnnouncements() {
         return announcements;
     }
+
     public Bitmap getEventBanner() {
         return eventBanner;
     }
