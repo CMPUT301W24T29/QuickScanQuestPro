@@ -76,7 +76,7 @@ public class EventDashboardFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         MainActivity mainActivity = (MainActivity) this.getActivity();
         ArrayList<String> eventDataList = new ArrayList<>();
-        eventDataList.add("Test Event ID: " + mainActivity.getTestEvent().getId().toString() + " | QR Code: " + String.valueOf(mainActivity.getTestEvent().getCheckinQRCode().hashCode()));
+        eventDataList.add("Test Event ID: " + mainActivity.getTestEvent().getId().toString() + " | Title: " + mainActivity.getTestEvent().getTitle() + " | Description: " + mainActivity.getTestEvent().getDescription() + " | Location: " + mainActivity.getTestEvent().getLocation() + " | Start: " + mainActivity.getTestEvent().getStartDate().toString() + " at " + mainActivity.getTestEvent().getStartTime().toString() + " | End: " + mainActivity.getTestEvent().getEndDate().toString() + " at " + mainActivity.getTestEvent().getEndTime().toString() + " | QR Code: " + String.valueOf(mainActivity.getTestEvent().getCheckinQRCode().hashCode()));
         ListView eventList = view.findViewById(R.id.event_dashboard_list);
         ArrayAdapter<String> eventArrayAdapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_list_item_1, eventDataList);
         eventList.setAdapter(eventArrayAdapter);
@@ -91,7 +91,7 @@ public class EventDashboardFragment extends Fragment {
 
         // set the event list to open the event details fragment when an event is clicked
         eventList.setOnItemClickListener((parent, view1, position, id) -> {
-            EventDetailsFragment fragment = new EventDetailsFragment();
+            EventDetailsFragment fragment = new EventDetailsFragment(mainActivity.getTestEvent());
             FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.events_list_title));
             fragmentTransaction.commit();
