@@ -6,15 +6,22 @@ labels: ''
 assignees: ''
 
 ---
+Description
 
 ### Acceptance Criteria
-- 
-- Button added to UI mockup for Organizers
-- Create Storyboard sequence involving this story
-- Create CRC cards for this story point
+- User acceptance criteria
 
 Story Points: 
 Risk Level: 
 
 ### Released for halfway point?
 Yes/No
+
+### Progress
+- [ ] Code
+  - [ ] Code Subtask 1
+- [ ] Javadocs
+- [ ] Tests
+- [ ] UI Mockup
+- [ ] Storyboard
+- [ ] UML
