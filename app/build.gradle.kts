@@ -51,5 +51,4 @@ dependencies {
     implementation("androidx.camera:camera-extensions:${camerax_version}")
 
     implementation("com.journeyapps:zxing-android-embedded:4.1.0")
-    implementation("de.hdodenhof:circleimageview:3.1.0")
 }

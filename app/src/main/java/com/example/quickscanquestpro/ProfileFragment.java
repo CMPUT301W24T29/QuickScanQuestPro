@@ -1,9 +1,7 @@
 package com.example.quickscanquestpro;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -34,15 +32,10 @@ import java.io.IOException;
  */
 public class ProfileFragment extends Fragment {
 
+
     private ImageView profilePicturePlaceholder;
     private ActivityResultLauncher<String> requestPermissionLauncher;
     private ActivityResultLauncher<Intent> pickImageLauncher;
-    private Button deleteProfilePictureButton;
-
-    private static final String SHARED_PREFS = "QuickScanQuestProPrefs";
-    private static final String PROFILE_PIC_URI = "profilePicUri";
-
-
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -97,8 +90,6 @@ public class ProfileFragment extends Fragment {
             if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
                 Uri selectedImage = result.getData().getData();
                 profilePicturePlaceholder.setImageURI(selectedImage);
-                saveProfilePictureUri(selectedImage.toString());
-                deleteProfilePictureButton.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -114,26 +105,15 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         profilePicturePlaceholder = view.findViewById(R.id.profilePicturePlaceholder);
-        deleteProfilePictureButton = view.findViewById(R.id.deleteProfilePictureButton);
-
         Button uploadProfilePictureButton = view.findViewById(R.id.uploadProfilePictureButton);
-        uploadProfilePictureButton.setOnClickListener(v -> requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES));
 
-        deleteProfilePictureButton.setOnClickListener(v -> {
-            clearProfilePicture();
-            profilePicturePlaceholder.setImageResource(0); // Removes the image from ImageView
-            deleteProfilePictureButton.setVisibility(View.GONE); // Hide the button
+        uploadProfilePictureButton.setOnClickListener(v -> {
+            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
+                openGallery();
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES);
+            }
         });
-
-        Uri savedUri = getSavedProfilePictureUri();
-        if (savedUri != null) {
-            profilePicturePlaceholder.setImageURI(savedUri);
-            deleteProfilePictureButton.setVisibility(View.VISIBLE); // Show delete button
-        } else {
-            deleteProfilePictureButton.setVisibility(View.GONE); // Hide delete button if no picture is set
-        }
-
-
     }
 
     private void openGallery() {
@@ -141,22 +121,5 @@ public class ProfileFragment extends Fragment {
         pickImageLauncher.launch(intent);
     }
 
-    private Uri getSavedProfilePictureUri() {
-        SharedPreferences prefs = getActivity().getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
-        String uriString = prefs.getString(PROFILE_PIC_URI, null);
-        return uriString != null ? Uri.parse(uriString) : null;
-    }
-
-    private void saveProfilePictureUri(String uri) {
-        SharedPreferences.Editor editor = getActivity().getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE).edit();
-        editor.putString(PROFILE_PIC_URI, uri);
-        editor.apply();
-    }
-
-    private void clearProfilePicture() {
-        SharedPreferences.Editor editor = getActivity().getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE).edit();
-        editor.remove(PROFILE_PIC_URI);
-        editor.apply();
-    }
 
 }
