@@ -5,6 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -86,14 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
     public Event getTestEvent() {
         if (this.testEvent == null) {
-            setTestEvent(new Event(getNewEventID()));
-            this.testEvent.setTitle("Title");
-            this.testEvent.setDescription("Description");
-            this.testEvent.setLocation("Location");
-            this.testEvent.setStartDate(LocalDate.now());
-            this.testEvent.setStartTime(LocalTime.now());
-            this.testEvent.setEndDate(LocalDate.now().plusDays(1));
-            this.testEvent.setEndTime(LocalTime.now());
+            setTestEvent(Event.createTestEvent(getNewEventID()));
         }
         return this.testEvent;
     }

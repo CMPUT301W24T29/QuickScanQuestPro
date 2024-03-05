@@ -46,7 +46,6 @@ public class EventDetailsFragment extends Fragment {
     private TextView eventDescription;
     private TextView eventDate;
     private TextView eventLocation;
-    private ArrayList<String> announcementList;
     private ArrayAdapter<String> announcementAdapter;
     private ListView announcementListView;
     private ImageView eventImage;
@@ -96,27 +95,6 @@ public class EventDetailsFragment extends Fragment {
         }
     }
 
-    public Event createTestEvent(){
-        String testTitle = "Old Strathcona Summer Rib Fest";
-        String testDescription = "Come join us for the 2021 Old Strathcona Summer Rib Fest! Enjoy a variety of delicious ribs, live music, and more!";
-
-        LocalTime testStartTime = LocalTime.of(11, 0, 0);
-        LocalTime testEndTime = LocalTime.of(21, 0, 0);
-        LocalDate testStartDate = LocalDate.of(2021, 7, 16);
-        LocalDate testEndDate = LocalDate.of(2021, 7, 18);
-        String testLocation = "Edmonton, AB - 10310 83 Ave NW, Edmonton, AB T6E 2C6";
-        announcementList = new ArrayList<String>();
-        announcementList.add("• The Old Strathcona Summer Rib Fest is now open! Come join us for a day of fun and delicious ribs!");
-        announcementList.add("• We are excited to announce that we will be having a live band at the event!");
-        announcementList.add("• We are running out of ribs! Come get them while they last!");
-        announcementList.add("• Restocking ribs! We will be back in 30 minutes!");
-        announcementList.add("• Buy 1 rack of ribs, get the second rack 50% off!");
-        announcementList.add("• We are now closed for the day. Thank you to everyone who came out to the event!");
-
-        event = new Event(0, testTitle, testDescription, testStartDate, testEndDate, testStartTime, testEndTime, testLocation, 0, announcementList);
-        return event;
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -139,14 +117,16 @@ public class EventDetailsFragment extends Fragment {
         Button uploadImageButton = view.findViewById(R.id.edit_banner_button);
 
         // If there is no event passed in, use the test event
-        if (getArguments() == null) {
-            event = createTestEvent();
+        if (this.event == null) {
+            MainActivity mainActivity = (MainActivity) this.getActivity();
+            event = Event.createTestEvent(mainActivity.getNewEventID());
         }
 
         if (event.getEventBanner() != null) {
             eventImage.setImageBitmap(event.getEventBanner());
         }
         else {
+
             eventImage.setVisibility(View.GONE);
         }
 
