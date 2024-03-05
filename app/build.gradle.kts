@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.quickscanquestpro"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -51,4 +51,5 @@ dependencies {
     implementation("androidx.camera:camera-extensions:${camerax_version}")
 
     implementation("com.journeyapps:zxing-android-embedded:4.1.0")
+    implementation ("com.google.android.material:material:1.11.0")
 }
