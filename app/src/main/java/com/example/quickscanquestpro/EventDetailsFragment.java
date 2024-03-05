@@ -12,6 +12,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -24,9 +25,14 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Time;
 import java.text.DateFormat;
 import java.time.LocalDate;
@@ -35,6 +41,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -147,10 +154,18 @@ public class EventDetailsFragment extends Fragment {
         ListViewHelper.getListViewSize(announcementListView);
 
         backButton.setOnClickListener(v -> {
-            EventDashboardFragment fragment = new EventDashboardFragment();
-            FragmentTransaction fragmentTransaction = this.getActivity().getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.event_title));
-            fragmentTransaction.commit();
+
+            Bitmap promoCodeImage = event.getPromoQRImage();
+            shareQRImage(promoCodeImage);
+
+
+
+
+
+            //EventDashboardFragment fragment = new EventDashboardFragment();
+            //FragmentTransaction fragmentTransaction = this.getActivity().getSupportFragmentManager().beginTransaction();
+            //fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.event_title));
+            //fragmentTransaction.commit();
         });
 
         // onclick listener for the button to upload an event poster
@@ -186,5 +201,42 @@ public class EventDetailsFragment extends Fragment {
                 mGetContent.launch("image/*");
             }
         });
+    }
+
+    private void shareQRImage(Bitmap imageQR) {
+
+        Uri uriQR = getImageToShare(imageQR);
+
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.putExtra(Intent.EXTRA_STREAM, uriQR);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, "Check out this event!");
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Event QR Code");
+        shareIntent.setType("image/*");
+        startActivity(Intent.createChooser(shareIntent, "Share QR Code via"));
+
+    }
+
+    private Uri getImageToShare(Bitmap imageQR) {
+
+        File folder = new File(getActivity().getCacheDir(), "images");
+        Uri uri = null;
+        try {
+            folder.mkdirs();
+            File file = new File(folder, "imageQR.jpg");
+
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+
+            imageQR.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
+            fileOutputStream.flush();
+            fileOutputStream.close();
+
+            uri = FileProvider.getUriForFile(Objects.requireNonNull(requireActivity().getApplicationContext()), "com.example.quickscanquestpro" + ".provider", file);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this.getActivity(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+        return uri;
+
     }
 }
