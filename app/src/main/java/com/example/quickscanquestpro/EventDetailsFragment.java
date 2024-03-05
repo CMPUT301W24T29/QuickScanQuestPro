@@ -1,8 +1,11 @@
 package com.example.quickscanquestpro;
 
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -49,7 +52,6 @@ public class EventDetailsFragment extends Fragment {
     private ArrayAdapter<String> announcementAdapter;
     private ListView announcementListView;
     private ImageView eventImage;
-    public final int galleryReqCode = 1000;
 
 
     // TODO: Rename parameter arguments, choose names that match
@@ -124,9 +126,9 @@ public class EventDetailsFragment extends Fragment {
 
         if (event.getEventBanner() != null) {
             eventImage.setImageBitmap(event.getEventBanner());
+            uploadImageButton.setVisibility(View.GONE);
         }
         else {
-
             eventImage.setVisibility(View.GONE);
         }
 
@@ -151,14 +153,25 @@ public class EventDetailsFragment extends Fragment {
             fragmentTransaction.commit();
         });
 
-        ActivityResultLauncher<String> mGetContent = registerForActivityResult(new ActivityResultContracts.GetContent(),
-                result -> {
-                    if (result != null) {
-                        eventImage.setImageURI(result);
-                        eventImage.setVisibility(View.VISIBLE);
-                        uploadImageButton.setVisibility(View.GONE);
+        // onclick listener for the button to upload an event poster
+        ActivityResultLauncher<String> mGetContent = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
+            if (result != null) {
+                Bitmap newBitmap = null;
+                ContentResolver contentResolver = this.getActivity().getContentResolver();
+                try {
+                    if(Build.VERSION.SDK_INT < 28) {
+                        newBitmap = MediaStore.Images.Media.getBitmap(contentResolver, result);
+                    } else {
+                        ImageDecoder.Source source = ImageDecoder.createSource(contentResolver, result);
+                        newBitmap = ImageDecoder.decodeBitmap(source);
                     }
-                });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                event.setEventBanner(newBitmap);
+                eventImage.setImageBitmap(newBitmap);
+            }
+        });
         // Sets an on click listener for the upload image button
         uploadImageButton.setOnClickListener(new View.OnClickListener(){
             @Override
