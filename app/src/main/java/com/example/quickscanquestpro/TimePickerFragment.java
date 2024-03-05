@@ -21,15 +21,17 @@ import java.util.Calendar;
 public class TimePickerFragment extends DialogFragment implements TimePickerDialog.OnTimeSetListener {
     private TextView timeText;
     private Event creatingEvent;
+    private EventCreationFragment eventCreationFragment;
 
     public TimePickerFragment() {
         super();
     }
 
-    public TimePickerFragment(TextView timeText, Event creatingEvent) {
+    public TimePickerFragment(TextView timeText, Event creatingEvent, EventCreationFragment eventCreationFragment) {
         super();
         this.timeText = timeText;
         this.creatingEvent = creatingEvent;
+        this.eventCreationFragment = eventCreationFragment;
     }
 
     @NonNull
@@ -74,5 +76,7 @@ public class TimePickerFragment extends DialogFragment implements TimePickerDial
         }
 
         timeText.setText(newTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)));
+        timeText.setError(null);
+        eventCreationFragment.validateEntryFields();
     }
 }
