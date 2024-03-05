@@ -17,6 +17,7 @@ import androidx.fragment.app.FragmentTransaction;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -80,6 +81,7 @@ public class EventCreationFragment extends Fragment {
         }
         MainActivity mainActivity = (MainActivity) this.getActivity();
         this.creatingEvent = new Event(mainActivity.getNewEventID());
+        Log.d("EventCreationFragment", "New event created with ID: " + creatingEvent.getId());
     }
 
     @Override
@@ -152,7 +154,7 @@ public class EventCreationFragment extends Fragment {
         // final button that creates event and stores it
         Button createButton = view.findViewById(R.id.create_event_confirm_button);
         createButton.setOnClickListener(v -> {
-            mainActivity.setTestEvent(this.creatingEvent);
+//            mainActivity.setTestEvent(this.creatingEvent);
 
             // create a new event in the database
             databaseService.addEvent(creatingEvent);
