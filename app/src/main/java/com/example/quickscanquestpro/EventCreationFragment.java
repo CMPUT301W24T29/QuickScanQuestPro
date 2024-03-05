@@ -24,6 +24,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.MultiFormatWriter;
 
 /**
@@ -42,6 +44,8 @@ public class EventCreationFragment extends Fragment {
     private String mParam1;
     private String mParam2;
     private Event creatingEvent;
+
+    private DatabaseService databaseService;
 
     public EventCreationFragment() {
         // Required empty public constructor
@@ -68,6 +72,8 @@ public class EventCreationFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Initialize DatabaseService
+        databaseService = new DatabaseService();
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
@@ -147,6 +153,9 @@ public class EventCreationFragment extends Fragment {
         Button createButton = view.findViewById(R.id.create_event_confirm_button);
         createButton.setOnClickListener(v -> {
             mainActivity.setTestEvent(this.creatingEvent);
+
+            // create a new event in the database
+            databaseService.addEvent(creatingEvent);
 
             // set active fragment to the event dashboard again
             EventDashboardFragment fragment = new EventDashboardFragment();
