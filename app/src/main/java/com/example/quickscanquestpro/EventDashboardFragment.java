@@ -96,5 +96,13 @@ public class EventDashboardFragment extends Fragment {
             fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.events_list_title));
             fragmentTransaction.commit();
         });
+
+        eventList.setOnItemLongClickListener((parent, view12, position, id) -> {
+            EventAttendeeFragment fragment = new EventAttendeeFragment();
+            FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.events_list_title));
+            fragmentTransaction.commit();
+            return true;
+        });
     }
 }
