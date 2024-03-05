@@ -124,6 +124,7 @@ public class EventDetailsFragment extends Fragment {
 
         if (event.getEventBanner() != null) {
             eventImage.setImageBitmap(event.getEventBanner());
+            uploadImageButton.setVisibility(View.GONE);
         }
         else {
 
