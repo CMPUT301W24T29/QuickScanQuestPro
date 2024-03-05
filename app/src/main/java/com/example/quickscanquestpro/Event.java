@@ -2,6 +2,9 @@ package com.example.quickscanquestpro;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.location.Location;
 import android.media.Image;
 import android.os.Bundle;
 import android.view.inputmethod.InputMethodManager;
@@ -20,6 +23,8 @@ import com.google.zxing.common.BitMatrix;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Objects;
@@ -32,17 +37,30 @@ public class Event {
     private Bitmap promoQRImage;
     private String title;
     private String description;
-    private Date startDate;
-    private Date endDate;
-    private Time startTime;
-    private Time endTime;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private LocalTime startTime;
+    private LocalTime endTime;
     private String location;
-    private User organizer;
-    private ArrayList<String> announcements;
+    private Integer organizerId;
+    private static ArrayList<String> announcements = new ArrayList<String>();
     private Bitmap eventBanner = null;
 
     public Event(Integer id) {
         this.id = id;
+        generateQR("both", id);
+    }
+    public Event(Integer id, String title, String description, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, String location, Integer organizer, ArrayList<String> announcements) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.location = location;
+        this.organizerId = organizer;
+        this.announcements = announcements;
         generateQR("both", id);
     }
 
@@ -109,31 +127,103 @@ public class Event {
     public void setPromoQRImage(Bitmap promoQRImage) {
         this.promoQRImage = promoQRImage;
     }
+
+    public void setEventBanner(Bitmap eventBanner) {
+        this.eventBanner = eventBanner;
+    }
+
     public String getTitle() {
         return title;
     }
+
     public String getDescription() {
         return description;
     }
-    public Date getStartDate() {
+    public LocalDate getStartDate() {
         return startDate;
     }
-    public Date getEndDate() {
+    public LocalDate getEndDate() {
         return endDate;
     }
-    public Time getStartTime() {
+    public LocalTime getStartTime() {
         return startTime;
     }
-    public Time getEndTime() {
+    public LocalTime getEndTime() {
         return endTime;
     }
+
     public String getLocation() {
         return location;
     }
+
     public ArrayList<String> getAnnouncements() {
         return announcements;
     }
+
     public Bitmap getEventBanner() {
         return eventBanner;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public void setOrganizer(User organizer) {
+        // TODO: MAKE THIS A REAL ID
+        this.organizerId = 1;
+    }
+
+    public void setAnnouncements(ArrayList<String> announcements) {
+        this.announcements = announcements;
+    }
+
+    public static Event createTestEvent(int eventID) {
+        String testTitle = "Old Strathcona Summer Rib Fest";
+        String testDescription = "Come join us for the 2021 Old Strathcona Summer Rib Fest! Enjoy a variety of delicious ribs, live music, and more!";
+
+        LocalTime testStartTime = LocalTime.of(11, 0, 0);
+        LocalTime testEndTime = LocalTime.of(21, 0, 0);
+        LocalDate testStartDate = LocalDate.of(2021, 7, 16);
+        LocalDate testEndDate = LocalDate.of(2021, 7, 18);
+        String testLocation = "Edmonton, AB - 10310 83 Ave NW, Edmonton, AB T6E 2C6";
+        announcements.add("• The Old Strathcona Summer Rib Fest is now open! Come join us for a day of fun and delicious ribs!");
+        announcements.add("• We are excited to announce that we will be having a live band at the event!");
+        announcements.add("• We are running out of ribs! Come get them while they last!");
+        announcements.add("• Restocking ribs! We will be back in 30 minutes!");
+        announcements.add("• Buy 1 rack of ribs, get the second rack 50% off!");
+        announcements.add("• We are now closed for the day. Thank you to everyone who came out to the event!");
+
+        Event event = new Event(eventID, testTitle, testDescription, testStartDate, testEndDate, testStartTime, testEndTime, testLocation, 0, announcements);
+
+        Bitmap bmp = Bitmap.createBitmap(500, 500, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bmp);
+        canvas.drawColor(Color.rgb(255,0,0));
+        event.setEventBanner(bmp);
+
+        return event;
     }
 }

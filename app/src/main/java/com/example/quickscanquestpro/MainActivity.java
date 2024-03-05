@@ -5,12 +5,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 
 import com.google.android.material.navigation.NavigationBarView;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
@@ -84,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
     public Event getTestEvent() {
         if (this.testEvent == null) {
-            setTestEvent(new Event(getNewEventID()));
+            setTestEvent(Event.createTestEvent(getNewEventID()));
         }
         return this.testEvent;
     }
