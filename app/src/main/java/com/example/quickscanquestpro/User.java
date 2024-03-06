@@ -85,7 +85,7 @@ public class User {
         this.geolocation = geolocation;
     }
     public boolean isAdmin() {
-        return true;
+        return admin;
     }
 
     public String getHomepage() {
@@ -103,5 +103,10 @@ public class User {
     public int getCheckIns() {
         return checkins;
     }
+
+    public void setAdmin(boolean admin){
+        this.admin = admin;
+    }
+
 
 }

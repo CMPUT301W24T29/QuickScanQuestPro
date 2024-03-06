@@ -57,6 +57,33 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         FirebaseApp.initializeApp(this);
+        // Initiate user
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String userId = prefs.getString(USER_ID_KEY, null);
+        databaseService.getUsers(new DatabaseService.OnUsersDataLoaded() {
+            boolean userExists = false;
+            @Override
+            public void onUsersLoaded(List<User> users) {
+                // Handle the list of users
+                for (User user : users) {
+                    if (user.getUserId().equals(userId)) {
+                        userExists = true;
+                    }
+                }
+                if (userExists) {
+                    existingUser(userId);
+                } else {
+                    newUser(userId);
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                // Handle the error
+                Log.e("MainActivity", "Error loading users: " + e.getMessage());
+            }
+
+        });
 
         // display the main page / qr code reader fragment when the app starts
         HomeViewFragment fragment = new HomeViewFragment();
@@ -93,7 +120,8 @@ public class MainActivity extends AppCompatActivity{
             if (Objects.equals(pressedTitle, dashboardTitle)) {
                 fragment1 = new EventDashboardFragment();
             } else if (Objects.equals(pressedTitle, profileTitle)) {
-                if (getUser().isAdmin()){
+                User testUser = databaseService.getSpecificUser(userId);
+                if (testUser.isAdmin()){
                     fragment1 = new AdminDashboardFragment();
                 }
                 else{
@@ -113,9 +141,7 @@ public class MainActivity extends AppCompatActivity{
             return true;
         });
 
-        // Initiate user
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        String userId = prefs.getString(USER_ID_KEY, null);
+
 
         // josephs code ----
 
@@ -133,30 +159,7 @@ public class MainActivity extends AppCompatActivity{
 
         // josephs code ----
 
-        databaseService.getUsers(new DatabaseService.OnUsersDataLoaded() {
-            boolean userExists = false;
-            @Override
-            public void onUsersLoaded(List<User> users) {
-                // Handle the list of users
-                for (User user : users) {
-                    if (user.getUserId().equals(userId)) {
-                        userExists = true;
-                    }
-                }
-                if (userExists) {
-                    existingUser(userId);
-                } else {
-                    newUser(userId);
-                }
-            }
 
-            @Override
-            public void onError(Exception e) {
-                // Handle the error
-                Log.e("MainActivity", "Error loading users: " + e.getMessage());
-            }
-
-        });
 
         //Toast.makeText(getApplicationContext(), userId, Toast.LENGTH_SHORT).show();
         //user.saveToFirestore();

@@ -126,4 +126,20 @@ public class DatabaseService {
         }).addOnFailureListener(callback::onError);
     }
 
+
+    public User getSpecificUser(String Userid)
+    {
+        User user = new User(Userid);
+        usersRef.document(Userid).get().addOnSuccessListener(documentSnapshot -> {
+            user.setName(documentSnapshot.getString("name"));
+            user.setAdmin(documentSnapshot.getBoolean("admin"));
+//            user.setEmail(documentSnapshot.getString("email"));
+//            user.setMobileNum(documentSnapshot.getString("phone"));
+//            user.setGeolocation(documentSnapshot.getBoolean("geoLocation"));
+//            user.setCheckins(documentSnapshot.getLong("check-ins").intValue());
+        });
+        return user;
+    }
+
+
 }
