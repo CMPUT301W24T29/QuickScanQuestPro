@@ -45,7 +45,6 @@ public class EventCreationFragment extends Fragment {
     private String mParam1;
     private String mParam2;
     private Event creatingEvent;
-
     private DatabaseService databaseService;
 
     public EventCreationFragment() {
@@ -81,7 +80,6 @@ public class EventCreationFragment extends Fragment {
         }
         MainActivity mainActivity = (MainActivity) this.getActivity();
         this.creatingEvent = new Event(mainActivity.getNewEventID());
-        Log.d("EventCreationFragment", "New event created with ID: " + creatingEvent.getId());
     }
 
     @Override
