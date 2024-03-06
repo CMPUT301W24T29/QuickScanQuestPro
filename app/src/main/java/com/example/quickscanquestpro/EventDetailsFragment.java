@@ -110,7 +110,7 @@ public class EventDetailsFragment extends Fragment {
         Button uploadImageButton = view.findViewById(R.id.edit_banner_button);
 
 
-        // If there is no event passed in, use the test event
+        // If there is no event passed in, create a test event
         if (this.event == null) {
             event = Event.createTestEvent(mainActivity.getNewEventID());
         }
@@ -122,20 +122,6 @@ public class EventDetailsFragment extends Fragment {
         else {
             eventImage.setVisibility(View.GONE);
         }
-
-        /* Enable these buttons if the user is the organizer of the event
-        if (event.getOrganizer() == mainActivity.getUser().getUserId()) {
-            uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
-            eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
-            setShareButton();
-
-        }
-        // Hide these buttons if user is not the organizer
-        else {
-            uploadImageButton.setVisibility(View.GONE);
-            shareButton.setVisibility(View.GONE);
-        }
-        */
 
         // Set the text of the event details to the event details
         eventTitle.setText(event.getTitle());
@@ -157,6 +143,21 @@ public class EventDetailsFragment extends Fragment {
             mainActivity.transitionFragment(new EventDashboardFragment(), "EventDashboardFragment");
         });
 
+        /* Enable these buttons if the user is the organizer of the event
+        if (event.getOrganizer() == mainActivity.getUser().getUserId()) {
+            uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
+            eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
+            setShareButton();
+
+        }
+        // Hide these buttons if user is not the organizer
+        else {
+            uploadImageButton.setVisibility(View.GONE);
+            shareButton.setVisibility(View.GONE);
+        }
+        */
+
+        // These will be removed when the organizer functionality is implemented
         uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
         eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
         setShareButton(shareButton);
