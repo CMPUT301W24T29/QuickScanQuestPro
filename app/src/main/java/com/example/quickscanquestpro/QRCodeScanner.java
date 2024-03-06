@@ -1,6 +1,9 @@
 package com.example.quickscanquestpro;
 import android.content.Context;
 import android.util.Log;
+import android.view.MenuItem;
+import android.widget.Toast;
+
 import androidx.annotation.OptIn;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ExperimentalGetImage;
@@ -10,6 +13,8 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
+
+import com.google.android.material.navigation.NavigationBarView;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -37,14 +42,17 @@ public class QRCodeScanner {
     private BarcodeScanner scanner;
 
     private LifecycleOwner lifecycleOwner;
+    private MainActivity mainActivity;
+    private Boolean processingQr = false;
 
     /**
      * Constructor for QRCodeScanner
      * @param context The application context used for accessing the camera.
      * @param previewView The view into which the camera preview is rendered
      */
-    public QRCodeScanner(Context context, PreviewView previewView, LifecycleOwner lifecycleOwner)
+    public QRCodeScanner(Context context, PreviewView previewView, LifecycleOwner lifecycleOwner, MainActivity mainActivity)
     {
+        this.mainActivity = mainActivity;
         this.context = context;
         this.previewView = previewView;
         this.cameraExecutor = Executors.newSingleThreadExecutor();
@@ -92,7 +100,10 @@ public class QRCodeScanner {
                         scanner.process(inputImage)
                                 .addOnSuccessListener(barcodes -> {
                                     Log.d("QRCodeScanner", "Barcodes detected: " + barcodes.size());
-                                    processBarcodes(barcodes);
+                                    if (!processingQr) {
+                                        processingQr = true;
+                                        processBarcodes(barcodes);
+                                    }
                                 })
                                 .addOnFailureListener(e -> Log.e("QRCodeScanner", "Error detecting QR Code", e))
                                 .addOnCompleteListener(task -> {
@@ -148,10 +159,36 @@ public class QRCodeScanner {
                 eventRef.set(updateData, SetOptions.merge())
                         .addOnSuccessListener(aVoid -> Log.d("QRCodeScanner", "QR Code processed successfully: " + type + " for event ID: " + eventId))
                         .addOnFailureListener(e -> Log.e("QRCodeScanner", "Error processing QR Code", e));
+
+                // request the event from the database service / check if this event exists in the database
+                // i am using MainActivity testEvent to simulate getting an event from the database
+                Event testEvent = mainActivity.getTestEvent();
+
+                // if the eventId matches the test event id
+                if (eventId.equals(testEvent.getId().toString())) {
+                    // transition to the test event's details page
+                    if (type.equals("c")){
+                        Toast.makeText(mainActivity.getApplicationContext(), "Checked in!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(mainActivity.getApplicationContext(), "Promotion code scanned!", Toast.LENGTH_SHORT).show();
+                    }
+
+                    // navigates to the details for the event
+                    mainActivity.transitionFragment(new EventDetailsFragment(testEvent), "EventDetailsFragment");
+                    NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
+                    // sets navbar selection to the event dashboard
+                    MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
+                    item.setChecked(true);
+
+                    shutdown();
+                    return;
+                }
             } else {
                 Log.e("QRCodeScanner", "Unknown QR Code format: " + rawValue);
+                processingQr = false;
             }
         }
+        processingQr = false;
     }
 
 
