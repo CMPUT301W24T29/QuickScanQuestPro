@@ -1,14 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ProfileFragment">
 
-    <!-- TODO: Update blank fragment layout -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+tools:context=".ProfileFragment">
+
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:id="@+id/event_dashboard_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/events_list_title"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf=""
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+<!-- Profile Image and Edit Icon -->
+<FrameLayout
+    android:id="@+id/profile_image_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    tools:ignore="ExtraText">
+
+    <ImageView
+        android:id="@+id/profile_image"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_gravity="center_horizontal"
+        android:contentDescription="the profile"
+        android:src="@drawable/user_profile"/> <!-- Replace with your image source -->
+
+
+    <ImageButton
+        android:id="@+id/edit_image_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="the edit image button"
+        android:src="@drawable/user_profile"/> <!-- Replace with your edit icon source -->
+
 
 </FrameLayout>
+
+<!-- Full Name -->
+<EditText
+    android:id="@+id/full_name"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="Joseph Du"
+    android:layout_below="@id/profile_image_container"
+    android:inputType="textPersonName"
+    android:layout_margin="16dp"/>
+
+<!-- Homepage URL -->
+<EditText
+    android:id="@+id/homepage_url"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="homepage.com"
+    android:inputType="textWebEditText"
+    android:layout_below="@id/full_name"
+    android:layout_margin="16dp"/>
+
+<!-- Contact Information Section -->
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Contact Information"
+    android:layout_below="@id/homepage_url"
+    android:layout_marginLeft="16dp"
+    android:layout_marginTop="8dp" />
+
+<!-- Mobile Number -->
+<EditText
+    android:id="@+id/mobile_number"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="604-618-1169"
+    android:inputType="phone"
+    android:layout_below="@id/homepage_url"
+    android:layout_margin="16dp"/>
+
+<!-- Email Address -->
+<EditText
+    android:id="@+id/email_address"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="joseph.kj.du@gmail.com"
+    android:inputType="textEmailAddress"
+    android:layout_below="@id/mobile_number"
+    android:layout_margin="16dp"/>
+
+<!-- Geolocation Button -->
+<ImageButton
+    android:id="@+id/geolocation_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:contentDescription="the geolocation"
+    android:layout_alignParentBottom="true"
+    android:layout_centerHorizontal="true"
+    android:src="@drawable/user_profile"/> <!-- Replace with your geolocation icon source -->
+
+
+</RelativeLayout>
