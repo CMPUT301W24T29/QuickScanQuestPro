@@ -211,11 +211,6 @@ public class Event {
         this.organizerId = organizerId;
     }
 
-    public void setOrganizer(String organizerId){
-        // TODO: MAKE THIS A REAL ID
-        this.organizerId = organizerId;
-    }
-
     public void setAnnouncements(ArrayList<String> announcements) {
         this.announcements = announcements;
     }

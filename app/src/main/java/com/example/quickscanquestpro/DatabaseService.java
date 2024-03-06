@@ -1,7 +1,10 @@
 package com.example.quickscanquestpro;
 
+import static androidx.camera.core.impl.utils.ContextUtil.getApplicationContext;
+
 import android.graphics.Bitmap;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -30,6 +33,11 @@ public class DatabaseService {
     private CollectionReference usersRef;
 
     private ArrayList<Event> events = new ArrayList<Event>();
+
+    public interface OnUsersDataLoaded {
+        void onUsersLoaded(List<User> users);
+        void onError(Exception e);
+    }
 
     public DatabaseService() {
         // Initialize Firestore
@@ -98,7 +106,7 @@ public class DatabaseService {
         return events;
     }
 
-    public List<User> getUsers() {
+    public void getUsers(OnUsersDataLoaded callback) {
         List<User> users = new ArrayList<>();
 
         usersRef.get().addOnSuccessListener(queryDocumentSnapshots -> {
@@ -107,14 +115,15 @@ public class DatabaseService {
                 User user = new User(userId);
 
                 // Set other fields as before
-                user.setName(document.getString("name"));
-                user.setEmail(document.getString("email"));
-                user.setMobileNum(document.getString("phone"));
-                user.setGeolocation(document.getBoolean("geoLocation"));
-                user.setCheckins(document.getLong("check-ins").intValue());
+//                user.setName(document.getString("name"));
+//                user.setEmail(document.getString("email"));
+//                user.setMobileNum(document.getString("phone"));
+//                user.setGeolocation(document.getBoolean("geoLocation"));
+//                user.setCheckins(document.getLong("check-ins").intValue());
                 users.add(user);
             }
-        });
-        return users;
+            callback.onUsersLoaded(users);
+        }).addOnFailureListener(callback::onError);
     }
+
 }
