@@ -36,25 +36,30 @@ public class QRCodeScanner {
     private Context context;
     private BarcodeScanner scanner;
 
+    private LifecycleOwner lifecycleOwner;
+
     /**
      * Constructor for QRCodeScanner
      * @param context The application context used for accessing the camera.
      * @param previewView The view into which the camera preview is rendered
      */
-    public QRCodeScanner(Context context, PreviewView previewView)
+    public QRCodeScanner(Context context, PreviewView previewView, LifecycleOwner lifecycleOwner)
     {
         this.context = context;
         this.previewView = previewView;
         this.cameraExecutor = Executors.newSingleThreadExecutor();
         this.scanner = BarcodeScanning.getClient();
+        this.lifecycleOwner = lifecycleOwner;
+
     }
 
     /**
      * This method sets ups the camera a PreviewView and an ImageAnalysis
      * use case to process frames in real-time and perform barcode scanning
      */
-    @OptIn(markerClass = ExperimentalGetImage.class) public void startCamera() {
-        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(context);
+    @OptIn(markerClass = ExperimentalGetImage.class)
+    public void startCamera() {
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(previewView.getContext());
 
         cameraProviderFuture.addListener(() ->{;
             try {
@@ -70,23 +75,49 @@ public class QRCodeScanner {
                         .build();
 
                 imageAnalysis.setAnalyzer(cameraExecutor, image -> {
-                    try
-                    {
+                    try {
+                        Log.d("QRCodeScanner", "ImageAnalysis analyzer is called");
+
+                        if (image.getImage() == null) {
+                            Log.e("QRCodeScanner", "Received image is null, skipping barcode scanning");
+                            return;
+                        }
+
+                        Log.d("QRCodeScanner", "Processing image for barcode scanning");
                         InputImage inputImage = InputImage.fromMediaImage(image.getImage(), image.getImageInfo().getRotationDegrees());
+
+                        // Before calling scanner.process
+                        Log.d("QRCodeScanner", "Calling scanner.process(inputImage)");
+
                         scanner.process(inputImage)
-                                .addOnSuccessListener(barcodes -> processBarcodes(barcodes))
-                                .addOnFailureListener(e -> {})
-                                .addOnCompleteListener(task -> image.close());
-                    }
-                    catch (Exception e)
-                    {
-                        image.close();
+                                .addOnSuccessListener(barcodes -> {
+                                    Log.d("QRCodeScanner", "Barcodes detected: " + barcodes.size());
+                                    processBarcodes(barcodes);
+                                })
+                                .addOnFailureListener(e -> Log.e("QRCodeScanner", "Error detecting QR Code", e))
+                                .addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        Log.d("QRCodeScanner", "Barcode scanning task completed successfully");
+                                    } else {
+                                        Log.e("QRCodeScanner", "Barcode scanning task failed", task.getException());
+                                    }
+                                    image.close(); // Ensure to close the image
+                                });
+
+                        // After scanner.process is called
+                        Log.d("QRCodeScanner", "scanner.process(inputImage) has been called");
+
+                    } catch (Exception e) {
+                        Log.e("QRCodeScanner", "Failed to process image", e);
+                        image.close(); // Ensure to close the image in case of failure
                     }
                 });
 
+
                 cameraProvider.unbindAll();
 
-                cameraProvider.bindToLifecycle((LifecycleOwner) context, cameraSelector, preview);
+                cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview, imageAnalysis);
+                Log.d("QRCodeScanner", "Camera started and bound to lifecycle");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -99,23 +130,30 @@ public class QRCodeScanner {
      * @param barcodes The list of barcodes detected in the frame.
      */
     private void processBarcodes(List<Barcode> barcodes) {
-        for (Barcode barcode: barcodes) {
+        for (Barcode barcode : barcodes) {
             String rawValue = barcode.getRawValue();
-            String yourEventId = "yourEventId";
+            Log.d("QRCodeScanner", "Barcode detected: " + rawValue);
 
-            DocumentReference attendeeRef = db.collection("events")
-                    .document(yourEventId)
-                    .collection("attendees")
-                    .document(rawValue);
-            Map<String, Object> checkedInData = new HashMap<>();
-            checkedInData.put("checkedIn", true);
+            if(rawValue.startsWith("c") || rawValue.startsWith("p")) {
+                // Extracting the prefix and ID from the QR code
+                String type = rawValue.substring(0, 1); // "c" for check-in, "p" for promo
+                String eventId = rawValue.substring(1);
 
-            attendeeRef.set(checkedInData, SetOptions.merge())
-                    .addOnCompleteListener(aVoid -> Log.d("QRCodeScanner", "Attendee checked-in successfully"))
-                    .addOnFailureListener(e -> Log.e("QRCodeScanner", "Error checking-in attendee",e));
+                String collectionPath = type.equals("c") ? "checkIns" : "promos";
 
+                DocumentReference eventRef = db.collection("events").document(eventId).collection(collectionPath).document("someIdentifier");
+                Map<String, Object> updateData = new HashMap<>();
+                updateData.put("processed", true);
+
+                eventRef.set(updateData, SetOptions.merge())
+                        .addOnSuccessListener(aVoid -> Log.d("QRCodeScanner", "QR Code processed successfully: " + type + " for event ID: " + eventId))
+                        .addOnFailureListener(e -> Log.e("QRCodeScanner", "Error processing QR Code", e));
+            } else {
+                Log.e("QRCodeScanner", "Unknown QR Code format: " + rawValue);
+            }
         }
     }
+
 
     /**
      * Shuts down the executor service used for running image analysis to release resources
