@@ -104,8 +104,9 @@ public class User {
         return checkins;
     }
 
-    public void setAdmin(boolean admin) {
+    public void setAdmin(boolean admin){
         this.admin = admin;
     }
+
 
 }

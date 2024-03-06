@@ -1,18 +1,26 @@
 package com.example.quickscanquestpro;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ImageDecoder;
 import android.location.Location;
 import android.media.Image;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import com.google.firebase.firestore.auth.User;
 import com.google.type.DateTime;
@@ -29,6 +37,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Objects;
 
+
+/**
+ * Event is a representation of an event from the database, created by the {@link EventCreationFragment} and then stored in the Database by the DatabaseService
+ * It contains a unique event ID, an organizer ID, and attributes for the all the data associated with an event. Contains getters and setters for those attributes.
+ */
 public class Event {
     private Integer id;
     private BitMatrix checkinQRCode;
@@ -46,14 +59,31 @@ public class Event {
     private static ArrayList<String> announcements = new ArrayList<String>();
 
     // josh
-
     private ArrayList<User> attendees = new ArrayList<User>();
     private Bitmap eventBanner = null;
 
+    /**
+     * Constructor for the event that just takes an id, used when constructing the object during event creation.
+     * @param id the id (unique) of the event, from database preferably
+     */
     public Event(Integer id) {
         this.id = id;
         generateQR("both", id);
     }
+
+    /**
+     * Constructor for event that requires most attributes.
+     * @param id id of event
+     * @param title title of event
+     * @param description description of event
+     * @param startDate day event starts
+     * @param endDate day event ends
+     * @param startTime time event starts
+     * @param endTime time event ends
+     * @param location address of event
+     * @param organizer id of the organizer
+     * @param announcements ArrayList of announcement strings
+     */
     public Event(Integer id, String title, String description, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, String location, String organizer, ArrayList<String> announcements) {
         this.id = id;
         this.title = title;
@@ -68,6 +98,11 @@ public class Event {
         generateQR("both", id);
     }
 
+    /**
+     * Generates a QR that depends on the type passed, or creates both if passed "both"
+     * @param qrType a string of what type qr to generate and store in the event. valid values are "both", "checkin", or "promo"
+     * @param id the id of the event to use during generation
+     */
     public void generateQR(String qrType, Integer id) {
         MultiFormatWriter mfWriter = new MultiFormatWriter();
 
@@ -215,6 +250,11 @@ public class Event {
         this.announcements = announcements;
     }
 
+    /**
+     * Used to create and return a test event as a class function / static method.
+     * @param eventID the ID to use during event creation
+     * @return returns an Event with pre-filled attributes
+     */
     public static Event createTestEvent(int eventID) {
         String testTitle = "Old Strathcona Summer Rib Fest";
         String testDescription = "Come join us for the 2021 Old Strathcona Summer Rib Fest! Enjoy a variety of delicious ribs, live music, and more!";
@@ -239,5 +279,43 @@ public class Event {
         event.setEventBanner(bmp);
 
         return event;
+    }
+
+    /**
+     * creates an onclick listener to upload an image to the event and set its result to an imageview for displaying the uploaded image.
+     * @param fragment the fragment (usually 'this') that the button is in
+     * @param imageView the imageview to display the uploaded image in
+     * @return View.OnClickListener to use with a button
+     */
+    public View.OnClickListener uploadPhoto(Fragment fragment, ImageView imageView) {
+        MainActivity mainActivity = (MainActivity) fragment.getActivity();
+
+        // onclick listener for the button to upload a picture
+        ActivityResultLauncher<String> mGetContent = fragment.registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
+            if (result != null) {
+                Bitmap newBitmap = null;
+                ContentResolver contentResolver = mainActivity.getContentResolver();
+                try {
+                    if(Build.VERSION.SDK_INT < 28) {
+                        newBitmap = MediaStore.Images.Media.getBitmap(contentResolver, result);
+                    } else {
+                        ImageDecoder.Source source = ImageDecoder.createSource(contentResolver, result);
+                        newBitmap = ImageDecoder.decodeBitmap(source);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                this.setEventBanner(newBitmap);
+                imageView.setImageBitmap(newBitmap);
+                imageView.setVisibility(View.VISIBLE);
+            }
+        });
+
+        return new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                mGetContent.launch("image/*");
+            }
+        };
     }
 }
