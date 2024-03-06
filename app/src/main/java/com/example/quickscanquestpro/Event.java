@@ -1,17 +1,24 @@
 package com.example.quickscanquestpro;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ImageDecoder;
 import android.location.Location;
 import android.media.Image;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
@@ -259,5 +266,37 @@ public class Event {
         event.setEventBanner(bmp);
 
         return event;
+    }
+
+    public View.OnClickListener uploadPhoto(Fragment fragment, ImageView imageView) {
+        MainActivity mainActivity = (MainActivity) fragment.getActivity();
+
+        // onclick listener for the button to upload a picture
+        ActivityResultLauncher<String> mGetContent = fragment.registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
+            if (result != null) {
+                Bitmap newBitmap = null;
+                ContentResolver contentResolver = mainActivity.getContentResolver();
+                try {
+                    if(Build.VERSION.SDK_INT < 28) {
+                        newBitmap = MediaStore.Images.Media.getBitmap(contentResolver, result);
+                    } else {
+                        ImageDecoder.Source source = ImageDecoder.createSource(contentResolver, result);
+                        newBitmap = ImageDecoder.decodeBitmap(source);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                this.setEventBanner(newBitmap);
+                imageView.setImageBitmap(newBitmap);
+                imageView.setVisibility(View.VISIBLE);
+            }
+        });
+
+        return new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                mGetContent.launch("image/*");
+            }
+        };
     }
 }
