@@ -48,14 +48,15 @@ import java.util.UUID;
 
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link ProfileFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * This fragment displays user profile details.
+ * The user can update details of themselves
+ * The user can upload profile picture
+ * The user can delete profile picture
  */
 public class ProfileFragment extends Fragment {
 
     private ImageView profilePicturePlaceholder;
-    private ActivityResultLauncher<String> requestPermissionLauncher;
+
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private Button deleteProfilePictureButton;
 
@@ -112,6 +113,11 @@ public class ProfileFragment extends Fragment {
 
     }
 
+    /**
+     * Sets up the ActivityResultLauncher for handling image selection result.
+     * This method initializes the {@code pickImageLauncher} with the action to take when an image is selected from the device's gallery.
+     * Upon successful selection, the selected image URI is loaded into {@code profilePicturePlaceholder} ImageView and uploaded via {@code uploadImage(Uri file)} method.
+     */
     private void setupActivityResultLaunchers() {
 
         pickImageLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -243,7 +249,13 @@ public class ProfileFragment extends Fragment {
 
     }
 
-
+    /**
+     * Uploads the selected image to Firebase Storage and updates user profile picture information.
+     * @param file The URI of the selected image to be uploaded.
+     * This method uploads the image to a "images/" directory in Firebase Storage with a unique UUID.
+     * It displays upload progress, updates the profile picture URL and path in the User object upon successful upload,
+     * and makes the delete profile picture button visible. In case of failure, it displays a toast message.
+     */
     private void uploadImage(Uri file) {
         String refPath = "images/" + UUID.randomUUID().toString();
         StorageReference ref = storageReference.child(refPath);
@@ -275,6 +287,13 @@ public class ProfileFragment extends Fragment {
     }
 
 
+    /**
+     * Deletes the current profile picture from Firebase Storage and updates Firestore.
+     * This method checks if the current user has a profile picture set. If yes, it deletes the picture from Firebase Storage,
+     * sets the profile picture URL and path in the User object to null, updates Firestore,
+     * resets the UI to show the default profile picture, and hides the delete profile picture button.
+     * It shows a toast message indicating success or failure.
+     */
     public void deleteProfilePicture() {
         MainActivity mainActivity = (MainActivity) getActivity();
         User user = mainActivity.getUser();

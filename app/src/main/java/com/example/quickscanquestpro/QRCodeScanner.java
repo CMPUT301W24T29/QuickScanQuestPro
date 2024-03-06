@@ -1,5 +1,9 @@
 package com.example.quickscanquestpro;
+import static android.app.PendingIntent.getActivity;
+
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.util.Log;
 import androidx.annotation.OptIn;
 import androidx.camera.core.CameraSelector;
@@ -26,7 +30,10 @@ import java.util.concurrent.Executors;
 
 
 /**
- * *This is main class which defines QRCodeScanner Behaviors
+ * This class defines the behaviour of the QRCodeScanner and lets attendees check in by scanning QR code seamlessly
+ * Tells Events about new check in
+ * The attendees can also go to events details page without checking, if a promotional code is scanned
+ *
  */
 public class QRCodeScanner {
 
@@ -134,25 +141,49 @@ public class QRCodeScanner {
             String rawValue = barcode.getRawValue();
             Log.d("QRCodeScanner", "Barcode detected: " + rawValue);
 
-            if(rawValue.startsWith("c") || rawValue.startsWith("p")) {
-                // Extracting the prefix and ID from the QR code
-                String type = rawValue.substring(0, 1); // "c" for check-in, "p" for promo
-                String eventId = rawValue.substring(1);
+            if ((rawValue.startsWith("c") || rawValue.startsWith("p")) && rawValue.length() > 1) {
+                try {
+                    // Check if following characters are integer
+                    Integer.parseInt(rawValue.substring(1));
+                    // If parsing is successful, it means we have an integer following 'c' or 'p'
+                    Log.d("QRCodeScanner", "Valid QR Code detected: " + rawValue);
+                    // Implement the popup dialog with the success message here
+                    showSuccessPopup();
 
-                String collectionPath = type.equals("c") ? "checkIns" : "promos";
 
-                DocumentReference eventRef = db.collection("events").document(eventId).collection(collectionPath).document("someIdentifier");
-                Map<String, Object> updateData = new HashMap<>();
-                updateData.put("processed", true);
-
-                eventRef.set(updateData, SetOptions.merge())
-                        .addOnSuccessListener(aVoid -> Log.d("QRCodeScanner", "QR Code processed successfully: " + type + " for event ID: " + eventId))
-                        .addOnFailureListener(e -> Log.e("QRCodeScanner", "Error processing QR Code", e));
+                    break;
+                } catch (NumberFormatException e) {
+                    Log.e("QRCodeScanner", "QR Code does not follow the required format.", e);
+                }
             } else {
                 Log.e("QRCodeScanner", "Unknown QR Code format: " + rawValue);
             }
         }
     }
+
+    /**
+     * If the QRCode is Scanned Properly a success message is showed
+     */
+    private void showSuccessPopup() {
+        // Create a dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(previewView.getContext());
+        builder.setTitle("Success");
+        builder.setMessage("Hurray! Successfully checked into Startcona Fest");
+
+        // Add a button and its onClickListener
+        builder.setPositiveButton("Go to event details page", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Code to go to the event details page
+
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+
 
 
     /**
