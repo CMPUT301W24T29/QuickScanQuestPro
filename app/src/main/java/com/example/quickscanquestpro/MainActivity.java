@@ -13,6 +13,9 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.os.Build;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -116,7 +119,8 @@ public class MainActivity extends AppCompatActivity {
             existingUser(userId);
         }
 
-        Toast.makeText(getApplicationContext(), userId, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(), userId, Toast.LENGTH_SHORT).show();
+        //user.saveToFirestore();
 
 
         /*

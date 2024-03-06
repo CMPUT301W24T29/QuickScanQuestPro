@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,11 +24,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.MultiFormatWriter;
+
+import org.w3c.dom.Text;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -46,6 +50,16 @@ public class EventCreationFragment extends Fragment {
     private String mParam2;
     private Event creatingEvent;
     private DatabaseService databaseService;
+    private EditText titleEditText;
+    private EditText descriptionEditText;
+    private EditText locationEditText;
+    private TextView startDateText;
+    private TextView endDateText;
+    private TextView startTimeText;
+    private TextView endTimeText;
+    private MainActivity mainActivity;
+    private Button createButton;
+    private ImageView posterImageView;
 
     public EventCreationFragment() {
         // Required empty public constructor
@@ -90,9 +104,10 @@ public class EventCreationFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        MainActivity mainActivity = (MainActivity) this.getActivity();
+        mainActivity = (MainActivity) this.getActivity();
 
-        // onclick listener for the button to upload a profile picture
+        posterImageView = view.findViewById(R.id.create_event_poster);
+        // onclick listener for the button to upload a picture
         ActivityResultLauncher<String> mGetContent = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
             if (result != null) {
                 Bitmap newBitmap = null;
@@ -108,6 +123,8 @@ public class EventCreationFragment extends Fragment {
                     e.printStackTrace();
                 }
                 creatingEvent.setEventBanner(newBitmap);
+                posterImageView.setImageBitmap(newBitmap);
+                posterImageView.setVisibility(View.VISIBLE);
             }
         });
 
@@ -120,53 +137,58 @@ public class EventCreationFragment extends Fragment {
         });
 
         // adds textwatchers that update the Event whenever text is changed
-        EditText titleEditText = view.findViewById(R.id.edit_text_event_title);
-        EditText descriptionEditText = view.findViewById(R.id.edit_text_event_description);
-        EditText locationEditText = view.findViewById(R.id.edit_text_event_address);
+        titleEditText = view.findViewById(R.id.edit_text_event_title);
+        descriptionEditText = view.findViewById(R.id.edit_text_event_description);
+        locationEditText = view.findViewById(R.id.edit_text_event_address);
+        
         titleEditText.addTextChangedListener(getTextWatcher(titleEditText));
         descriptionEditText.addTextChangedListener(getTextWatcher(descriptionEditText));
         locationEditText.addTextChangedListener(getTextWatcher(locationEditText));
 
         // setting time pickers for start / end times
-        TextView startTimeText = view.findViewById(R.id.text_event_start_time);
+        startTimeText = view.findViewById(R.id.text_event_start_time);
         startTimeText.setOnClickListener(v -> {
-            new TimePickerFragment(startTimeText, creatingEvent).show(mainActivity.getSupportFragmentManager(), "startTimePicker");
+            new TimePickerFragment(startTimeText, creatingEvent, this).show(mainActivity.getSupportFragmentManager(), "startTimePicker");
         });
 
-        TextView endTimeText = view.findViewById(R.id.text_event_end_time);
+        endTimeText = view.findViewById(R.id.text_event_end_time);
         endTimeText.setOnClickListener(v -> {
-            new TimePickerFragment(endTimeText, creatingEvent).show(mainActivity.getSupportFragmentManager(), "endTimePicker");
+            new TimePickerFragment(endTimeText, creatingEvent, this).show(mainActivity.getSupportFragmentManager(), "endTimePicker");
         });
 
         // setting date pickers for start / end dates
-        TextView startDateText = view.findViewById(R.id.text_event_start_date);
+        startDateText = view.findViewById(R.id.text_event_start_date);
         startDateText.setOnClickListener(v -> {
-            new DatePickerFragment(startDateText, creatingEvent).show(mainActivity.getSupportFragmentManager(), "startDatePicker");
+            new DatePickerFragment(startDateText, creatingEvent, this).show(mainActivity.getSupportFragmentManager(), "startDatePicker");
         });
 
-        TextView endDateText = view.findViewById(R.id.text_event_end_date);
+        endDateText = view.findViewById(R.id.text_event_end_date);
         endDateText.setOnClickListener(v -> {
-            new DatePickerFragment(endDateText, creatingEvent).show(mainActivity.getSupportFragmentManager(), "endDatePicker");
+            new DatePickerFragment(endDateText, creatingEvent, this).show(mainActivity.getSupportFragmentManager(), "endDatePicker");
         });
 
         // final button that creates event and stores it
-        Button createButton = view.findViewById(R.id.create_event_confirm_button);
+        createButton = view.findViewById(R.id.create_event_confirm_button);
         createButton.setOnClickListener(v -> {
-//            mainActivity.setTestEvent(this.creatingEvent);
+            if (validateEntryFields()) {
+                mainActivity.setTestEvent(this.creatingEvent);
 
-            // create a new event in the database
-            databaseService.addEvent(creatingEvent);
-
-            // set active fragment to the event dashboard again
-            EventDashboardFragment fragment = new EventDashboardFragment();
-            FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.title_dashboard));
-            fragmentTransaction.commit();
+                // create a new event in the database
+                databaseService.addEvent(creatingEvent);
+                // set active fragment to the event dashboard again
+                EventDashboardFragment fragment = new EventDashboardFragment();
+                FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.title_dashboard));
+                fragmentTransaction.commit();
+            }
         });
+        
         view.findViewById(R.id.reuse_checkin_button).setOnClickListener(v -> showReuseFragment("checkin"));
         // Reuse speaker button
         view.findViewById(R.id.reuse_promo_button).setOnClickListener(v -> showReuseFragment("promo"));
 
+        // must do this at the end, last thing before showing user the fields
+        validateEntryFields();
     }
 
 
@@ -217,7 +239,63 @@ public class EventCreationFragment extends Fragment {
                 } else if (editId == R.id.edit_text_event_address) {
                     creatingEvent.setLocation(editable.toString());
                 }
+                validateEntryFields();
             }
         };
+    }
+
+    public Boolean validateEntryFields() {
+        Boolean valid = true;
+
+        if (titleEditText.getText().toString().length() <= 0) {
+            titleEditText.setError("Must enter a title!");
+            valid = false;
+        }
+
+        if (descriptionEditText.getText().toString().length() <= 0) {
+            descriptionEditText.setError("Must enter a description!");
+            valid = false;
+        }
+
+        if (locationEditText.getText().toString().length() <= 0) {
+            locationEditText.setError("Must enter an address!");
+            valid = false;
+        }
+
+        if (startDateText.getText().toString().length() <= 0) {
+            startDateText.setError("Must enter a start date!");
+            valid = false;
+        } else {
+            startDateText.setError(null);
+        }
+
+        if (endDateText.getText().toString().length() <= 0) {
+            endDateText.setError("Must enter a end date!");
+            valid = false;
+        } else {
+            endDateText.setError(null);
+        }
+
+        if (startTimeText.getText().toString().length() <= 0) {
+            startTimeText.setError("Must enter a start time!");
+            valid = false;
+        } else {
+            startTimeText.setError(null);
+        }
+
+        if (endTimeText.getText().toString().length() <= 0) {
+            endTimeText.setError("Must enter a end time!");
+            valid = false;
+        } else {
+            endTimeText.setError(null);
+        }
+        
+        if (!valid) {
+            createButton.setEnabled(false);
+        } else {
+            createButton.setEnabled(true);
+        }
+        
+        return valid;
     }
 }
