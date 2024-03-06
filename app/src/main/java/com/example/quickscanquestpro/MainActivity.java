@@ -96,8 +96,6 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-        testUser = databaseService.getSpecificUser(userId);
-
         // display the main page / qr code reader fragment when the app starts
         this.transitionFragment(new HomeViewFragment(), this.getString(R.string.title_qr_scanner));
 
@@ -124,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("NavMenu", "ignoring press on " + item.getTitle() + " because it was already active");
                 return false;
             }
+
 
             // create fragment of the type selected
             Fragment fragment1;
@@ -225,11 +224,34 @@ public class MainActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     // Potential failure stuff
                 });
+
+        databaseService.getSpecificUser(userId, new DatabaseService.OnUserDataLoaded() {
+            @Override
+            public void onUserLoaded(User user) {
+                testUser = new User(userId);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e("MainActivity", "Error loading user: " + e.getMessage());
+            }
+        });
     }
 
     //user constructor
     private void existingUser(String userId) {
         this.user = new User(userId);
+        databaseService.getSpecificUser(userId, new DatabaseService.OnUserDataLoaded() {
+            @Override
+            public void onUserLoaded(User user) {
+                testUser = user;
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e("MainActivity", "Error loading user: " + e.getMessage());
+            }
+        });
         Toast.makeText(getApplicationContext(), "Welcome Back!", Toast.LENGTH_SHORT).show();
 
     }

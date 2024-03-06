@@ -39,6 +39,11 @@ public class DatabaseService {
         void onError(Exception e);
     }
 
+    public interface OnUserDataLoaded {
+        void onUserLoaded(User user);
+        void onError(Exception e);
+    }
+
     public DatabaseService() {
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
@@ -127,18 +132,20 @@ public class DatabaseService {
     }
 
 
-    public User getSpecificUser(String Userid)
-    {
-        User user = new User(Userid);
-        usersRef.document(Userid).get().addOnSuccessListener(documentSnapshot -> {
-//            user.setName(documentSnapshot.getString("name"));
+    public void getSpecificUser(String userId, OnUserDataLoaded callback) {
+        usersRef.document(userId).get().addOnSuccessListener(documentSnapshot -> {
+            User user = new User(userId);
+
+            // Set user fields based on documentSnapshot
+//        user.setName(documentSnapshot.getString("name"));
             user.setAdmin(documentSnapshot.getBoolean("admin"));
-//            user.setEmail(documentSnapshot.getString("email"));
-//            user.setMobileNum(documentSnapshot.getString("phone"));
-//            user.setGeolocation(documentSnapshot.getBoolean("geoLocation"));
-//            user.setCheckins(documentSnapshot.getLong("check-ins").intValue());
-        });
-        return user;
+//        user.setEmail(documentSnapshot.getString("email"));
+//        user.setMobileNum(documentSnapshot.getString("phone"));
+//        user.setGeolocation(documentSnapshot.getBoolean("geoLocation"));
+//        user.setCheckins(documentSnapshot.getLong("check-ins").intValue());
+
+            callback.onUserLoaded(user);
+        }).addOnFailureListener(e -> callback.onError(e));
     }
 
 
