@@ -18,6 +18,8 @@
     <string name="where_text">Where?</string>
     <string name="event_location">This will be the location of the event.</string>
     <string name="event_announcements_text">Announcements</string>
+    <string name="upload_picture">This button can be invoked to add profile picture</string>
+    <string name="back">This button is invoked to go back to event details fragment from profile fragment</string>
 
     <string name="large_text">
         "Material is the metaphor.\n\n"
