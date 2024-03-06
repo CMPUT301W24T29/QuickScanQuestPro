@@ -33,7 +33,7 @@ public class ReuseQRFragment extends Fragment {
         qrCodeScanner.startCamera(); // Start camera and prepare for scanning
 
 
-        view.findViewById(R.id.backButton).setOnClickListener(v -> {
+        view.findViewById(R.id.back_button).setOnClickListener(v -> {
             // Check if there are entries in the back stack
             if (getParentFragmentManager().getBackStackEntryCount() > 0) {
                 // If there are, pop the back stack to go to the previous fragment

@@ -64,7 +64,9 @@ public class MainActivity extends AppCompatActivity {
             if (Objects.equals(pressedTitle, dashboardTitle)) {
                 fragment1 = new EventDashboardFragment();
             } else if (Objects.equals(pressedTitle, profileTitle)) {
-                fragment1 = new ProfileFragment();
+
+                //this is just for testing do not forget to delete
+                fragment1 = isAdminUser() ? new AdminDashboardFragment() : new ProfileFragment();
             } else {
                 // default to qr code home view
                 fragment1 = new HomeViewFragment();
@@ -93,4 +95,11 @@ public class MainActivity extends AppCompatActivity {
         }
         return this.testEvent;
     }
+
+    private boolean isAdminUser(){
+        return true;
+    }
+
+
 }
+
