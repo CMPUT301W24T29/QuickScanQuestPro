@@ -124,7 +124,6 @@ public class MainActivity extends AppCompatActivity{
             if (Objects.equals(pressedTitle, dashboardTitle)) {
                 fragment1 = new EventDashboardFragment();
             } else if (Objects.equals(pressedTitle, profileTitle)) {
-                User testUser = databaseService.getSpecificUser(userId);
                 if (testUser.isAdmin()){
                     fragment1 = new AdminDashboardFragment();
                 }
