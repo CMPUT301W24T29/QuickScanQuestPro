@@ -1,5 +1,6 @@
 package com.example.quickscanquestpro;
 import android.content.Context;
+import android.os.Handler;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -182,13 +184,21 @@ public class QRCodeScanner {
 
                     shutdown();
                     return;
+                } else {
+                    Toast.makeText(mainActivity.getApplicationContext(), "Invalid QR", Toast.LENGTH_SHORT).show();
                 }
             } else {
                 Log.e("QRCodeScanner", "Unknown QR Code format: " + rawValue);
-                processingQr = false;
+                Toast.makeText(mainActivity.getApplicationContext(), "Invalid QR", Toast.LENGTH_SHORT).show();
             }
         }
-        processingQr = false;
+        // if there is an error, then this will wait 4 seconds before allowing processing of a QR code again to stop toasts from stacking
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                processingQr = false;
+            }
+        }, 4000);
     }
 
 
