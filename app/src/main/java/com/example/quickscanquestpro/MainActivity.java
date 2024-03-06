@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
             if (Objects.equals(pressedTitle, dashboardTitle)) {
                 fragment1 = new EventDashboardFragment();
             } else if (Objects.equals(pressedTitle, profileTitle)) {
-                fragment1 = new ProfileFragment();
+                fragment1 = getUser().isAdmin() ? new AdminDashboardFragment() : new ProfileFragment();
             } else {
                 // default to qr code home view
                 fragment1 = new HomeViewFragment();
