@@ -22,7 +22,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
-import com.google.firebase.firestore.auth.User;
 import com.google.type.DateTime;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
