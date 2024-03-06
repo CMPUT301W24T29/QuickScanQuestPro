@@ -46,6 +46,8 @@ public class ProfileFragment extends Fragment {
     private ActivityResultLauncher<String> requestPermissionLauncher;
     private ActivityResultLauncher<Intent> pickImageLauncher;
 
+    private DatabaseService databaseService = new DatabaseService();
+
     //User user;
 
     // TODO: Rename parameter arguments, choose names that match
@@ -150,7 +152,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable s) {
                 user.setName(s.toString());
-                user.saveToFirestore(); // Update Firestore with the new user data
+                databaseService.addUser(user);
             }
         });
 
@@ -164,7 +166,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable s) {
                 user.setHomepage(s.toString());
-                user.saveToFirestore();
+                databaseService.addUser(user);
             }
         });
 
@@ -178,7 +180,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable s) {
                 user.setMobileNum(s.toString());
-                user.saveToFirestore();
+                databaseService.addUser(user);
             }
         });
 
@@ -192,13 +194,13 @@ public class ProfileFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable s) {
                 user.setEmail(s.toString());
-                user.saveToFirestore();
+                databaseService.addUser(user);
             }
         });
 
         geolocationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             user.setGeolocation(isChecked);
-            user.saveToFirestore();
+            databaseService.addUser(user);
         });
 
         //Prepopulate EditText

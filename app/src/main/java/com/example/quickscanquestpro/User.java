@@ -104,29 +104,4 @@ public class User {
         return checkins;
     }
 
-    public void saveToFirestore() {
-        // Get Firestore instance
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        // Create a map to hold user data
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("userId", this.userId);
-        userData.put("name", this.name);
-        userData.put("checkins", this.checkins);
-        userData.put("mobileNum", this.mobileNum);
-        userData.put("email", this.email);
-        userData.put("geolocation", this.geolocation);
-        userData.put("homepage", this.homepage);
-        userData.put("admin", this.admin);
-
-        // Save or update the user document in Firestore
-        db.collection("users").document(this.userId).set(userData)
-                .addOnSuccessListener(aVoid -> {
-                    // Handle success, e.g., log success or inform the user
-                })
-                .addOnFailureListener(e -> {
-                    // Handle failure, e.g., log error or inform the user
-                });
-    }
-
 }
