@@ -1,10 +1,18 @@
 package com.example.quickscanquestpro;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.os.Build;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -15,16 +23,21 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationBarView;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.FirebaseApp;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Calendar;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 
     private QRCodeScanner qrCodeScanner;
     private int newEventID = 0;
@@ -35,11 +48,46 @@ public class MainActivity extends AppCompatActivity {
 
     private User user;
 
+    private User testUser;
+
+    private DatabaseService databaseService = new DatabaseService();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        FirebaseApp.initializeApp(this);
+        // Initiate user
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String userId = prefs.getString(USER_ID_KEY, null);
+        databaseService.getUsers(new DatabaseService.OnUsersDataLoaded() {
+            boolean userExists = false;
+            @Override
+            public void onUsersLoaded(List<User> users) {
+                // Handle the list of users
+                for (User user : users) {
+                    if (user.getUserId().equals(userId)) {
+                        userExists = true;
+                    }
+                }
+                if (userExists) {
+                    existingUser(userId);
+                } else {
+                    newUser(userId);
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                // Handle the error
+                Log.e("MainActivity", "Error loading users: " + e.getMessage());
+            }
+
+        });
+
+        testUser = databaseService.getSpecificUser(userId);
 
         // display the main page / qr code reader fragment when the app starts
         HomeViewFragment fragment = new HomeViewFragment();
@@ -76,7 +124,14 @@ public class MainActivity extends AppCompatActivity {
             if (Objects.equals(pressedTitle, dashboardTitle)) {
                 fragment1 = new EventDashboardFragment();
             } else if (Objects.equals(pressedTitle, profileTitle)) {
-                fragment1 = new ProfileFragment();
+                User testUser = databaseService.getSpecificUser(userId);
+                if (testUser.isAdmin()){
+                    fragment1 = new AdminDashboardFragment();
+                }
+                else{
+                    fragment1 = new ProfileFragment();
+                }
+
             } else {
                 // default to qr code home view
                 fragment1 = new HomeViewFragment();
@@ -89,21 +144,25 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        // Initiate user
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        String userId = prefs.getString(USER_ID_KEY, null);
 
-        // If UserID not found then create a new one and add to firebase
-        if (userId == null) {
-            userId = UUID.randomUUID().toString();
-            prefs.edit().putString(USER_ID_KEY, userId).apply();
 
-            addUserToFirestore(userId);
-        } else {
-            // UserID exists, proceed with existing UserID
-            // Optionally, you can verify or update this user's details in Firestore
-            existingUser(userId);
-        }
+        // josephs code ----
+
+////         If UserID not found then create a new one and add to firebase
+//        if (userId == null) {
+//            userId = UUID.randomUUID().toString();
+//            prefs.edit().putString(USER_ID_KEY, userId).apply();
+//
+//            newUser(userId);
+//        } else {
+//            // UserID exists, proceed with existing UserID
+//            // Optionally, you can verify or update this user's details in Firestore
+//            existingUser(userId);
+//        }
+
+        // josephs code ----
+
+
 
         //Toast.makeText(getApplicationContext(), userId, Toast.LENGTH_SHORT).show();
         //user.saveToFirestore();
@@ -146,12 +205,13 @@ public class MainActivity extends AppCompatActivity {
         return this.testEvent;
     }
 
-    private void addUserToFirestore(String userId) {
+    private void newUser(String userId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // Create a new user with a Map or a custom object
         Map<String, Object> user = new HashMap<>();
-        user.put("exists", true); // Just a simple flag, you can add more user details here
+        user.put("exists", "i dont know"); // Just a simple flag, you can add more user details here
+        user.put("admin", false);
 
         // Add a new document with the generated userId
         db.collection("users").document(userId).set(user)

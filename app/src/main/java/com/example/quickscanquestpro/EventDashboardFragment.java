@@ -35,6 +35,12 @@ public class EventDashboardFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
+    public ArrayList<String> eventDataList;
+
+    public ArrayAdapter<String> eventArrayAdapter;
+
+    public ListView eventList;
+
     public EventDashboardFragment() {
         // Required empty public constructor
     }
@@ -75,10 +81,10 @@ public class EventDashboardFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         MainActivity mainActivity = (MainActivity) this.getActivity();
-        ArrayList<String> eventDataList = new ArrayList<>();
+        eventDataList = new ArrayList<>();
         eventDataList.add("Test Event ID: " + mainActivity.getTestEvent().getId().toString() + " | Title: " + mainActivity.getTestEvent().getTitle() + " | Description: " + mainActivity.getTestEvent().getDescription() + " | Location: " + mainActivity.getTestEvent().getLocation() + " | Start: " + mainActivity.getTestEvent().getStartDate().toString() + " at " + mainActivity.getTestEvent().getStartTime().toString() + " | End: " + mainActivity.getTestEvent().getEndDate().toString() + " at " + mainActivity.getTestEvent().getEndTime().toString() + " | QR Code: " + String.valueOf(mainActivity.getTestEvent().getCheckinQRCode().hashCode()));
-        ListView eventList = view.findViewById(R.id.event_dashboard_list);
-        ArrayAdapter<String> eventArrayAdapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_list_item_1, eventDataList);
+        eventList = view.findViewById(R.id.event_dashboard_list);
+        eventArrayAdapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_list_item_1, eventDataList);
         eventList.setAdapter(eventArrayAdapter);
 
         Button createButton = view.findViewById(R.id.event_dashboard_create_button);
@@ -96,5 +102,14 @@ public class EventDashboardFragment extends Fragment {
             fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.events_list_title));
             fragmentTransaction.commit();
         });
+
+        eventList.setOnItemLongClickListener((parent, view12, position, id) -> {
+            EventAttendeeFragment fragment = new EventAttendeeFragment();
+            FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.events_list_title));
+            fragmentTransaction.commit();
+            return true;
+        });
     }
+
 }
