@@ -58,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
 
     private DatabaseService databaseService = new DatabaseService();
 
+    private String userId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         FirebaseApp.initializeApp(this);
         // Initiate user
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        String userId = prefs.getString(USER_ID_KEY, null);
+        userId = prefs.getString(USER_ID_KEY, null);
         databaseService.getUsers(new DatabaseService.OnUsersDataLoaded() {
             boolean userExists = false;
             @Override
@@ -80,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
                 if (userExists) {
                     existingUser(userId);
                 } else {
+                    userId = UUID.randomUUID().toString();
+                    prefs.edit().putString(USER_ID_KEY, userId).apply();
                     newUser(userId);
                 }
             }
@@ -210,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Create a new user with a Map or a custom object
         Map<String, Object> user = new HashMap<>();
-        user.put("exists", "i dont know"); // Just a simple flag, you can add more user details here
+        user.put("exists", "i think so"); // Just a simple flag, you can add more user details here
         user.put("admin", false);
 
         // Add a new document with the generated userId
