@@ -128,10 +128,7 @@ public class EventCreationFragment extends Fragment {
                 mainActivity.setTestEvent(this.creatingEvent);
 
                 // set active fragment to the event dashboard again
-                EventDashboardFragment fragment = new EventDashboardFragment();
-                FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.title_dashboard));
-                fragmentTransaction.commit();
+                mainActivity.transitionFragment(new EventDashboardFragment(), this.getString(R.string.title_dashboard));
             }
         });
         

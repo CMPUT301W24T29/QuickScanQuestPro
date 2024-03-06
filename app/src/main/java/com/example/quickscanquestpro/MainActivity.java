@@ -48,10 +48,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // display the main page / qr code reader fragment when the app starts
-        HomeViewFragment fragment = new HomeViewFragment();
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.title_qr_scanner));
-        fragmentTransaction.commit();
+        this.transitionFragment(new HomeViewFragment(), this.getString(R.string.title_qr_scanner));
 
         NavigationBarView navBarView = findViewById(R.id.bottom_navigation);
         // sets the default selected item for the main activity to the qrscanner button
@@ -89,9 +86,8 @@ public class MainActivity extends AppCompatActivity {
             }
 
             // actually display the fragment, using a tag with the same name as the button that was pressed
-            FragmentTransaction fragmentTransaction1 = getSupportFragmentManager().beginTransaction();
-            fragmentTransaction1.replace(R.id.content, fragment1, pressedTitle);
-            fragmentTransaction1.commit();
+            this.transitionFragment(fragment1, pressedTitle);
+
             return true;
         });
 
@@ -183,4 +179,16 @@ public class MainActivity extends AppCompatActivity {
     public void setUser(User user) {
         this.user = user;
     }
+
+    /**
+     * transitions the main fragment display (content) to the specified fragment with the given tag
+     * @param fragment fragment to move to
+     * @param tag internal tag that the app uses to know which fragment is open
+     */
+    public void transitionFragment(Fragment fragment, String tag) {
+        FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.content, fragment, tag);
+        fragmentTransaction.commit();
+    }
+
 }
