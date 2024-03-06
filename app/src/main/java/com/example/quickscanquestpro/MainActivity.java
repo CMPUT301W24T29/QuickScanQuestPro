@@ -8,21 +8,39 @@ import androidx.fragment.app.FragmentTransaction;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationBarView;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
+/**
+ * Main activity for the app, initializes DatabaseService on startup,
+ * checks/creates new UUID for User when app is started without one and stores reference to user for other fragments etc.
+ * Runs for full duration of app and allows for semi-persistence.
+ * Holds Navbar and starts with displaying QR scanner, used by other fragments to display in.
+ */
 public class MainActivity extends AppCompatActivity {
 
     private QRCodeScanner qrCodeScanner;
     private int newEventID = 0;
     private Event testEvent;
+
+    private static final String PREFS_NAME = "AppPrefs";
+    private static final String USER_ID_KEY = "userId";
+
+    private User user;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +95,46 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
+        // Initiate user
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String userId = prefs.getString(USER_ID_KEY, null);
+
+        // If UserID not found then create a new one and add to firebase
+        if (userId == null) {
+            userId = UUID.randomUUID().toString();
+            prefs.edit().putString(USER_ID_KEY, userId).apply();
+
+            addUserToFirestore(userId);
+        } else {
+            // UserID exists, proceed with existing UserID
+            // Optionally, you can verify or update this user's details in Firestore
+            existingUser(userId);
+        }
+
+        //Toast.makeText(getApplicationContext(), userId, Toast.LENGTH_SHORT).show();
+        //user.saveToFirestore();
+
+
+        /*
+        String userId = FirebaseFirestore.getInstance().collection("users").document().getId();
+
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("UserID", userId);
+        editor.apply();
+
+        Map<String, Object> user = new HashMap<>();
+        user.put("name", "John Doe");
+        user.put("email", "john.doe@example.com");
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        //String userId = sharedPreferences.getString("UserID", null);
+        db.collection("users").document(userId).set(user)
+                .addOnSuccessListener(aVoid -> Log.d("TAG", "DocumentSnapshot successfully written!"))
+                .addOnFailureListener(e -> Log.w("TAG", "Error writing document", e));
+
+
+         */
     }
 
     public int getNewEventID() {
@@ -92,5 +150,37 @@ public class MainActivity extends AppCompatActivity {
             setTestEvent(Event.createTestEvent(getNewEventID()));
         }
         return this.testEvent;
+    }
+
+    private void addUserToFirestore(String userId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // Create a new user with a Map or a custom object
+        Map<String, Object> user = new HashMap<>();
+        user.put("exists", true); // Just a simple flag, you can add more user details here
+
+        // Add a new document with the generated userId
+        db.collection("users").document(userId).set(user)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(getApplicationContext(), "New User", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    // Potential failure stuff
+                });
+    }
+
+    //user constructor
+    private void existingUser(String userId) {
+        this.user = new User(userId);
+        Toast.makeText(getApplicationContext(), "Welcome Back!", Toast.LENGTH_SHORT).show();
+
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }
