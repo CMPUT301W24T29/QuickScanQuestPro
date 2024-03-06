@@ -70,8 +70,6 @@ public class DatabaseService {
         userData.put("geoLocation", user.isGeolocation());
         userData.put("check-ins", user.getCheckins());
 
-
-
         // Add the user data to the Firestore "users" collection with the incremented document number
         usersRef.document(String.valueOf(user.getUserId())).set(userData, SetOptions.merge());
     }
