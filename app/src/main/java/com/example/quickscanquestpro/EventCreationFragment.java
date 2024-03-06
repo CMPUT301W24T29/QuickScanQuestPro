@@ -40,7 +40,7 @@ import org.w3c.dom.Text;
  */
 public class EventCreationFragment extends Fragment {
     private Event creatingEvent;
-    private DatabaseService databaseService;
+    private DatabaseService databaseService = new DatabaseService();
     private EditText titleEditText;
     private EditText descriptionEditText;
     private EditText locationEditText;
