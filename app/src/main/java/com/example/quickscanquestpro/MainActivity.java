@@ -37,7 +37,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity{
+/**
+ * Main activity for the app, initializes DatabaseService on startup,
+ * checks/creates new UUID for User when app is started without one and stores reference to user for other fragments etc.
+ * Runs for full duration of app and allows for semi-persistence.
+ * Holds Navbar and starts with displaying QR scanner, used by other fragments to display in.
+ */
+public class MainActivity extends AppCompatActivity {
 
     private QRCodeScanner qrCodeScanner;
     private int newEventID = 0;
@@ -51,7 +57,6 @@ public class MainActivity extends AppCompatActivity{
     private User testUser;
 
     private DatabaseService databaseService = new DatabaseService();
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,10 +95,7 @@ public class MainActivity extends AppCompatActivity{
         testUser = databaseService.getSpecificUser(userId);
 
         // display the main page / qr code reader fragment when the app starts
-        HomeViewFragment fragment = new HomeViewFragment();
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.title_qr_scanner));
-        fragmentTransaction.commit();
+        this.transitionFragment(new HomeViewFragment(), this.getString(R.string.title_qr_scanner));
 
         NavigationBarView navBarView = findViewById(R.id.bottom_navigation);
         // sets the default selected item for the main activity to the qrscanner button
@@ -137,9 +139,8 @@ public class MainActivity extends AppCompatActivity{
             }
 
             // actually display the fragment, using a tag with the same name as the button that was pressed
-            FragmentTransaction fragmentTransaction1 = getSupportFragmentManager().beginTransaction();
-            fragmentTransaction1.replace(R.id.content, fragment1, pressedTitle);
-            fragmentTransaction1.commit();
+            this.transitionFragment(fragment1, pressedTitle);
+
             return true;
         });
 
@@ -236,4 +237,16 @@ public class MainActivity extends AppCompatActivity{
     public void setUser(User user) {
         this.user = user;
     }
+
+    /**
+     * transitions the main fragment display (content) to the specified fragment with the given tag
+     * @param fragment fragment to move to
+     * @param tag internal tag that the app uses to know which fragment is open
+     */
+    public void transitionFragment(Fragment fragment, String tag) {
+        FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.content, fragment, tag);
+        fragmentTransaction.commit();
+    }
+
 }
