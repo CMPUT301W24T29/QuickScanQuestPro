@@ -41,6 +41,15 @@
         android:src="@drawable/ic_profile_picture_placeholder"
         android:scaleType="centerCrop"/>
 
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressIndicator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_below="@id/profilePicturePlaceholder"
+            style="@style/Widget.MaterialComponents.LinearProgressIndicator"
+            android:indeterminate="false"
+            android:visibility="gone"/>
 
     <Button
         android:id="@+id/uploadProfilePictureButton"

@@ -52,6 +52,11 @@ dependencies {
     implementation("androidx.camera:camera-view:${camerax_version}")
     implementation("androidx.camera:camera-extensions:${camerax_version}")
 
+    implementation("com.google.firebase:firebase-storage:19.2.0")
+    implementation("com.google.firebase:firebase-firestore:21.4.3")
+    implementation("com.github.bumptech.glide:glide:4.11.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.11.0")
+
     implementation("com.journeyapps:zxing-android-embedded:4.1.0")
     implementation ("com.google.android.material:material:1.11.0")
     implementation("de.hdodenhof:circleimageview:3.1.0")
