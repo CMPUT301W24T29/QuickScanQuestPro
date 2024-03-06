@@ -54,8 +54,11 @@ public class Event {
     private LocalTime startTime;
     private LocalTime endTime;
     private String location;
-    private Integer organizerId;
+    private String organizerId;
     private static ArrayList<String> announcements = new ArrayList<String>();
+
+    // josh
+    private ArrayList<User> attendees = new ArrayList<User>();
     private Bitmap eventBanner = null;
 
     /**
@@ -80,7 +83,7 @@ public class Event {
      * @param organizer id of the organizer
      * @param announcements ArrayList of announcement strings
      */
-    public Event(Integer id, String title, String description, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, String location, Integer organizer, ArrayList<String> announcements) {
+    public Event(Integer id, String title, String description, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, String location, String organizer, ArrayList<String> announcements) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -167,6 +170,10 @@ public class Event {
         this.eventBanner = eventBanner;
     }
 
+    public void addAttendee(User user) {
+        attendees.add(user);
+    }
+
     public String getTitle() {
         return title;
     }
@@ -176,6 +183,9 @@ public class Event {
     }
     public LocalDate getStartDate() {
         return startDate;
+    }
+    public String getOrganizerId() {
+        return organizerId;
     }
     public LocalDate getEndDate() {
         return endDate;
@@ -193,6 +203,10 @@ public class Event {
 
     public ArrayList<String> getAnnouncements() {
         return announcements;
+    }
+
+    public ArrayList<User> getAttendees() {
+        return attendees;
     }
 
     public Bitmap getEventBanner() {
@@ -227,9 +241,8 @@ public class Event {
         this.location = location;
     }
 
-    public void setOrganizer(User organizer) {
-        // TODO: MAKE THIS A REAL ID
-        this.organizerId = 1;
+    public void setOrganizerId(String organizerId) {
+        this.organizerId = organizerId;
     }
 
     public void setAnnouncements(ArrayList<String> announcements) {
@@ -257,7 +270,7 @@ public class Event {
         announcements.add("• Buy 1 rack of ribs, get the second rack 50% off!");
         announcements.add("• We are now closed for the day. Thank you to everyone who came out to the event!");
 
-        Event event = new Event(eventID, testTitle, testDescription, testStartDate, testEndDate, testStartTime, testEndTime, testLocation, 0, announcements);
+        Event event = new Event(eventID, testTitle, testDescription, testStartDate, testEndDate, testStartTime, testEndTime, testLocation, "alastair", announcements);
 
         Bitmap bmp = Bitmap.createBitmap(500, 500, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bmp);
