@@ -100,7 +100,8 @@ public class MainActivity extends AppCompatActivity {
             existingUser(userId);
         }
 
-        Toast.makeText(getApplicationContext(), userId, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(), userId, Toast.LENGTH_SHORT).show();
+        //user.saveToFirestore();
 
 
         /*
