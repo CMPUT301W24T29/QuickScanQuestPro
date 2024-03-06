@@ -59,7 +59,6 @@ public class Event {
     private static ArrayList<String> announcements = new ArrayList<String>();
 
     // josh
-
     private ArrayList<User> attendees = new ArrayList<User>();
     private Bitmap eventBanner = null;
 

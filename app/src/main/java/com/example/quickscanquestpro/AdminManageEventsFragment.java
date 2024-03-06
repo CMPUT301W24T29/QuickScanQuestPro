@@ -9,7 +9,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.List;
+
 public class AdminManageEventsFragment extends Fragment {
+
+    DatabaseService dbService = new DatabaseService();
 
     public AdminManageEventsFragment() {
         // Required empty public constructor
@@ -28,6 +32,9 @@ public class AdminManageEventsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // get all the events from the database
+        List<Event> events = dbService.getEvents();
 
 
         view.findViewById(R.id.back_button).setOnClickListener(v -> {
