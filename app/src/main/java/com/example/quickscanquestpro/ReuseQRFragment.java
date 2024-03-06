@@ -29,11 +29,11 @@ public class ReuseQRFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         PreviewView previewView = view.findViewById(R.id.cameraFeed);
-        qrCodeScanner = new QRCodeScanner(getContext(), previewView, this);
+        qrCodeScanner = new QRCodeScanner(getContext(), previewView, this, (MainActivity) this.getActivity());
         qrCodeScanner.startCamera(); // Start camera and prepare for scanning
 
 
-        view.findViewById(R.id.backButton).setOnClickListener(v -> {
+        view.findViewById(R.id.back_button).setOnClickListener(v -> {
             // Check if there are entries in the back stack
             if (getParentFragmentManager().getBackStackEntryCount() > 0) {
                 // If there are, pop the back stack to go to the previous fragment

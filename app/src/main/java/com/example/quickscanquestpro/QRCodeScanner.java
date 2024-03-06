@@ -4,7 +4,11 @@ import static android.app.PendingIntent.getActivity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Handler;
 import android.util.Log;
+import android.view.MenuItem;
+import android.widget.Toast;
+
 import androidx.annotation.OptIn;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ExperimentalGetImage;
@@ -14,6 +18,8 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
+
+import com.google.android.material.navigation.NavigationBarView;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -27,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -44,14 +51,17 @@ public class QRCodeScanner {
     private BarcodeScanner scanner;
 
     private LifecycleOwner lifecycleOwner;
+    private MainActivity mainActivity;
+    private Boolean processingQr = false;
 
     /**
      * Constructor for QRCodeScanner
      * @param context The application context used for accessing the camera.
      * @param previewView The view into which the camera preview is rendered
      */
-    public QRCodeScanner(Context context, PreviewView previewView, LifecycleOwner lifecycleOwner)
+    public QRCodeScanner(Context context, PreviewView previewView, LifecycleOwner lifecycleOwner, MainActivity mainActivity)
     {
+        this.mainActivity = mainActivity;
         this.context = context;
         this.previewView = previewView;
         this.cameraExecutor = Executors.newSingleThreadExecutor();
@@ -99,7 +109,10 @@ public class QRCodeScanner {
                         scanner.process(inputImage)
                                 .addOnSuccessListener(barcodes -> {
                                     Log.d("QRCodeScanner", "Barcodes detected: " + barcodes.size());
-                                    processBarcodes(barcodes);
+                                    if (!processingQr) {
+                                        processingQr = true;
+                                        processBarcodes(barcodes);
+                                    }
                                 })
                                 .addOnFailureListener(e -> Log.e("QRCodeScanner", "Error detecting QR Code", e))
                                 .addOnCompleteListener(task -> {
@@ -141,49 +154,59 @@ public class QRCodeScanner {
             String rawValue = barcode.getRawValue();
             Log.d("QRCodeScanner", "Barcode detected: " + rawValue);
 
-            if ((rawValue.startsWith("c") || rawValue.startsWith("p")) && rawValue.length() > 1) {
-                try {
-                    // Check if following characters are integer
-                    Integer.parseInt(rawValue.substring(1));
-                    // If parsing is successful, it means we have an integer following 'c' or 'p'
-                    Log.d("QRCodeScanner", "Valid QR Code detected: " + rawValue);
-                    // Implement the popup dialog with the success message here
-                    showSuccessPopup();
+            if(rawValue.startsWith("c") || rawValue.startsWith("p")) {
+                // Extracting the prefix and ID from the QR code
+                String type = rawValue.substring(0, 1); // "c" for check-in, "p" for promo
+                String eventId = rawValue.substring(1);
 
+                String collectionPath = type.equals("c") ? "checkIns" : "promos";
 
-                    break;
-                } catch (NumberFormatException e) {
-                    Log.e("QRCodeScanner", "QR Code does not follow the required format.", e);
+                DocumentReference eventRef = db.collection("events").document(eventId).collection(collectionPath).document("someIdentifier");
+                Map<String, Object> updateData = new HashMap<>();
+                updateData.put("processed", true);
+
+                eventRef.set(updateData, SetOptions.merge())
+                        .addOnSuccessListener(aVoid -> Log.d("QRCodeScanner", "QR Code processed successfully: " + type + " for event ID: " + eventId))
+                        .addOnFailureListener(e -> Log.e("QRCodeScanner", "Error processing QR Code", e));
+
+                // request the event from the database service / check if this event exists in the database
+                // i am using MainActivity testEvent to simulate getting an event from the database
+                Event testEvent = mainActivity.getTestEvent();
+
+                // if the eventId matches the test event id
+                if (eventId.equals(testEvent.getId().toString())) {
+                    // transition to the test event's details page
+                    if (type.equals("c")){
+                        Toast.makeText(mainActivity.getApplicationContext(), "Checked in!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(mainActivity.getApplicationContext(), "Promotion code scanned!", Toast.LENGTH_SHORT).show();
+                    }
+
+                    // navigates to the details for the event
+                    mainActivity.transitionFragment(new EventDetailsFragment(testEvent), "EventDetailsFragment");
+                    NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
+                    // sets navbar selection to the event dashboard
+                    MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
+                    item.setChecked(true);
+
+                    shutdown();
+                    return;
+                } else {
+                    Toast.makeText(mainActivity.getApplicationContext(), "Invalid QR", Toast.LENGTH_SHORT).show();
                 }
             } else {
                 Log.e("QRCodeScanner", "Unknown QR Code format: " + rawValue);
+                Toast.makeText(mainActivity.getApplicationContext(), "Invalid QR", Toast.LENGTH_SHORT).show();
             }
         }
-    }
-
-    /**
-     * If the QRCode is Scanned Properly a success message is showed
-     */
-    private void showSuccessPopup() {
-        // Create a dialog
-        AlertDialog.Builder builder = new AlertDialog.Builder(previewView.getContext());
-        builder.setTitle("Success");
-        builder.setMessage("Hurray! Successfully checked into Startcona Fest");
-
-        // Add a button and its onClickListener
-        builder.setPositiveButton("Go to event details page", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // Code to go to the event details page
-
+        // if there is an error, then this will wait 4 seconds before allowing processing of a QR code again to stop toasts from stacking
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                processingQr = false;
             }
-        });
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
+        }, 4000);
     }
-
-
 
 
     /**

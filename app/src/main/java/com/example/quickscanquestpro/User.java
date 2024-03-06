@@ -90,6 +90,9 @@ public class User {
     public void setGeolocation(boolean geolocation) {
         this.geolocation = geolocation;
     }
+    public boolean isAdmin() {
+        return admin;
+    }
 
     public String getHomepage() {
         return homepage;
@@ -139,14 +142,9 @@ public class User {
         userData.put("admin", this.admin);
         userData.put("profilePictureUrl", this.profilePictureUrl);
 
-        // Save or update the user document in Firestore
-        db.collection("users").document(this.userId).set(userData)
-                .addOnSuccessListener(aVoid -> {
-                    // Handle success, e.g., log success or inform the user
-                })
-                .addOnFailureListener(e -> {
-                    // Handle failure, e.g., log error or inform the user
-                });
+    public void setAdmin(boolean admin){
+        this.admin = admin;
     }
+
 
 }

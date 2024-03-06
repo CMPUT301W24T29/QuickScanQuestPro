@@ -105,7 +105,7 @@ public class HomeViewFragment extends Fragment {
         View view = getView();
         if (view != null) {
             PreviewView previewView = view.findViewById(R.id.cameraFeed);
-            qrCodeScanner = new QRCodeScanner(getContext(), previewView, this);
+            qrCodeScanner = new QRCodeScanner(getContext(), previewView, this, (MainActivity) this.getActivity());
             qrCodeScanner.startCamera();
         }
     }
@@ -135,6 +135,8 @@ public class HomeViewFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        qrCodeScanner.shutdown();
+        if (qrCodeScanner != null) {
+            qrCodeScanner.shutdown();
+        }
     }
 }
