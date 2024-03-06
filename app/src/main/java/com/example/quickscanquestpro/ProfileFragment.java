@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -20,6 +21,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -83,7 +85,12 @@ public class ProfileFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-        // Initialize the permission request launcher
+        setupActivityResultLaunchers();
+
+
+    }
+
+    private void setupActivityResultLaunchers() {
         requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
             if (isGranted) {
                 openGallery();
@@ -92,16 +99,16 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-        // Initialize the image picker launcher
         pickImageLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
                 Uri selectedImage = result.getData().getData();
-                profilePicturePlaceholder.setImageURI(selectedImage);
-                saveProfilePictureUri(selectedImage.toString());
-                deleteProfilePictureButton.setVisibility(View.VISIBLE);
+                handleSelectedImage(selectedImage);
             }
         });
     }
+
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -113,28 +120,42 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        profilePicturePlaceholder = view.findViewById(R.id.profilePicturePlaceholder);
-        deleteProfilePictureButton = view.findViewById(R.id.deleteProfilePictureButton);
-
-        Button uploadProfilePictureButton = view.findViewById(R.id.uploadProfilePictureButton);
-        uploadProfilePictureButton.setOnClickListener(v -> requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES));
-
-        deleteProfilePictureButton.setOnClickListener(v -> {
+        initializeViews(view);
+        try {
+            loadProfilePicture();
+        } catch (Exception e)
+        {
             clearProfilePicture();
-            profilePicturePlaceholder.setImageResource(0); // Removes the image from ImageView
-            deleteProfilePictureButton.setVisibility(View.GONE); // Hide the button
-        });
-
-        Uri savedUri = getSavedProfilePictureUri();
-        if (savedUri != null) {
-            profilePicturePlaceholder.setImageURI(savedUri);
-            deleteProfilePictureButton.setVisibility(View.VISIBLE); // Show delete button
-        } else {
-            deleteProfilePictureButton.setVisibility(View.GONE); // Hide delete button if no picture is set
         }
 
 
     }
+
+
+    private void initializeViews(View view) {
+        profilePicturePlaceholder = view.findViewById(R.id.profilePicturePlaceholder);
+        deleteProfilePictureButton = view.findViewById(R.id.deleteProfilePictureButton);
+        Button uploadProfilePictureButton = view.findViewById(R.id.uploadProfilePictureButton);
+
+        uploadProfilePictureButton.setOnClickListener(v -> requestPermissionIfNeeded());
+
+        deleteProfilePictureButton.setOnClickListener(v -> clearProfilePicture());
+    }
+
+    private void requestPermissionIfNeeded() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+        } else {
+            openGallery();
+        }
+    }
+
+    private void handleSelectedImage(Uri selectedImage) {
+        profilePicturePlaceholder.setImageURI(selectedImage);
+        saveProfilePictureUri(selectedImage.toString());
+        deleteProfilePictureButton.setVisibility(View.VISIBLE);
+    }
+
 
     private void openGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -151,12 +172,27 @@ public class ProfileFragment extends Fragment {
         SharedPreferences.Editor editor = getActivity().getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE).edit();
         editor.putString(PROFILE_PIC_URI, uri);
         editor.apply();
+
     }
 
     private void clearProfilePicture() {
         SharedPreferences.Editor editor = getActivity().getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE).edit();
         editor.remove(PROFILE_PIC_URI);
         editor.apply();
+
+        profilePicturePlaceholder.setImageResource(R.drawable.ic_profile_picture_placeholder); // Assuming you have a placeholder drawable
+        deleteProfilePictureButton.setVisibility(View.GONE);
     }
+
+    private void loadProfilePicture() {
+        Uri savedUri = getSavedProfilePictureUri();
+        if (savedUri != null) {
+            profilePicturePlaceholder.setImageURI(savedUri);
+            deleteProfilePictureButton.setVisibility(View.VISIBLE);
+        } else {
+            deleteProfilePictureButton.setVisibility(View.GONE);
+        }
+    }
+
 
 }
