@@ -268,6 +268,12 @@ public class Event {
         return event;
     }
 
+    /**
+     * creates an onclick listener to upload an image to the event and set its result to an imageview for displaying the uploaded image.
+     * @param fragment the fragment (usually 'this') that the button is in
+     * @param imageView the imageview to display the uploaded image in
+     * @return View.OnClickListener to use with a button
+     */
     public View.OnClickListener uploadPhoto(Fragment fragment, ImageView imageView) {
         MainActivity mainActivity = (MainActivity) fragment.getActivity();
 
