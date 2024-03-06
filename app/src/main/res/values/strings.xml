@@ -8,7 +8,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="create_event_button_string">Create Event</string>
     <string name="events_list_title">Events List</string>
-    <string name="this_is_admin">This is admin</string>
+    <string name="attendee_list">Event Attendee List</string>
 
     // The following strings are used in the EventDetailsFragment
     <string name="event_title">This is the title of the event</string>
@@ -18,6 +18,8 @@
     <string name="where_text">Where?</string>
     <string name="event_location">This will be the location of the event.</string>
     <string name="event_announcements_text">Announcements</string>
+    <string name="upload_picture">This button can be invoked to add profile picture</string>
+    <string name="back">This button is invoked to go back to event details fragment from profile fragment</string>
 
     <string name="large_text">
         "Material is the metaphor.\n\n"

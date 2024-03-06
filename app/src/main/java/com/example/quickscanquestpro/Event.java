@@ -44,6 +44,10 @@ public class Event {
     private String location;
     private Integer organizerId;
     private static ArrayList<String> announcements = new ArrayList<String>();
+
+    // josh
+
+    private ArrayList<User> attendees = new ArrayList<User>();
     private Bitmap eventBanner = null;
 
     public Event(Integer id) {
@@ -132,6 +136,10 @@ public class Event {
         this.eventBanner = eventBanner;
     }
 
+    public void addAttendee(User user) {
+        attendees.add(user);
+    }
+
     public String getTitle() {
         return title;
     }
@@ -141,6 +149,9 @@ public class Event {
     }
     public LocalDate getStartDate() {
         return startDate;
+    }
+    public int getOrganizerId() {
+        return organizerId;
     }
     public LocalDate getEndDate() {
         return endDate;
@@ -158,6 +169,10 @@ public class Event {
 
     public ArrayList<String> getAnnouncements() {
         return announcements;
+    }
+
+    public ArrayList<User> getAttendees() {
+        return attendees;
     }
 
     public Bitmap getEventBanner() {
@@ -190,6 +205,10 @@ public class Event {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public void setOrganizerId(int organizerId) {
+        this.organizerId = organizerId;
     }
 
     public void setOrganizer(User organizer) {

@@ -1,22 +1,37 @@
 package com.example.quickscanquestpro;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.os.Build;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationBarView;
+import com.google.firebase.FirebaseApp;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Calendar;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,10 +39,18 @@ public class MainActivity extends AppCompatActivity {
     private int newEventID = 0;
     private Event testEvent;
 
+    private static final String PREFS_NAME = "AppPrefs";
+    private static final String USER_ID_KEY = "userId";
+
+    private User user;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        FirebaseApp.initializeApp(this);
 
         // display the main page / qr code reader fragment when the app starts
         HomeViewFragment fragment = new HomeViewFragment();
@@ -64,9 +87,7 @@ public class MainActivity extends AppCompatActivity {
             if (Objects.equals(pressedTitle, dashboardTitle)) {
                 fragment1 = new EventDashboardFragment();
             } else if (Objects.equals(pressedTitle, profileTitle)) {
-
-                //this is just for testing do not forget to delete
-                fragment1 = isAdminUser() ? new AdminDashboardFragment() : new ProfileFragment();
+                fragment1 = new ProfileFragment();
             } else {
                 // default to qr code home view
                 fragment1 = new HomeViewFragment();
@@ -79,6 +100,45 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
+        // Initiate user
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String userId = prefs.getString(USER_ID_KEY, null);
+
+        // If UserID not found then create a new one and add to firebase
+        if (userId == null) {
+            userId = UUID.randomUUID().toString();
+            prefs.edit().putString(USER_ID_KEY, userId).apply();
+
+            addUserToFirestore(userId);
+        } else {
+            // UserID exists, proceed with existing UserID
+            // Optionally, you can verify or update this user's details in Firestore
+            existingUser(userId);
+        }
+
+        Toast.makeText(getApplicationContext(), userId, Toast.LENGTH_SHORT).show();
+
+
+        /*
+        String userId = FirebaseFirestore.getInstance().collection("users").document().getId();
+
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("UserID", userId);
+        editor.apply();
+
+        Map<String, Object> user = new HashMap<>();
+        user.put("name", "John Doe");
+        user.put("email", "john.doe@example.com");
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        //String userId = sharedPreferences.getString("UserID", null);
+        db.collection("users").document(userId).set(user)
+                .addOnSuccessListener(aVoid -> Log.d("TAG", "DocumentSnapshot successfully written!"))
+                .addOnFailureListener(e -> Log.w("TAG", "Error writing document", e));
+
+
+         */
     }
 
     public int getNewEventID() {
@@ -96,10 +156,35 @@ public class MainActivity extends AppCompatActivity {
         return this.testEvent;
     }
 
-    private boolean isAdminUser(){
-        return true;
+    private void addUserToFirestore(String userId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // Create a new user with a Map or a custom object
+        Map<String, Object> user = new HashMap<>();
+        user.put("exists", true); // Just a simple flag, you can add more user details here
+
+        // Add a new document with the generated userId
+        db.collection("users").document(userId).set(user)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(getApplicationContext(), "New User", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    // Potential failure stuff
+                });
     }
 
+    //user constructor
+    private void existingUser(String userId) {
+        this.user = new User(userId);
+        Toast.makeText(getApplicationContext(), "Welcome Back!", Toast.LENGTH_SHORT).show();
 
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }
-
