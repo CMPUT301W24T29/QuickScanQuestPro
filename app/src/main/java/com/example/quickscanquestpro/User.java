@@ -32,7 +32,7 @@ public class User {
      * text file storing ID
      * */
 
-    public User(String userId){
+    public User(String userId) {
         this.userId = userId;
     }
 
@@ -64,7 +64,7 @@ public class User {
 
     // return name and checkins as a string
     public String toString() {
-        return "NAME: "+ name + "  " + "CHECK-INS: " +checkins;
+        return "NAME: " + name + "  " + "CHECK-INS: " + checkins;
     }
 
     public String getMobileNum() {
@@ -90,6 +90,7 @@ public class User {
     public void setGeolocation(boolean geolocation) {
         this.geolocation = geolocation;
     }
+
     public boolean isAdmin() {
         return admin;
     }
@@ -106,19 +107,16 @@ public class User {
         return userId;
     }
 
-    public String getProfilePictureUrl()
-    {
+    public String getProfilePictureUrl() {
         return profilePictureUrl;
     }
 
 
-    public void setProfilePictureUrl(String profilePictureUrl)
-    {
+    public void setProfilePictureUrl(String profilePictureUrl) {
         this.profilePictureUrl = profilePictureUrl;
     }
 
-    public void setProfilePicturePath(String profilePicturePath)
-    {
+    public void setProfilePicturePath(String profilePicturePath) {
         this.profilePicturePath = profilePicturePath;
     }
 
@@ -126,25 +124,12 @@ public class User {
         return profilePicturePath;
     }
 
-    public void saveToFirestore() {
-        // Get Firestore instance
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // Create a map to hold user data
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("userId", this.userId);
-        userData.put("name", this.name);
-        userData.put("checkins", this.checkins);
-        userData.put("mobileNum", this.mobileNum);
-        userData.put("email", this.email);
-        userData.put("geolocation", this.geolocation);
-        userData.put("homepage", this.homepage);
-        userData.put("admin", this.admin);
-        userData.put("profilePictureUrl", this.profilePictureUrl);
-
-    public void setAdmin(boolean admin){
+    public void setAdmin(boolean admin) {
         this.admin = admin;
     }
 
-
 }
+
+
+

@@ -34,8 +34,6 @@ public class ProfileFragmentTest {
 
         onView(withId(R.id.uploadProfilePictureButton)).perform(click());
 
-
-
     }
 
 

@@ -63,11 +63,6 @@ public class ProfileFragment extends Fragment {
 
     LinearProgressIndicator progressIndicator;
 
-
-
-    private StorageReference storageReference;
-
-
     private DatabaseService databaseService = new DatabaseService();
 
     //User user;
@@ -148,9 +143,7 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        storageReference = FirebaseStorage.getInstance().getReference();
         initializeViews(view);
-
 
     }
 
@@ -162,13 +155,10 @@ public class ProfileFragment extends Fragment {
         progressIndicator = view.findViewById(R.id.progressIndicator);
 
 
-        uploadProfilePictureButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                pickImageLauncher.launch(intent);
-            }
+        uploadProfilePictureButton.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            pickImageLauncher.launch(intent);
         });
 
 
@@ -257,66 +247,65 @@ public class ProfileFragment extends Fragment {
      * Uploads the selected image to Firebase Storage and updates user profile picture information.
      * @param file The URI of the selected image to be uploaded.
      * This method uploads the image to a "images/" directory in Firebase Storage with a unique UUID.
-     * It displays upload progress, updates the profile picture URL and path in the User object upon successful upload,
+     * It displays upload progress, updates the profile picture URL and path in the User object and DatabaseService upon successful upload,
      * and makes the delete profile picture button visible. In case of failure, it displays a toast message.
      */
     private void uploadImage(Uri file) {
-        String refPath = "images/" + UUID.randomUUID().toString();
-        StorageReference ref = storageReference.child(refPath);
-        progressIndicator.setVisibility(View.VISIBLE); // Make the progress indicator visible
+        MainActivity mainActivity = (MainActivity) getActivity();
+        User user = mainActivity.getUser();
 
-        ref.putFile(file)
-                .addOnProgressListener(snapshot -> {
-                    double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
-                    progressIndicator.setProgress((int) progress);
-                })
-                .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(uri -> {
-                    String imageUrl = uri.toString();
-                    MainActivity mainActivity = (MainActivity) getActivity();
-                    User user = mainActivity.getUser();
-                    if (user != null) {
-                        user.setProfilePicturePath(refPath);
-                        user.setProfilePictureUrl(imageUrl);
-                        user.saveToFirestore();
-                    }
-                    Glide.with(ProfileFragment.this).load(imageUrl).into(profilePicturePlaceholder);
-                    deleteProfilePictureButton.setVisibility(View.VISIBLE);
-                    Toast.makeText(getContext(), "Profile Picture Uploaded", Toast.LENGTH_SHORT).show();
-                    progressIndicator.setVisibility(View.GONE); // Hide the progress indicator
-                }))
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Failed To Upload Profile Picture: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    progressIndicator.setVisibility(View.GONE); // Hide the progress indicator
-                });
+        progressIndicator.setVisibility(View.VISIBLE);
+        progressIndicator.setIndeterminate(true);
+
+        databaseService.uploadProfilePicture(file, user, new DatabaseService.OnProfilePictureUpload() {
+            @Override
+            public void onSuccess(String imageUrl, String imagePath) {
+                Glide.with(ProfileFragment.this).load(imageUrl).into(profilePicturePlaceholder);
+                deleteProfilePictureButton.setVisibility(View.VISIBLE);
+                Toast.makeText(getContext(), "Profile Picture Uploaded", Toast.LENGTH_SHORT).show();
+                progressIndicator.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(getContext(), "Failed To Upload Profile Picture: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                progressIndicator.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onProgress(double progress) {
+                // Update the UI with the progress
+                progressIndicator.setProgress((int) progress);
+            }
+        });
     }
 
 
     /**
      * Deletes the current profile picture from Firebase Storage and updates Firestore.
-     * This method checks if the current user has a profile picture set. If yes, it deletes the picture from Firebase Storage,
-     * sets the profile picture URL and path in the User object to null, updates Firestore,
+     * This method checks if the current user has a profile picture set. If yes, it deletes the picture from Firebase Storage through DatabaseService
+     * sets the profile picture URL and path in the User object to null, updates Firestore through Database Service,
      * resets the UI to show the default profile picture, and hides the delete profile picture button.
      * It shows a toast message indicating success or failure.
      */
     public void deleteProfilePicture() {
         MainActivity mainActivity = (MainActivity) getActivity();
         User user = mainActivity.getUser();
-        if (user != null && user.getProfilePicturePath() != null) {
-            // Delete from Firebase Storage
-            StorageReference picRef = FirebaseStorage.getInstance().getReference().child(user.getProfilePicturePath());
-            picRef.delete().addOnSuccessListener(aVoid -> {
 
-                user.setProfilePictureUrl(null);
-                user.setProfilePicturePath(null);
-                user.saveToFirestore();
-                // Reset UI
+        databaseService.deleteProfilePicture(user, new DatabaseService.OnProfilePictureDelete() {
+            @Override
+            public void onSuccess() {
                 profilePicturePlaceholder.setImageResource(R.drawable.ic_profile_picture_placeholder);
                 deleteProfilePictureButton.setVisibility(View.GONE);
                 Toast.makeText(getContext(), "Profile Picture Deleted", Toast.LENGTH_SHORT).show();
-            }).addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to delete profile picture: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-        }
-    }
+            }
 
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(getContext(), "Failed to delete profile picture: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
 
 
