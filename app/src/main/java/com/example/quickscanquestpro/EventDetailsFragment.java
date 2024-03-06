@@ -1,23 +1,37 @@
 package com.example.quickscanquestpro;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.sql.Time;
+import java.text.DateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -32,10 +46,10 @@ public class EventDetailsFragment extends Fragment {
     private TextView eventDescription;
     private TextView eventDate;
     private TextView eventLocation;
-    private ArrayList<String> announcementList;
     private ArrayAdapter<String> announcementAdapter;
     private ListView announcementListView;
     private ImageView eventImage;
+    public final int galleryReqCode = 1000;
 
 
     // TODO: Rename parameter arguments, choose names that match
@@ -87,44 +101,42 @@ public class EventDetailsFragment extends Fragment {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_event_details, container, false);
     }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        eventTitle = view.findViewById(R.id.event_title);
-        eventDescription = view.findViewById(R.id.event_description);
-        eventDate = view.findViewById(R.id.event_date);
-        eventLocation = view.findViewById(R.id.event_location);
-        announcementList = new ArrayList<String>();
-        eventImage = view.findViewById(R.id.event_banner);
+        TextView eventTitle = view.findViewById(R.id.event_title);
+        TextView eventDescription = view.findViewById(R.id.event_description);
+        TextView eventDate = view.findViewById(R.id.event_date);
+        TextView eventLocation = view.findViewById(R.id.event_location);
+        ArrayList<String> announcementList = new ArrayList<String>();
+        ArrayAdapter<String> announcementAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, announcementList);
+        ListView announcementListView = view.findViewById(R.id.event_announcements_list);
+        ImageView eventImage = view.findViewById(R.id.event_banner);
+        FloatingActionButton backButton = view.findViewById(R.id.back_button);
+        Button uploadImageButton = view.findViewById(R.id.edit_banner_button);
 
         // If there is no event passed in, use the test event
-        if (getArguments() == null) {
-
-        eventImage.setImageResource(R.drawable.pork_ribs);
-        eventTitle.setText("Old Strathcona Summer Rib Fest");
-        eventDescription.setText("Come join us for the 2021 Old Strathcona Summer Rib Fest! Enjoy a variety of delicious ribs, live music, and more!");
-        eventDate.setText("August 20, 2021" + " - " + "August 22, 2021" + " 11:00 AM - 9:00 PM");
-        eventLocation.setText("Edmonton, AB - 10310 83 Ave NW, Edmonton, AB T6E 2C6");
-        announcementList.add("• The Old Strathcona Summer Rib Fest is now open! Come join us for a day of fun and delicious ribs!");
-        announcementList.add("• We are excited to announce that we will be having a live band at the event!");
-        announcementList.add("• We are running out of ribs! Come get them while they last!");
-        announcementList.add("• Restocking ribs! We will be back in 30 minutes!");
-        announcementList.add("• Buy 1 rack of ribs, get the second rack 50% off!");
-        announcementList.add("• We are now closed for the day. Thank you to everyone who came out to the event!");
+        if (this.event == null) {
+            MainActivity mainActivity = (MainActivity) this.getActivity();
+            event = Event.createTestEvent(mainActivity.getNewEventID());
         }
 
-        // If there is no event passed in, use the test event
+        if (event.getEventBanner() != null) {
+            eventImage.setImageBitmap(event.getEventBanner());
+            uploadImageButton.setVisibility(View.GONE);
+        }
         else {
-            if (event.getEventBanner() != null) {
-                eventImage.setImageBitmap(event.getEventBanner());
-            }
-            eventTitle.setText(event.getTitle());
-            eventDescription.setText(event.getDescription());
-            String eventDateString = event.getStartDate() + " - " + event.getEndDate() + " " + event.getStartTime() + " - " + event.getEndTime();
-            eventDate.setText(eventDateString);
-            eventLocation.setText(event.getLocation());
-            announcementList = event.getAnnouncements();
+
+            eventImage.setVisibility(View.GONE);
         }
+
+        eventTitle.setText(event.getTitle());
+        eventDescription.setText(event.getDescription());
+        String eventDateString = event.getStartDate() + " at " + event.getStartTime() + " until " + event.getEndDate() + " at " + event.getEndTime();
+        eventDate.setText(eventDateString);
+        eventLocation.setText(event.getLocation());
+        announcementList = event.getAnnouncements();
 
         announcementAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, announcementList);
 
@@ -133,13 +145,34 @@ public class EventDetailsFragment extends Fragment {
         announcementListView.setAdapter(announcementAdapter);
         ListViewHelper.getListViewSize(announcementListView);
 
-        FloatingActionButton backButton = view.findViewById(R.id.back_button);
-
         backButton.setOnClickListener(v -> {
             EventDashboardFragment fragment = new EventDashboardFragment();
             FragmentTransaction fragmentTransaction = this.getActivity().getSupportFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.event_title));
             fragmentTransaction.commit();
+        });
+
+        ActivityResultLauncher<String> mGetContent = registerForActivityResult(new ActivityResultContracts.GetContent(),
+                result -> {
+                    if (result != null) {
+                        eventImage.setImageURI(result);
+                        eventImage.setVisibility(View.VISIBLE);
+                        uploadImageButton.setVisibility(View.GONE);
+                    }
+                });
+        // Sets an on click listener for the upload image button
+        uploadImageButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                mGetContent.launch("image/*");
+            }
+        });
+        // Set an on click listener for the event image so image can still be uploaded after it has been set
+        eventImage.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                mGetContent.launch("image/*");
+            }
         });
     }
 }

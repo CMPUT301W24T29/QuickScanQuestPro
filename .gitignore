@@ -33,6 +33,7 @@ google-services.json
 *.hprof
 
 # mac thing
+**/.DS_Store
 .DS_Store
 ._.DS_Store
 **/.DS_Store
