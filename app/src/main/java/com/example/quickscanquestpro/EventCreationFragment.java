@@ -171,10 +171,12 @@ public class EventCreationFragment extends Fragment {
         createButton = view.findViewById(R.id.create_event_confirm_button);
         createButton.setOnClickListener(v -> {
             if (validateEntryFields()) {
-                mainActivity.setTestEvent(this.creatingEvent);
-
+//                mainActivity.setTestEvent(this.creatingEvent);
+                String organizerId = mainActivity.getUser().getUserId();
+                creatingEvent.setOrganizerId(organizerId);
                 // create a new event in the database
                 databaseService.addEvent(creatingEvent);
+                Log.d("EventCreationFragment", "Event created: " + creatingEvent.toString() );
                 // set active fragment to the event dashboard again
                 EventDashboardFragment fragment = new EventDashboardFragment();
                 FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
