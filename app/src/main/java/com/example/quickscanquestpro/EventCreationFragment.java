@@ -33,8 +33,7 @@ import org.w3c.dom.Text;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link EventCreationFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Used to create a new event.
  */
 public class EventCreationFragment extends Fragment {
 

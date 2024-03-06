@@ -24,6 +24,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Main activity for the app, initializes DatabaseService on startup,
+ * checks/creates new UUID for User when app is started without one and stores reference to user for other fragments etc.
+ * Runs for full duration of app and allows for semi-persistence.
+ * Holds Navbar and starts with displaying QR scanner, used by other fragments to display in.
+ */
 public class MainActivity extends AppCompatActivity {
 
     private QRCodeScanner qrCodeScanner;
