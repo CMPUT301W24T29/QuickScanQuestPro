@@ -27,6 +27,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.MultiFormatWriter;
 
 import org.w3c.dom.Text;
@@ -38,6 +40,7 @@ import org.w3c.dom.Text;
  */
 public class EventCreationFragment extends Fragment {
     private Event creatingEvent;
+    private DatabaseService databaseService = new DatabaseService();
     private EditText titleEditText;
     private EditText descriptionEditText;
     private EditText locationEditText;
@@ -61,7 +64,6 @@ public class EventCreationFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         MainActivity mainActivity = (MainActivity) this.getActivity();
         this.creatingEvent = new Event(mainActivity.getNewEventID());
     }
@@ -125,8 +127,12 @@ public class EventCreationFragment extends Fragment {
         createButton = view.findViewById(R.id.create_event_confirm_button);
         createButton.setOnClickListener(v -> {
             if (validateEntryFields()) {
-                mainActivity.setTestEvent(this.creatingEvent);
-
+//                mainActivity.setTestEvent(this.creatingEvent);
+                String organizerId = mainActivity.getUser().getUserId();
+                creatingEvent.setOrganizerId(organizerId);
+                // create a new event in the database
+                databaseService.addEvent(creatingEvent);
+                Log.d("EventCreationFragment", "Event created: " + creatingEvent.toString() );
                 // set active fragment to the event dashboard again
                 mainActivity.transitionFragment(new EventDashboardFragment(), this.getString(R.string.title_dashboard));
             }
