@@ -22,6 +22,15 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.EditText;
+
+
+import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.io.IOException;
 
 
@@ -36,6 +45,8 @@ public class ProfileFragment extends Fragment {
     private ImageView profilePicturePlaceholder;
     private ActivityResultLauncher<String> requestPermissionLauncher;
     private ActivityResultLauncher<Intent> pickImageLauncher;
+
+    //User user;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -114,11 +125,136 @@ public class ProfileFragment extends Fragment {
                 requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES);
             }
         });
+
+
+        //For updating profile information
+        EditText fullNameInput = view.findViewById(R.id.fullNameInput);
+        EditText homepageInput = view.findViewById(R.id.homepageInput);
+        EditText mobileNumberInput = view.findViewById(R.id.mobileNumberInput);
+        EditText emailAddressInput = view.findViewById(R.id.emailAddressInput);
+        SwitchMaterial geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
+
+        //Get User from Main activity
+        MainActivity mainActivity = (MainActivity) getActivity();
+        User user = mainActivity.getUser();
+
+
+        //Update information
+        fullNameInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                user.setName(s.toString());
+                user.saveToFirestore(); // Update Firestore with the new user data
+            }
+        });
+
+        homepageInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                user.setHomepage(s.toString());
+                user.saveToFirestore();
+            }
+        });
+
+        mobileNumberInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                user.setMobileNum(s.toString());
+                user.saveToFirestore();
+            }
+        });
+
+        emailAddressInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                user.setEmail(s.toString());
+                user.saveToFirestore();
+            }
+        });
+
+        geolocationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            user.setGeolocation(isChecked);
+            user.saveToFirestore();
+        });
+
+        //Prepopulate EditText
+        fetchAndPopulateUserData(user);
+
     }
 
     private void openGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         pickImageLauncher.launch(intent);
+    }
+
+    private void fetchAndPopulateUserData(User user) {
+        // Assuming you have a way to get the current user's ID
+        String userId = user.getUserId()/* Retrieve the user ID, possibly from SharedPreferences or passed through arguments */;
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users").document(userId).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document != null && document.exists()) {
+                    // Now, you directly access fields
+                    String name = document.getString("name");
+                    String homepage = document.getString("homepage");
+                    String mobileNum = document.getString("mobileNum");
+                    String email = document.getString("email");
+                    Boolean geolocation = document.getBoolean("geolocation");
+
+                    // Assuming this runs on the UI thread, but consider checking and/or using runOnUiThread if needed
+                    updateUIWithUserData(name, homepage, mobileNum, email, geolocation);
+                } else {
+                    Log.d("ProfileFragment", "No such document");
+                }
+            } else {
+                Log.d("ProfileFragment", "get failed with ", task.getException());
+            }
+        });
+    }
+
+    private void updateUIWithUserData(String name, String homepage, String mobileNum, String email, Boolean geolocation) {
+        View view = getView();
+        if (view == null) return; // Ensure view is available
+
+        EditText fullNameInput = view.findViewById(R.id.fullNameInput);
+        EditText homepageInput = view.findViewById(R.id.homepageInput);
+        EditText mobileNumberInput = view.findViewById(R.id.mobileNumberInput);
+        EditText emailAddressInput = view.findViewById(R.id.emailAddressInput);
+        SwitchMaterial geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
+
+        fullNameInput.setText(name);
+        homepageInput.setText(homepage);
+        mobileNumberInput.setText(mobileNum);
+        emailAddressInput.setText(email);
+        if (geolocation != null) {
+            geolocationSwitch.setChecked(geolocation);
+        }
     }
 
 

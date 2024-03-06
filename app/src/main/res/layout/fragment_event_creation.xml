@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".EventCreationFragment"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".EventCreationFragment" >
+    android:layout_height="match_parent">
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
     <TextView
         android:id="@+id/create_event_title"
@@ -18,6 +22,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/create_event_poster"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:layout_marginTop="16dp"
+        android:scaleType="fitCenter"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/create_event_title" />
+
     <Button
         android:id="@+id/banner_upload_button"
         android:layout_width="wrap_content"
@@ -26,7 +41,7 @@
         android:text="Banner Upload"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/create_event_title" />
+        app:layout_constraintTop_toBottomOf="@+id/create_event_poster" />
 
     <EditText
         android:id="@+id/edit_text_event_title"
@@ -78,13 +93,14 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
+        android:background="?attr/editTextBackground"
         android:ems="10"
+        android:focusable="false"
+        android:gravity="center_vertical"
         android:hint="Start Date"
         android:inputType="date"
-        android:textColor="?attr/editTextColor"
-        android:background="?attr/editTextBackground"
-        android:gravity="center_vertical"
         android:textAppearance="?android:attr/textAppearanceMediumInverse"
+        android:textColor="?attr/editTextColor"
         app:layout_constraintEnd_toStartOf="@+id/text_event_start_time"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edit_text_event_address" />
@@ -96,13 +112,14 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
+        android:background="?attr/editTextBackground"
         android:ems="10"
+        android:focusable="false"
+        android:gravity="center_vertical"
         android:hint="Start Time"
         android:inputType="time"
-        android:textColor="?attr/editTextColor"
-        android:background="?attr/editTextBackground"
-        android:gravity="center_vertical"
         android:textAppearance="?android:attr/textAppearanceMediumInverse"
+        android:textColor="?attr/editTextColor"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/text_event_start_date"
         app:layout_constraintTop_toBottomOf="@+id/edit_text_event_address" />
@@ -114,13 +131,14 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
+        android:background="?attr/editTextBackground"
         android:ems="10"
+        android:focusable="false"
+        android:gravity="center_vertical"
         android:hint="End Date"
         android:inputType="date"
-        android:textColor="?attr/editTextColor"
-        android:background="?attr/editTextBackground"
-        android:gravity="center_vertical"
         android:textAppearance="?android:attr/textAppearanceMediumInverse"
+        android:textColor="?attr/editTextColor"
         app:layout_constraintEnd_toStartOf="@+id/text_event_end_time"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/text_event_start_date" />
@@ -132,13 +150,14 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
+        android:background="?attr/editTextBackground"
         android:ems="10"
+        android:focusable="false"
+        android:gravity="center_vertical"
         android:hint="End Time"
         android:inputType="time"
-        android:textColor="?attr/editTextColor"
-        android:background="?attr/editTextBackground"
-        android:gravity="center_vertical"
         android:textAppearance="?android:attr/textAppearanceMediumInverse"
+        android:textColor="?attr/editTextColor"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/text_event_end_date"
         app:layout_constraintTop_toBottomOf="@+id/text_event_start_time" />
@@ -183,3 +202,4 @@
         app:layout_constraintTop_toBottomOf="@+id/reuse_promo_button"
         app:layout_constraintVertical_bias="1.0" />
 </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

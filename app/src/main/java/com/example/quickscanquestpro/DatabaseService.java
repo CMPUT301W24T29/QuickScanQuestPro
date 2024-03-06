@@ -70,8 +70,6 @@ public class DatabaseService {
         userData.put("geoLocation", user.isGeolocation());
         userData.put("check-ins", user.getCheckins());
 
-
-
         // Add the user data to the Firestore "users" collection with the incremented document number
         usersRef.document(String.valueOf(user.getUserId())).set(userData, SetOptions.merge());
     }
@@ -88,7 +86,7 @@ public class DatabaseService {
                 event.setTitle(document.getString("title"));
                 event.setDescription(document.getString("description"));
                 event.setLocation(document.getString("location"));
-                event.setOrganizerId(document.getLong("organizerId").intValue());
+                event.setOrganizerId(document.getString("organizerId"));
                 event.setStartDate(LocalDate.parse(document.getString("Start-date")));
                 event.setEndDate(LocalDate.parse(document.getString("End-date")));
                 event.setStartTime(LocalTime.parse(document.getString("Start-time")));

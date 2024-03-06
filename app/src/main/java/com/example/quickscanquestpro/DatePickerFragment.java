@@ -19,15 +19,17 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
 
     private TextView dateText;
     private Event creatingEvent;
+    private EventCreationFragment eventCreationFragment;
 
     public DatePickerFragment() {
         super();
     }
 
-    public DatePickerFragment(TextView dateText, Event creatingEvent) {
+    public DatePickerFragment(TextView dateText, Event creatingEvent, EventCreationFragment eventCreationFragment) {
         super();
         this.dateText = dateText;
         this.creatingEvent = creatingEvent;
+        this.eventCreationFragment = eventCreationFragment;
     }
 
     @NonNull
@@ -75,5 +77,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
         }
 
         dateText.setText(newDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)));
+        dateText.setError(null);
+        eventCreationFragment.validateEntryFields();
     }
 }
