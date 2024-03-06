@@ -77,6 +77,7 @@ public class DatabaseService {
         userData.put("phone", user.getMobileNum());
         userData.put("geoLocation", user.isGeolocation());
         userData.put("check-ins", user.getCheckins());
+        userData.put("admin", false);
 
         // Add the user data to the Firestore "users" collection with the incremented document number
         usersRef.document(String.valueOf(user.getUserId())).set(userData, SetOptions.merge());
