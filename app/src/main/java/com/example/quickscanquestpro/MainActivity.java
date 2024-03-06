@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity{
             }
 
         });
-
+        User testUser = databaseService.getSpecificUser(userId);
         // display the main page / qr code reader fragment when the app starts
         HomeViewFragment fragment = new HomeViewFragment();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity{
             if (Objects.equals(pressedTitle, dashboardTitle)) {
                 fragment1 = new EventDashboardFragment();
             } else if (Objects.equals(pressedTitle, profileTitle)) {
-                User testUser = databaseService.getSpecificUser(userId);
+
                 if (testUser.isAdmin()){
                     fragment1 = new AdminDashboardFragment();
                 }
