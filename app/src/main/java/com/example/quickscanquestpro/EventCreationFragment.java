@@ -27,6 +27,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.MultiFormatWriter;
 
 import org.w3c.dom.Text;
@@ -47,6 +49,7 @@ public class EventCreationFragment extends Fragment {
     private String mParam1;
     private String mParam2;
     private Event creatingEvent;
+    private DatabaseService databaseService;
     private EditText titleEditText;
     private EditText descriptionEditText;
     private EditText locationEditText;
@@ -83,6 +86,8 @@ public class EventCreationFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Initialize DatabaseService
+        databaseService = new DatabaseService();
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
@@ -166,8 +171,12 @@ public class EventCreationFragment extends Fragment {
         createButton = view.findViewById(R.id.create_event_confirm_button);
         createButton.setOnClickListener(v -> {
             if (validateEntryFields()) {
-                mainActivity.setTestEvent(this.creatingEvent);
-
+//                mainActivity.setTestEvent(this.creatingEvent);
+                String organizerId = mainActivity.getUser().getUserId();
+                creatingEvent.setOrganizerId(organizerId);
+                // create a new event in the database
+                databaseService.addEvent(creatingEvent);
+                Log.d("EventCreationFragment", "Event created: " + creatingEvent.toString() );
                 // set active fragment to the event dashboard again
                 EventDashboardFragment fragment = new EventDashboardFragment();
                 FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
