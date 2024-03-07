@@ -26,7 +26,7 @@ import java.util.UUID;
  * Runs for full duration of app and allows for semi-persistence.
  * Holds Navbar and starts with displaying QR scanner, used by other fragments to display in.
  */
-public class MainActivity extends AppCompatActivity implements DatabaseService.OnUserDataLoaded {
+public class MainActivity extends AppCompatActivity implements DatabaseService.OnUsersDataLoaded, DatabaseService.OnUserDataLoaded {
 
     private QRCodeScanner qrCodeScanner;
     private String newEventID = UUID.randomUUID().toString();
@@ -45,6 +45,14 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
     private Boolean foundUser = false;
 
+    private Boolean foundUserList = false;
+
+    private SharedPreferences prefs;
+
+    private List<User> usersList;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,31 +60,9 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
         FirebaseApp.initializeApp(this);
         // Initiate user
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         userId = prefs.getString(USER_ID_KEY, null);
-        databaseService.getUsers(new DatabaseService.OnUsersDataLoaded() {
-            boolean userExists = false;
-            @Override
-            public void onUsersLoaded(List<User> users) {
-                // Handle the list of users
-                for (User user : users) {
-                    if (user.getUserId().equals(userId)) {
-                        userExists = true;
-                    }
-                }
-                if (userExists) {
-                    existingUser(userId);
-                } else {
-                    userId = UUID.randomUUID().toString();
-                    prefs.edit().putString(USER_ID_KEY, userId).apply();
-                    newUser(userId);
-                }
-            }
-
-
-        });
-
-        // display the main page / qr code reader fragment when the app starts
+        databaseService.getUsers(this);
         this.transitionFragment(new HomeViewFragment(), this.getString(R.string.title_qr_scanner));
 
         NavigationBarView navBarView = findViewById(R.id.bottom_navigation);
@@ -84,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         navBarView.setSelectedItemId(R.id.navigation_qr_scanner);
         // adds functions to the navbar button
         navBarView.setOnItemSelectedListener(item -> {
+            databaseService.getSpecificUserDetails(userId, this);
             Log.i("NavMenu", "navButtonPressed: title is " + item.getTitle());
             String pressedTitle = (String) item.getTitle();
 
@@ -126,58 +113,11 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
             return true;
         });
-
-
-
-        // josephs code ----
-
-////         If UserID not found then create a new one and add to firebase
-//        if (userId == null) {
-//            userId = UUID.randomUUID().toString();
-//            prefs.edit().putString(USER_ID_KEY, userId).apply();
-//
-//            newUser(userId);
-//        } else {
-//            // UserID exists, proceed with existing UserID
-//            // Optionally, you can verify or update this user's details in Firestore
-//            existingUser(userId);
-//        }
-
-        // josephs code ----
-
-
-
-        //Toast.makeText(getApplicationContext(), userId, Toast.LENGTH_SHORT).show();
-        //user.saveToFirestore();
-
-
-        /*
-        String userId = FirebaseFirestore.getInstance().collection("users").document().getId();
-
-        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("UserID", userId);
-        editor.apply();
-
-        Map<String, Object> user = new HashMap<>();
-        user.put("name", "John Doe");
-        user.put("email", "john.doe@example.com");
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        //String userId = sharedPreferences.getString("UserID", null);
-        db.collection("users").document(userId).set(user)
-                .addOnSuccessListener(aVoid -> Log.d("TAG", "DocumentSnapshot successfully written!"))
-                .addOnFailureListener(e -> Log.w("TAG", "Error writing document", e));
-
-
-         */
     }
 
     public String getNewEventID() {
         newEventID = UUID.randomUUID().toString();
-
         return newEventID;
-
     }
 
     public void setTestEvent(Event event) {
@@ -205,14 +145,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         user.put("email", "");
         user.put("geolocation", true);
 
-        databaseService.getSpecificUser(userId, new DatabaseService.OnUserDataLoaded() {
-
-            @Override
-            public void onUserLoaded(User user) {
-                testUser = new User(userId);
-            }
-        });
-
         // Add a new document with the generated userId
         db.collection("users").document(userId).set(user)
                 .addOnSuccessListener(aVoid -> {
@@ -226,15 +158,8 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
     //user constructor
     private void existingUser(String userId) {
-        this.user = new User(userId);
-        databaseService.getSpecificUser(userId, new DatabaseService.OnUserDataLoaded() {
-            @Override
-            public void onUserLoaded(User user) {
-                testUser = user;
-            }
-        });
+        testUser = new User(userId);
         Toast.makeText(getApplicationContext(), "Welcome Back!", Toast.LENGTH_SHORT).show();
-
     }
 
     public User getUser() {
@@ -257,12 +182,47 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     }
 
     @Override
-    public void onUserLoaded(User user)
+    public void onUsersLoaded(List<User> users)
     {
+        if(users == null)
+        {
+            Toast.makeText(getApplicationContext(), "There was so such userList", Toast.LENGTH_SHORT).show();
+            foundUserList = false;
+        }
+        else
+        {
+            foundUserList = true;
+            usersList = users;
+
+            // Handle the list of users
+            for (User user : usersList) {
+                if (user.getUserId().equals(userId)) {
+                    foundUser = true;
+                    break;
+                }
+            }
+            if (foundUser) {
+                existingUser(userId);
+            } else {
+                userId = UUID.randomUUID().toString();
+                prefs.edit().putString(USER_ID_KEY, userId).apply();
+                newUser(userId);
+            }
+        }
+    }
+
+    @Override
+    public void onUserLoaded(User user) {
+
         if(user == null)
         {
-            Toast.makeText(getApplicationContext(), "Invalid QR", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "There was no such user", Toast.LENGTH_SHORT).show();
             foundUser = false;
         }
+        else
+        {
+            testUser = user;
+        }
+
     }
 }
