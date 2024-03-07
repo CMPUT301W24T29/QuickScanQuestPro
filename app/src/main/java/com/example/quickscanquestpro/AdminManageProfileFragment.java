@@ -57,7 +57,7 @@ public class AdminManageProfileFragment extends Fragment {
                     Toast.makeText(getActivity(), "No users found!", Toast.LENGTH_SHORT).show();
                 } else {
                     // Use AdminProfileAdapter to display the users in the ListView
-                    AdminProfileAdapter adapter = new AdminProfileAdapter(getActivity(), R.layout.list_profile_admin_view, users);
+                    AdminProfileAdapter adapter = new AdminProfileAdapter(getActivity(), R.layout.list_admin_view, users);
                     profileListView.setAdapter(adapter);
                 }
             }

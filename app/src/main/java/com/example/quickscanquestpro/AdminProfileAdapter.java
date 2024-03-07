@@ -19,7 +19,9 @@ public class AdminProfileAdapter extends ArrayAdapter<User> {
     private int resourceLayout;
     private Context mContext;
 
-    private DatabaseService databaseService;
+    private DatabaseService databaseService = new DatabaseService();
+
+
 
     public AdminProfileAdapter(@NonNull Context context, int resource, List<User> items) {
         super(context, resource, items);
