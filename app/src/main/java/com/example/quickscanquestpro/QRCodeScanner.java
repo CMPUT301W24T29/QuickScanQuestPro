@@ -146,8 +146,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
     }
 
     /**
-     * Processes scanned barcodes to perform check-ins
-     * For each barcode, a Firestore document is updated to record the check in
+     * Processes scanned barcodes to perform check-ins and promo codes
      * @param barcodes The list of barcodes detected in the frame.
      */
     private void processBarcodes(List<Barcode> barcodes) {
@@ -186,6 +185,10 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
         cameraExecutor.shutdown();
     }
 
+    /**
+     * This runs when the processed QRcode returns from the database and either checks in the user or shows them the details page
+     * @param event Event returned from DatabaseService, can be null if not found.
+     */
     @Override
     public void onEventLoaded(Event event) {
         if (event == null) {

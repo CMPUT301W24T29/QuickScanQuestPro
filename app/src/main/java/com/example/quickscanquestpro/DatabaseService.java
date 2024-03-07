@@ -49,12 +49,10 @@ public class DatabaseService {
 
     public interface OnUsersDataLoaded {
         void onUsersLoaded(List<User> users);
-        void onError(Exception e);
     }
 
     public interface OnUserDataLoaded {
         void onUserLoaded(User user);
-        void onError(Exception e);
     }
 
     public interface OnProfilePictureUpload {
@@ -72,6 +70,10 @@ public class DatabaseService {
 
     public interface OnEventDataLoaded {
         void onEventLoaded(Event event);
+    }
+
+    public interface onEventsDataLoaded {
+        void onEventsLoaded(List<Event> events);
     }
 
     public DatabaseService() {
@@ -166,42 +168,51 @@ public class DatabaseService {
     }
 
     public void getUsers(OnUsersDataLoaded callback) {
-        List<User> users = new ArrayList<>();
-
         usersRef.get().addOnSuccessListener(queryDocumentSnapshots -> {
+            List<User> users = new ArrayList<>();
             for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                 String userId = document.getId(); // Get the document ID
                 User user = new User(userId);
 
-                // Set other fields as before
-//                user.setName(document.getString("name"));
-//                user.setEmail(document.getString("email"));
-//                user.setMobileNum(document.getString("phone"));
+                // Set user fields based on queryDocumentSnapshot
+                user.setName(document.getString("name"));
+                user.setEmail(document.getString("email"));
+                user.setMobileNum(document.getString("phone"));
 //                user.setGeolocation(document.getBoolean("geoLocation"));
 //                user.setCheckins(document.getLong("check-ins").intValue());
                 users.add(user);
             }
             callback.onUsersLoaded(users);
-        }).addOnFailureListener(callback::onError);
+        }).addOnFailureListener(e -> callback.onUsersLoaded(null));
     }
 
 
-    public void getSpecificUser(String userId, OnUserDataLoaded callback) {
-        usersRef.document(userId).get().addOnSuccessListener(documentSnapshot -> {
+    public void getSpecificUserDetails(String userId, OnUserDataLoaded callback) {
+        usersRef.document(userId).get().addOnSuccessListener(queryDocumentSnapshot -> {
+            if (!queryDocumentSnapshot.exists()) {
+                callback.onUserLoaded(null);
+                return;
+            }
+
             User user = new User(userId);
 
-            // Set user fields based on documentSnapshot
-//        user.setName(documentSnapshot.getString("name"));
-            user.setAdmin(documentSnapshot.getBoolean("admin"));
-//        user.setEmail(documentSnapshot.getString("email"));
-//        user.setMobileNum(documentSnapshot.getString("phone"));
-//        user.setGeolocation(documentSnapshot.getBoolean("geoLocation"));
-//        user.setCheckins(documentSnapshot.getLong("check-ins").intValue());
+            // Set user fields based on queryDocumentSnapshot
+            user.setName(queryDocumentSnapshot.getString("name"));
+            user.setEmail(queryDocumentSnapshot.getString("email"));
+            user.setMobileNum(queryDocumentSnapshot.getString("phone"));
+            user.setAdmin(queryDocumentSnapshot.getBoolean("admin"));
+//            user.setGeolocation(queryDocumentSnapshot.getBoolean("geoLocation"));
+//            user.setCheckins(queryDocumentSnapshot.getLong("check-ins").intValue());
 
             callback.onUserLoaded(user);
-        }).addOnFailureListener(e -> callback.onError(e));
+        }).addOnFailureListener(e -> callback.onUserLoaded(null));
     }
 
+    /**
+     * This will get a requested event from the database, then call a callback when the data is loaded into an event class
+     * @param eventId the id of the event to search for in the database
+     * @param callback the callback function in the class that called this, which will run when the data is loaded
+     */
     public void getEvent(String eventId, OnEventDataLoaded callback) {
         eventsRef.document(eventId).get().addOnSuccessListener(queryDocumentSnapshot -> {
                 if (!queryDocumentSnapshot.exists()) {
@@ -209,6 +220,7 @@ public class DatabaseService {
                     return;
                 }
 
+                // creating an event using its id will also create a QR code from the id it was given, which will always be the same
                 Event event = new Event(eventId);
 
                 // Set other fields as before
