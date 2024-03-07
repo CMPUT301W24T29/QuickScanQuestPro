@@ -30,7 +30,7 @@ import java.util.Map;
 
 public class DatabaseService {
 
-    private static final String EVENTS_COLLECTION = "events";
+    private static final String EVENTS_COLLECTION = "Events";
     private static final String USERS_COLLECTION = "users";
     private FirebaseFirestore db;
     private CollectionReference eventsRef;
@@ -46,14 +46,8 @@ public class DatabaseService {
         void onUserLoaded(User user);
     }
 
-    public interface OnEventDataLoaded {
-        void onEventLoaded(Event event);
-    }
 
-    public interface onEventsDataLoaded {
-        void onEventsLoaded(List<Event> events);
 
-    }
 
     public DatabaseService() {
         // Initialize Firestore
@@ -98,14 +92,15 @@ public class DatabaseService {
         usersRef.document(String.valueOf(user.getUserId())).set(userData, SetOptions.merge());
     }
 
-    public void getEvents(onEventsDataLoaded callback) {
+    public List<Event> getEvents() {
+        List<Event> events = new ArrayList<>();
+
         eventsRef.get().addOnSuccessListener(queryDocumentSnapshots -> {
-            List<Event> events = new ArrayList<>();
             for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                 String eventId = document.getId(); // Get the document ID
-                Event event = new Event(eventId);
+                Event event = new Event(Integer.parseInt(eventId));
 
-                // Set event fields based on queryDocumentSnapshot
+                // Set other fields as before
                 event.setTitle(document.getString("title"));
                 event.setDescription(document.getString("description"));
                 event.setLocation(document.getString("location"));
@@ -114,25 +109,28 @@ public class DatabaseService {
                 event.setEndDate(LocalDate.parse(document.getString("End-date")));
                 event.setStartTime(LocalTime.parse(document.getString("Start-time")));
                 event.setEndTime(LocalTime.parse(document.getString("End-time")));
+
                 events.add(event);
             }
-            callback.onEventsLoaded(events);
-        }).addOnFailureListener(e -> callback.onEventsLoaded(null));
+        });
+        return events;
     }
 
     public void getUsers(OnUsersDataLoaded callback) {
+
         usersRef.get().addOnSuccessListener(queryDocumentSnapshots -> {
             List<User> users = new ArrayList<>();
+
             for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                 String userId = document.getId(); // Get the document ID
                 String name = document.getString("name");
                 User user = new User(userId);
                 user.setName(name);
 
-                // Set user fields based on queryDocumentSnapshot
-                user.setName(document.getString("name"));
-                user.setEmail(document.getString("email"));
-                user.setMobileNum(document.getString("phone"));
+                // Set other fields as before
+//                user.setName(document.getString("name"));
+//                user.setEmail(document.getString("email"));
+//                user.setMobileNum(document.getString("phone"));
 //                user.setGeolocation(document.getBoolean("geoLocation"));
 //                user.setCheckins(document.getLong("check-ins").intValue());
                 users.add(user);
@@ -142,56 +140,22 @@ public class DatabaseService {
     }
 
 
-    public void getSpecificUserDetails(String userId, OnUserDataLoaded callback) {
-        usersRef.document(userId).get().addOnSuccessListener(queryDocumentSnapshot -> {
-            if (!queryDocumentSnapshot.exists()) {
-                callback.onUserLoaded(null);
-                return;
-            }
-
+    public void getSpecificUser(String userId, OnUserDataLoaded callback) {
+        usersRef.document(userId).get().addOnSuccessListener(documentSnapshot -> {
             User user = new User(userId);
 
-            // Set user fields based on queryDocumentSnapshot
-            user.setName(queryDocumentSnapshot.getString("name"));
-            user.setEmail(queryDocumentSnapshot.getString("email"));
-            user.setMobileNum(queryDocumentSnapshot.getString("phone"));
-            user.setAdmin(queryDocumentSnapshot.getBoolean("admin"));
-//            user.setGeolocation(queryDocumentSnapshot.getBoolean("geoLocation"));
-//            user.setCheckins(queryDocumentSnapshot.getLong("check-ins").intValue());
+            // Set user fields based on documentSnapshot
+//        user.setName(documentSnapshot.getString("name"));
+            user.setAdmin(documentSnapshot.getBoolean("admin"));
+//        user.setEmail(documentSnapshot.getString("email"));
+//        user.setMobileNum(documentSnapshot.getString("phone"));
+//        user.setGeolocation(documentSnapshot.getBoolean("geoLocation"));
+//        user.setCheckins(documentSnapshot.getLong("check-ins").intValue());
 
             callback.onUserLoaded(user);
         }).addOnFailureListener(e -> callback.onUserLoaded(null));
     }
 
-    public void getEvent(String eventId, OnEventDataLoaded callback) {
-        eventsRef.document(eventId).get().addOnSuccessListener(queryDocumentSnapshot -> {
-                if (!queryDocumentSnapshot.exists()) {
-                    callback.onEventLoaded(null);
-                    return;
-                }
-
-                Event event = new Event(eventId);
-
-                // Set other fields as before
-                event.setTitle(queryDocumentSnapshot.getString("title"));
-                event.setDescription(queryDocumentSnapshot.getString("description"));
-                event.setLocation(queryDocumentSnapshot.getString("location"));
-                event.setOrganizerId(queryDocumentSnapshot.getString("organizerId"));
-                event.setStartDate(LocalDate.parse(queryDocumentSnapshot.getString("Start-date")));
-                event.setEndDate(LocalDate.parse(queryDocumentSnapshot.getString("End-date")));
-                event.setStartTime(LocalTime.parse(queryDocumentSnapshot.getString("Start-time")));
-                event.setEndTime(LocalTime.parse(queryDocumentSnapshot.getString("End-time")));
-
-                callback.onEventLoaded(event);
-        }).addOnFailureListener(e -> callback.onEventLoaded(null));
-
-    }
-
-
-    public void deleteUser(String userId)
-    {
-        usersRef.document(userId).delete();
-    }
 
     public void listenForUsersUpdates(OnUsersDataLoaded callback) {
         usersRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -215,34 +179,9 @@ public class DatabaseService {
         });
     }
 
-    public void listenForEventUpdates(onEventsDataLoaded callback) {
-        eventsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w("DatabaseService", "Listen failed.", e);
-                    return;
-                }
-
-                List<Event> eventList = new ArrayList<>();
-                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                    String eventId = doc.getId();
-                    Event event = new Event(eventId);
-                    // Assuming you have a method in User class to set the name directly from Firestore document
-                    event.setTitle(doc.getString("title")); // Ensure field name matches your Firestore structure
-                    eventList.add(event);
-                }
-                callback.onEventsLoaded(eventList);
-            }
-        });
-    }
 
     public void deleteUser(User user){
         usersRef.document(user.getUserId()).delete();
-    }
-
-    public void deleteEvent(Event event){
-        eventsRef.document(event.getId()).delete();
     }
 
 }

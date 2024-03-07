@@ -35,7 +35,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * *This is main class which defines QRCodeScanner Behaviors
  */
-public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
+public class QRCodeScanner {
+
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private ExecutorService cameraExecutor;
     private PreviewView previewView;
     private Context context;
@@ -44,8 +46,6 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
     private LifecycleOwner lifecycleOwner;
     private MainActivity mainActivity;
     private Boolean processingQr = false;
-    private DatabaseService databaseService = new DatabaseService();
-    private String processingQrType;
 
     /**
      * Constructor for QRCodeScanner
@@ -149,14 +149,44 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
 
             if(rawValue.startsWith("c") || rawValue.startsWith("p")) {
                 // Extracting the prefix and ID from the QR code
-                processingQrType = rawValue.substring(0, 1); // "c" for check-in, "p" for promo
+                String type = rawValue.substring(0, 1); // "c" for check-in, "p" for promo
                 String eventId = rawValue.substring(1);
 
+                String collectionPath = type.equals("c") ? "checkIns" : "promos";
+
+                DocumentReference eventRef = db.collection("events").document(eventId).collection(collectionPath).document("someIdentifier");
+                Map<String, Object> updateData = new HashMap<>();
+                updateData.put("processed", true);
+
+                eventRef.set(updateData, SetOptions.merge())
+                        .addOnSuccessListener(aVoid -> Log.d("QRCodeScanner", "QR Code processed successfully: " + type + " for event ID: " + eventId))
+                        .addOnFailureListener(e -> Log.e("QRCodeScanner", "Error processing QR Code", e));
+
                 // request the event from the database service / check if this event exists in the database
-                databaseService.getEvent(eventId, this);
-                // this returns now because when the data is retrieved or fails to retrieve the data, it will call onEventLoaded
-                // to continue the processing
-                return;
+                // i am using MainActivity testEvent to simulate getting an event from the database
+                Event testEvent = mainActivity.getTestEvent();
+
+                // if the eventId matches the test event id
+                if (eventId.equals(testEvent.getId().toString())) {
+                    // transition to the test event's details page
+                    if (type.equals("c")){
+                        Toast.makeText(mainActivity.getApplicationContext(), "Checked in!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(mainActivity.getApplicationContext(), "Promotion code scanned!", Toast.LENGTH_SHORT).show();
+                    }
+
+                    // navigates to the details for the event
+                    mainActivity.transitionFragment(new EventDetailsFragment(testEvent), "EventDetailsFragment");
+                    NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
+                    // sets navbar selection to the event dashboard
+                    MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
+                    item.setChecked(true);
+
+                    shutdown();
+                    return;
+                } else {
+                    Toast.makeText(mainActivity.getApplicationContext(), "Invalid QR", Toast.LENGTH_SHORT).show();
+                }
             } else {
                 Log.e("QRCodeScanner", "Unknown QR Code format: " + rawValue);
                 Toast.makeText(mainActivity.getApplicationContext(), "Invalid QR", Toast.LENGTH_SHORT).show();
@@ -171,6 +201,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
         }, 4000);
     }
 
+
     /**
      * Shuts down the executor service used for running image analysis to release resources
      */
@@ -178,29 +209,4 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
         cameraExecutor.shutdown();
     }
 
-    @Override
-    public void onEventLoaded(Event event) {
-        if (event == null) {
-            // the database didnt find a match
-            Toast.makeText(mainActivity.getApplicationContext(), "Invalid QR", Toast.LENGTH_SHORT).show();
-            processingQr = false;
-        } else {
-            // the database found a match, so continue
-            // transition to the test event's details page
-            if (processingQrType.equals("c")){
-                Toast.makeText(mainActivity.getApplicationContext(), "Checked in!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(mainActivity.getApplicationContext(), "Promotion code scanned!", Toast.LENGTH_SHORT).show();
-            }
-
-            // navigates to the details for the event
-            mainActivity.transitionFragment(new EventDetailsFragment(event), "EventDetailsFragment");
-            NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
-            // sets navbar selection to the event dashboard
-            MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
-            item.setChecked(true);
-
-            shutdown();
-        }
-    }
 }
