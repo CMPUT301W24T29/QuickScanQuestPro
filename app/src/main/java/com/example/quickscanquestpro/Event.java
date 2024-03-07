@@ -16,6 +16,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -286,7 +287,7 @@ public class Event {
      * @param imageView the imageview to display the uploaded image in
      * @return View.OnClickListener to use with a button
      */
-    public View.OnClickListener uploadPhoto(Fragment fragment, ImageView imageView) {
+    public View.OnClickListener uploadPhoto(Fragment fragment, ImageView imageView, boolean editMode, DatabaseService databaseService) {
         MainActivity mainActivity = (MainActivity) fragment.getActivity();
 
         // onclick listener for the button to upload a picture
@@ -307,6 +308,24 @@ public class Event {
                 this.setEventBanner(newBitmap);
                 imageView.setImageBitmap(newBitmap);
                 imageView.setVisibility(View.VISIBLE);
+                if (editMode) {
+                    databaseService.uploadEventPhoto(result, this, new DatabaseService.OnEventPhotoUpload() {
+                        @Override
+                        public void onSuccess(String imageUrl, String imagePath) {
+                            Toast.makeText(fragment.getContext(), "Profile Picture Uploaded", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Toast.makeText(fragment.getContext(), "Failed To Upload Profile Picture: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onProgress(double progress) {
+                        }
+                    });
+                }
+
             }
         });
 
@@ -317,4 +336,5 @@ public class Event {
             }
         };
     }
+
 }

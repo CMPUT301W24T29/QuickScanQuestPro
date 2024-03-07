@@ -69,6 +69,12 @@ public class DatabaseService {
         void onEventLoaded(Event event);
     }
 
+    public interface OnEventPhotoUpload {
+        void onSuccess(String imageUrl, String imagePath);
+        void onFailure(Exception e);
+        void onProgress(double progress);
+    }
+
     public DatabaseService() {
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
@@ -77,7 +83,7 @@ public class DatabaseService {
         usersRef = db.collection(USERS_COLLECTION);
     }
 
-    public void addEvent(Event event) {
+    public void addEvent(Event event, String url) {
         // Create a Map to store the data
         Map<String, Object> eventData = new HashMap<>();
         // Assuming your Event class has getters for its properties
@@ -85,6 +91,14 @@ public class DatabaseService {
         eventData.put("description", event.getDescription());
         eventData.put("location", event.getLocation());
         eventData.put("organizerId", event.getOrganizerId());
+        if (url == null) {
+            eventData.put("eventPictureUrl", "null");
+            eventData.put("eventPicturePath", "null");
+        }
+        else {
+            eventData.put("eventPictureUrl", url);
+            eventData.put("eventPicturePath", "eventPictures/");
+        }
 
         // Combine all data into a single map
         Map<String, Object> combinedData = new HashMap<>();
@@ -238,7 +252,6 @@ public class DatabaseService {
                 .addOnFailureListener(callback::onFailure);
     }
 
-
     /**
      * Deletes the user's profile picture from Firebase Storage and updates the user's profile in Firestore.
      *
@@ -267,6 +280,21 @@ public class DatabaseService {
         }
     }
 
+    public void uploadEventPhoto(Uri fileUri, Event event, OnEventPhotoUpload callback) {
+        String refPath = "eventPictures/" + UUID.randomUUID().toString();
+        StorageReference ref = storage.getReference().child(refPath);
 
-
+        ref.putFile(fileUri)
+                .addOnProgressListener(taskSnapshot -> {
+                    double progressPercentage = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                    callback.onProgress(progressPercentage);
+                })
+                .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(uri -> {
+                    String imageUrl = uri.toString();
+                    // Update Firestore document for this user
+                    addEvent(event, imageUrl);
+                    callback.onSuccess(imageUrl, refPath);
+                }))
+                .addOnFailureListener(callback::onFailure);
+    }
 }

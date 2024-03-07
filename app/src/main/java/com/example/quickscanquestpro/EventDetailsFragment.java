@@ -56,6 +56,7 @@ import java.util.Objects;
 public class EventDetailsFragment extends Fragment {
 
     private Event event;
+    private DatabaseService databaseService = new DatabaseService();
 
     /**
      * This is the default constructor for the EventDetailsFragment class. If no event is passed in,
@@ -158,8 +159,8 @@ public class EventDetailsFragment extends Fragment {
         */
 
         // These will be removed when the organizer functionality is implemented
-        uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
-        eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
+        uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage, true, databaseService));
+        eventImage.setOnClickListener(event.uploadPhoto(this, eventImage,true, databaseService));
         setShareButton(shareButton);
     }
 
@@ -224,7 +225,7 @@ public class EventDetailsFragment extends Fragment {
      * @param imageQR A bitmap of the QR code image to be shared
      * @return A URI of the QR code image to be shared
      */
-    private Uri getImageToShare(Bitmap imageQR) {
+    public Uri getImageToShare(Bitmap imageQR) {
 
         File folder = new File(getActivity().getCacheDir(), "images");
         Uri uri = null;

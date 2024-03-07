@@ -3,6 +3,7 @@ package com.example.quickscanquestpro;
 import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -11,6 +12,7 @@ import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
@@ -26,13 +28,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.MultiFormatWriter;
 
 import org.w3c.dom.Text;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -53,6 +60,7 @@ public class EventCreationFragment extends Fragment {
     private MainActivity mainActivity;
     private Button createButton;
     private ImageView posterImageView;
+    private EventDetailsFragment eventDetailsFragment = new EventDetailsFragment();
 
     public EventCreationFragment() {
         // Required empty public constructor
@@ -92,7 +100,7 @@ public class EventCreationFragment extends Fragment {
 
         Button uploadImageButton = view.findViewById(R.id.banner_upload_button);
 
-        uploadImageButton.setOnClickListener(creatingEvent.uploadPhoto(this, posterImageView));
+        uploadImageButton.setOnClickListener(creatingEvent.uploadPhoto(this, posterImageView, false, databaseService));
 
         // adds textwatchers that update the Event whenever text is changed
         titleEditText = view.findViewById(R.id.edit_text_event_title);
@@ -133,7 +141,10 @@ public class EventCreationFragment extends Fragment {
                 String organizerId = mainActivity.getUser().getUserId();
                 creatingEvent.setOrganizerId(organizerId);
                 // create a new event in the database
-                databaseService.addEvent(creatingEvent);
+                databaseService.addEvent(creatingEvent, null);
+                if (creatingEvent.getEventBanner() != null) {
+                    uploadImage(getImageToShare(creatingEvent.getEventBanner()));
+                }
                 Log.d("EventCreationFragment", "Event created: " + creatingEvent.toString() );
                 // set active fragment to the event dashboard again
                 mainActivity.transitionFragment(new EventDashboardFragment(), this.getString(R.string.title_dashboard));
@@ -258,4 +269,46 @@ public class EventCreationFragment extends Fragment {
         
         return valid;
     }
+
+    private void uploadImage(Uri file) {
+        databaseService.uploadEventPhoto(file, creatingEvent, new DatabaseService.OnEventPhotoUpload() {
+            @Override
+            public void onSuccess(String imageUrl, String imagePath) {
+                Toast.makeText(getContext(), "Profile Picture Uploaded", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(getContext(), "Failed To Upload Profile Picture: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onProgress(double progress) {
+            }
+        });
+    }
+
+    public Uri getImageToShare(Bitmap imageQR) {
+
+        File folder = new File(getActivity().getCacheDir(), "images");
+        Uri uri = null;
+        try {
+            folder.mkdirs();
+            File file = new File(folder, "imageQR.jpg");
+
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+
+            imageQR.compress(Bitmap.CompressFormat.JPEG, 90, fileOutputStream);
+            fileOutputStream.flush();
+            fileOutputStream.close();
+
+            uri = FileProvider.getUriForFile(Objects.requireNonNull(requireActivity().getApplicationContext()), "com.example.quickscanquestpro" + ".provider", file);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this.getActivity(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+        return uri;
+    }
+
 }
