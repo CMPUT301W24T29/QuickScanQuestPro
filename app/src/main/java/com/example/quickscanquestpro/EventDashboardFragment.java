@@ -24,21 +24,11 @@ import java.util.ArrayList;
  * Displays events that user has created or is attending.
  */
 public class EventDashboardFragment extends Fragment {
+    private ArrayList<String> eventDataList;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private ArrayAdapter<String> eventArrayAdapter;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public ArrayList<String> eventDataList;
-
-    public ArrayAdapter<String> eventArrayAdapter;
-
-    public ListView eventList;
+    private ListView eventList;
 
     public EventDashboardFragment() {
         // Required empty public constructor
