@@ -25,16 +25,16 @@ public class AdminManageEventsFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static AdminManageEventsFragment newInstance() {
-        return new AdminManageEventsFragment();
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_admin_events_manage, container, false);
     }
 
+    /**
+     * onViewCreated is called immediately after onCreateView.
+     * This is where you should do your view setup.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -47,7 +47,9 @@ public class AdminManageEventsFragment extends Fragment {
             }
         });
 
-        // Fetch users from Firestore and update the ListView
+        /**
+         * Fetch events from Firestore and update the ListView
+         */
         databaseService.listenForEventUpdates(new DatabaseService.onEventsDataLoaded() {
             @Override
             public void onEventsLoaded(List<Event> events) {
