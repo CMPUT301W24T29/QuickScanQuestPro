@@ -1,5 +1,9 @@
 package com.example.quickscanquestpro;
+import static android.app.PendingIntent.getActivity;
+
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Handler;
 import android.util.Log;
 import android.view.MenuItem;
@@ -17,6 +21,7 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
@@ -33,7 +38,10 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * *This is main class which defines QRCodeScanner Behaviors
+ * This class defines the behaviour of the QRCodeScanner and lets attendees check in by scanning QR code seamlessly
+ * Tells Events about new check in
+ * The attendees can also go to events details page without checking, if a promotional code is scanned
+ *
  */
 public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
     private ExecutorService cameraExecutor;
@@ -188,9 +196,9 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
             Toast.makeText(mainActivity.getApplicationContext(), "Invalid QR", Toast.LENGTH_SHORT).show();
             processingQr = false;
         } else {
-            // the database found a match, so continue
-            // transition to the test event's details page
             if (processingQrType.equals("c")){
+                databaseService.recordCheckIn(event.getId(), mainActivity.getUser().getUserId(), "The location where QR is scanned");
+
                 Toast.makeText(mainActivity.getApplicationContext(), "Checked in!", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(mainActivity.getApplicationContext(), "Promotion code scanned!", Toast.LENGTH_SHORT).show();
@@ -207,3 +215,4 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
         }
     }
 }
+
