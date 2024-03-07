@@ -152,6 +152,11 @@ public class DatabaseService {
         }).addOnFailureListener(e -> callback.onError(e));
     }
 
+    /**
+     * This will get a requested event from the database, then call a callback when the data is loaded into an event class
+     * @param eventId the id of the event to search for in the database
+     * @param callback the callback function in the class that called this, which will run when the data is loaded
+     */
     public void getEvent(String eventId, OnEventDataLoaded callback) {
         eventsRef.document(eventId).get().addOnSuccessListener(queryDocumentSnapshot -> {
                 if (!queryDocumentSnapshot.exists()) {
@@ -159,6 +164,7 @@ public class DatabaseService {
                     return;
                 }
 
+                // creating an event using its id will also create a QR code from the id it was given, which will always be the same
                 Event event = new Event(eventId);
 
                 // Set other fields as before
