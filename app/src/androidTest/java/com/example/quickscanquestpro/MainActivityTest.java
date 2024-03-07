@@ -144,7 +144,7 @@ public class MainActivityTest {
     }
 
     @Test
-    public static void testUS_04_01_01AdminRemoveEvent(){
+    public void testUS_04_01_01AdminRemoveEvent(){
         // i want to navigate to admin event dashboard and delete the first event
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.admin_button_manage_events)).perform(click());
