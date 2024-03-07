@@ -1,9 +1,12 @@
 package com.example.quickscanquestpro;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -18,6 +21,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -27,11 +31,20 @@ import android.text.TextWatcher;
 import android.widget.EditText;
 
 
+import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.OnProgressListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.IOException;
+import java.util.UUID;
 
 
 /**
@@ -41,14 +54,18 @@ import java.io.IOException;
  */
 public class ProfileFragment extends Fragment {
 
-
     private ImageView profilePicturePlaceholder;
     private ActivityResultLauncher<String> requestPermissionLauncher;
     private ActivityResultLauncher<Intent> pickImageLauncher;
+    private Button deleteProfilePictureButton;
 
-    private DatabaseService databaseService = new DatabaseService();
+    LinearProgressIndicator progressIndicator;
 
-    //User user;
+
+
+    private StorageReference storageReference;
+
+
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -84,28 +101,32 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-        // Initialize the permission request launcher
-        requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-            if (isGranted) {
-                openGallery();
-            } else {
-                Toast.makeText(getContext(), "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
-            }
-        });
+        setupActivityResultLaunchers();
 
-        // Initialize the image picker launcher
+
+    }
+
+    private void setupActivityResultLaunchers() {
+
         pickImageLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
-                Uri selectedImage = result.getData().getData();
-                profilePicturePlaceholder.setImageURI(selectedImage);
+                Uri selectedImageUri = result.getData().getData();
+                if (selectedImageUri != null) {
+                    Glide.with(this).load(selectedImageUri).into(profilePicturePlaceholder);
+                    uploadImage(selectedImageUri);
+                }
             }
         });
     }
+
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -117,14 +138,26 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        profilePicturePlaceholder = view.findViewById(R.id.profilePicturePlaceholder);
-        Button uploadProfilePictureButton = view.findViewById(R.id.uploadProfilePictureButton);
+        storageReference = FirebaseStorage.getInstance().getReference();
+        initializeViews(view);
 
-        uploadProfilePictureButton.setOnClickListener(v -> {
-            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
-                openGallery();
-            } else {
-                requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES);
+
+    }
+
+
+    private void initializeViews(View view) {
+        profilePicturePlaceholder = view.findViewById(R.id.profilePicturePlaceholder);
+        deleteProfilePictureButton = view.findViewById(R.id.deleteProfilePictureButton);
+        Button uploadProfilePictureButton = view.findViewById(R.id.uploadProfilePictureButton);
+        progressIndicator = view.findViewById(R.id.progressIndicator);
+
+
+        uploadProfilePictureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType("image/*");
+                pickImageLauncher.launch(intent);
             }
         });
 
@@ -152,7 +185,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable s) {
                 user.setName(s.toString());
-                databaseService.addUser(user);
+                user.saveToFirestore(); // Update Firestore with the new user data
             }
         });
 
@@ -166,7 +199,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable s) {
                 user.setHomepage(s.toString());
-                databaseService.addUser(user);
+                user.saveToFirestore();
             }
         });
 
@@ -180,7 +213,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable s) {
                 user.setMobileNum(s.toString());
-                databaseService.addUser(user);
+                user.saveToFirestore();
             }
         });
 
@@ -194,24 +227,76 @@ public class ProfileFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable s) {
                 user.setEmail(s.toString());
-                databaseService.addUser(user);
+                user.saveToFirestore();
             }
         });
 
         geolocationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             user.setGeolocation(isChecked);
-            databaseService.addUser(user);
+            user.saveToFirestore();
         });
 
         //Prepopulate EditText
         fetchAndPopulateUserData(user);
 
+        deleteProfilePictureButton.setOnClickListener(v -> deleteProfilePicture());
+
     }
 
-    private void openGallery() {
-        Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        pickImageLauncher.launch(intent);
+
+    private void uploadImage(Uri file) {
+        String refPath = "images/" + UUID.randomUUID().toString();
+        StorageReference ref = storageReference.child(refPath);
+        progressIndicator.setVisibility(View.VISIBLE); // Make the progress indicator visible
+
+        ref.putFile(file)
+                .addOnProgressListener(snapshot -> {
+                    double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
+                    progressIndicator.setProgress((int) progress);
+                })
+                .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(uri -> {
+                    String imageUrl = uri.toString();
+                    MainActivity mainActivity = (MainActivity) getActivity();
+                    User user = mainActivity.getUser();
+                    if (user != null) {
+                        user.setProfilePicturePath(refPath);
+                        user.setProfilePictureUrl(imageUrl);
+                        user.saveToFirestore();
+                    }
+                    Glide.with(ProfileFragment.this).load(imageUrl).into(profilePicturePlaceholder);
+                    deleteProfilePictureButton.setVisibility(View.VISIBLE);
+                    Toast.makeText(getContext(), "Profile Picture Uploaded", Toast.LENGTH_SHORT).show();
+                    progressIndicator.setVisibility(View.GONE); // Hide the progress indicator
+                }))
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed To Upload Profile Picture: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    progressIndicator.setVisibility(View.GONE); // Hide the progress indicator
+                });
     }
+
+
+    public void deleteProfilePicture() {
+        MainActivity mainActivity = (MainActivity) getActivity();
+        User user = mainActivity.getUser();
+        if (user != null && user.getProfilePicturePath() != null) {
+            // Delete from Firebase Storage
+            StorageReference picRef = FirebaseStorage.getInstance().getReference().child(user.getProfilePicturePath());
+            picRef.delete().addOnSuccessListener(aVoid -> {
+
+                user.setProfilePictureUrl(null);
+                user.setProfilePicturePath(null);
+                user.saveToFirestore();
+                // Reset UI
+                profilePicturePlaceholder.setImageResource(R.drawable.ic_profile_picture_placeholder);
+                deleteProfilePictureButton.setVisibility(View.GONE);
+                Toast.makeText(getContext(), "Profile Picture Deleted", Toast.LENGTH_SHORT).show();
+            }).addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to delete profile picture: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        }
+    }
+
+
+
+
 
     private void fetchAndPopulateUserData(User user) {
         // Assuming you have a way to get the current user's ID
@@ -223,14 +308,17 @@ public class ProfileFragment extends Fragment {
                 DocumentSnapshot document = task.getResult();
                 if (document != null && document.exists()) {
                     // Now, you directly access fields
+
                     String name = document.getString("name");
                     String homepage = document.getString("homepage");
                     String mobileNum = document.getString("mobileNum");
                     String email = document.getString("email");
+                    String profilePictureUrl = document.getString("profilePictureUrl");
                     Boolean geolocation = document.getBoolean("geolocation");
 
+
                     // Assuming this runs on the UI thread, but consider checking and/or using runOnUiThread if needed
-                    updateUIWithUserData(name, homepage, mobileNum, email, geolocation);
+                    updateUIWithUserData(name, homepage, mobileNum, email, geolocation, profilePictureUrl);
                 } else {
                     Log.d("ProfileFragment", "No such document");
                 }
@@ -240,7 +328,7 @@ public class ProfileFragment extends Fragment {
         });
     }
 
-    private void updateUIWithUserData(String name, String homepage, String mobileNum, String email, Boolean geolocation) {
+    private void updateUIWithUserData(String name, String homepage, String mobileNum, String email, Boolean geolocation, String profilePictureUrl) {
         View view = getView();
         if (view == null) return; // Ensure view is available
 
@@ -254,6 +342,15 @@ public class ProfileFragment extends Fragment {
         homepageInput.setText(homepage);
         mobileNumberInput.setText(mobileNum);
         emailAddressInput.setText(email);
+
+        if (profilePictureUrl != null && !profilePictureUrl.isEmpty()) {
+            Glide.with(this).load(profilePictureUrl).into(profilePicturePlaceholder);
+            deleteProfilePictureButton.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            deleteProfilePictureButton.setVisibility(View.GONE);
+        }
         if (geolocation != null) {
             geolocationSwitch.setChecked(geolocation);
         }
