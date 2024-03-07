@@ -48,6 +48,7 @@ public class DatabaseService {
 
     public interface onEventsDataLoaded {
         void onEventsLoaded(List<Event> events);
+
     }
 
     public DatabaseService() {
@@ -177,6 +178,7 @@ public class DatabaseService {
 
                 callback.onEventLoaded(event);
         }).addOnFailureListener(e -> callback.onEventLoaded(null));
+
     }
 
 
