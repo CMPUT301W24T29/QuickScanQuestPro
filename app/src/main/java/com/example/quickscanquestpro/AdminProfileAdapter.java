@@ -2,6 +2,7 @@ package com.example.quickscanquestpro;
 
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ public class AdminProfileAdapter extends ArrayAdapter<User> {
     private int resourceLayout;
     private Context mContext;
 
+    private DatabaseService databaseService;
 
     public AdminProfileAdapter(@NonNull Context context, int resource, List<User> items) {
         super(context, resource, items);
@@ -38,6 +40,7 @@ public class AdminProfileAdapter extends ArrayAdapter<User> {
             textView.setText(user.getName());
             Button deleteButton = convertView.findViewById(R.id.delete_profile_button);
             deleteButton.setOnClickListener(view -> {
+                databaseService.deleteUser(getItem(position));
                 remove(getItem(position)); // Remove the user from the adapter
                 notifyDataSetChanged(); // Refresh the adapter
             });
