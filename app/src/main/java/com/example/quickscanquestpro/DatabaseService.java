@@ -26,7 +26,7 @@ import java.util.Map;
 
 public class DatabaseService {
 
-    private static final String EVENTS_COLLECTION = "Events";
+    private static final String EVENTS_COLLECTION = "events";
     private static final String USERS_COLLECTION = "users";
     private FirebaseFirestore db;
     private CollectionReference eventsRef;
@@ -131,21 +131,30 @@ public class DatabaseService {
         }).addOnFailureListener(callback::onError);
     }
 
-
     public void getSpecificUser(String userId, OnUserDataLoaded callback) {
-        usersRef.document(userId).get().addOnSuccessListener(documentSnapshot -> {
-            User user = new User(userId);
+        usersRef.document(userId).addSnapshotListener((documentSnapshot, e) -> {
+            if (e != null) {
+                callback.onError(e);
+                return;
+            }
 
-            // Set user fields based on documentSnapshot
-//        user.setName(documentSnapshot.getString("name"));
-            user.setAdmin(documentSnapshot.getBoolean("admin"));
-//        user.setEmail(documentSnapshot.getString("email"));
-//        user.setMobileNum(documentSnapshot.getString("phone"));
-//        user.setGeolocation(documentSnapshot.getBoolean("geoLocation"));
-//        user.setCheckins(documentSnapshot.getLong("check-ins").intValue());
+            if (documentSnapshot != null && documentSnapshot.exists()) {
+                User user = new User(userId);
 
-            callback.onUserLoaded(user);
-        }).addOnFailureListener(e -> callback.onError(e));
+                // Set user fields based on documentSnapshot
+                // user.setName(documentSnapshot.getString("name"));
+                 user.setAdmin(documentSnapshot.getBoolean("admin"));
+                // user.setEmail(documentSnapshot.getString("email"));
+                // user.setMobileNum(documentSnapshot.getString("phone"));
+                // user.setGeolocation(documentSnapshot.getBoolean("geoLocation"));
+                // user.setCheckins(documentSnapshot.getLong("check-ins").intValue());
+
+                callback.onUserLoaded(user);
+            } else {
+                // Document doesn't exist or has been deleted
+                callback.onError(new Exception("User document not found"));
+            }
+        });
     }
 
 

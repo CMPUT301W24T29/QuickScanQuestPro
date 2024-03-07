@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
             if (Objects.equals(pressedTitle, dashboardTitle)) {
                 fragment1 = new EventDashboardFragment();
             } else if (Objects.equals(pressedTitle, profileTitle)) {
-                if (testUser.isAdmin()){
+                if (testUser != null && testUser.isAdmin()){
                     fragment1 = new AdminDashboardFragment();
                 }
                 else{
@@ -193,6 +193,7 @@ public class MainActivity extends AppCompatActivity {
          */
     }
 
+
     public int getNewEventID() {
         return this.newEventID++;
     }
@@ -213,19 +214,17 @@ public class MainActivity extends AppCompatActivity {
 
         // Create a new user with a Map or a custom object
         Map<String, Object> user = new HashMap<>();
-        user.put("exists", "i think so"); // Just a simple flag, you can add more user details here
-        user.put("admin", false);
-
-        // Add a new document with the generated userId
-        db.collection("users").document(userId).set(user)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(getApplicationContext(), "New User", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    // Potential failure stuff
-                });
+        user.put("exists", "LMFAO"); // Just a simple flag, you can add more user details here
+        user.put("admin", true);
+        user.put("check-ins", 0);
+        user.put("name", "Mickey Mouse");
+        user.put("homepage", "https://disney.com");
+        user.put("mobileNum", "123-456-7890");
+        user.put("email", "");
+        user.put("geolocation", true);
 
         databaseService.getSpecificUser(userId, new DatabaseService.OnUserDataLoaded() {
+
             @Override
             public void onUserLoaded(User user) {
                 testUser = new User(userId);
@@ -236,6 +235,16 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("MainActivity", "Error loading user: " + e.getMessage());
             }
         });
+
+        // Add a new document with the generated userId
+        db.collection("users").document(userId).set(user)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(getApplicationContext(), "New User", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    // Potential failure stuff
+                });
+
     }
 
     //user constructor
@@ -257,7 +266,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public User getUser() {
-        return user;
+        return testUser;
     }
 
     public void setUser(User user) {
