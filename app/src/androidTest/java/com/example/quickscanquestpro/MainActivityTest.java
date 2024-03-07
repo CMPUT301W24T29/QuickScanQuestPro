@@ -117,4 +117,16 @@ public class MainActivityTest {
         };
     }
 
+    @Test
+    public static void testUS_04_01_01AdminRemoveEvent(){
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
+        onView(withId(R.id.button_manage_events)).perform(click());
+        onView(withId(R.id.admin_event_dashboard_list)).check(matches(isDisplayed()));
+        // click the delete button on the first event
+        onView(withId(R.id.admin_delete_button)).perform(click());
+        // check that the event is no longer in the list
+        onView(withId(R.id.admin_event_dashboard_list)).check(doesNotExist());
+    }
+
 }
