@@ -12,6 +12,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import java.util.List;
 
@@ -46,6 +49,20 @@ public class AdminProfileAdapter extends ArrayAdapter<User> {
                 remove(getItem(position)); // Remove the user from the adapter
                 notifyDataSetChanged(); // Refresh the adapter
             });
+
+            textView.setOnClickListener(view -> {
+                ProfileFragment profileFragment = ProfileFragment.newInstance(user.getUserId(), user.getName());
+                FragmentManager fragmentManager = ((FragmentActivity) mContext).getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.content, profileFragment); // Make sure R.id.content is the ID of your fragment container
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
+
+
+
+            });
+
+
         }
 
         return convertView;
