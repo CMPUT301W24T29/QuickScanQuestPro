@@ -43,7 +43,7 @@ import java.util.Objects;
  * It contains a unique event ID, an organizer ID, and attributes for the all the data associated with an event. Contains getters and setters for those attributes.
  */
 public class Event {
-    private Integer id;
+    private String id;
     private BitMatrix checkinQRCode;
     private Bitmap checkinQRImage;
     private BitMatrix promoQRCode;
@@ -66,7 +66,7 @@ public class Event {
      * Constructor for the event that just takes an id, used when constructing the object during event creation.
      * @param id the id (unique) of the event, from database preferably
      */
-    public Event(Integer id) {
+    public Event(String id) {
         this.id = id;
         generateQR("both", id);
     }
@@ -84,7 +84,7 @@ public class Event {
      * @param organizer id of the organizer
      * @param announcements ArrayList of announcement strings
      */
-    public Event(Integer id, String title, String description, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, String location, String organizer, ArrayList<String> announcements) {
+    public Event(String id, String title, String description, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, String location, String organizer, ArrayList<String> announcements) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -103,7 +103,7 @@ public class Event {
      * @param qrType a string of what type qr to generate and store in the event. valid values are "both", "checkin", or "promo"
      * @param id the id of the event to use during generation
      */
-    public void generateQR(String qrType, Integer id) {
+    public void generateQR(String qrType, String id) {
         MultiFormatWriter mfWriter = new MultiFormatWriter();
 
         if (Objects.equals(qrType, "checkin") || Objects.equals(qrType, "both")) {
@@ -127,11 +127,11 @@ public class Event {
         }
     }
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -255,7 +255,7 @@ public class Event {
      * @param eventID the ID to use during event creation
      * @return returns an Event with pre-filled attributes
      */
-    public static Event createTestEvent(int eventID) {
+    public static Event createTestEvent(String eventID) {
         String testTitle = "Old Strathcona Summer Rib Fest";
         String testDescription = "Come join us for the 2021 Old Strathcona Summer Rib Fest! Enjoy a variety of delicious ribs, live music, and more!";
 
