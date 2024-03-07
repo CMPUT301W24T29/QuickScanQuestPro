@@ -1,5 +1,9 @@
 package com.example.quickscanquestpro;
+import static android.app.PendingIntent.getActivity;
+
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Handler;
 import android.util.Log;
 import android.view.MenuItem;
@@ -33,7 +37,10 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * *This is main class which defines QRCodeScanner Behaviors
+ * This class defines the behaviour of the QRCodeScanner and lets attendees check in by scanning QR code seamlessly
+ * Tells Events about new check in
+ * The attendees can also go to events details page without checking, if a promotional code is scanned
+ *
  */
 public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
     private ExecutorService cameraExecutor;
