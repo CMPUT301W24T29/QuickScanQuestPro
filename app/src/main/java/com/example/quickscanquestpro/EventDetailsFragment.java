@@ -56,7 +56,7 @@ import java.util.Objects;
 public class EventDetailsFragment extends Fragment {
 
     private Event event;
-    private DatabaseService databaseService = new DatabaseService();
+    // private DatabaseService databaseService = new DatabaseService();
 
     /**
      * This is the default constructor for the EventDetailsFragment class. If no event is passed in,
@@ -141,6 +141,8 @@ public class EventDetailsFragment extends Fragment {
 
         // Set an on click listener for the back button
         backButton.setOnClickListener(v -> {
+            // Uploading image to database has not been implemented yet
+            // uploadImage(getImageToShare(event.getEventBanner()));
             mainActivity.transitionFragment(new EventDashboardFragment(), "EventDashboardFragment");
         });
 
@@ -159,8 +161,8 @@ public class EventDetailsFragment extends Fragment {
         */
 
         // These will be removed when the organizer functionality is implemented
-        uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage, true, databaseService));
-        eventImage.setOnClickListener(event.uploadPhoto(this, eventImage,true, databaseService));
+        uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
+        eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
         setShareButton(shareButton);
     }
 
@@ -247,4 +249,22 @@ public class EventDetailsFragment extends Fragment {
         }
         return uri;
     }
+    // TODO: Create a method to upload an event image to the database
+    /*private void uploadImage(Uri file) {
+        databaseService.uploadEventPhoto(file, event, new DatabaseService.OnEventPhotoUpload() {
+            @Override
+            public void onSuccess(String imageUrl, String imagePath) {
+                Toast.makeText(getContext(), "Profile Picture Uploaded", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(getContext(), "Failed To Upload Profile Picture: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onProgress(double progress) {
+            }
+        });
+    }*/
 }

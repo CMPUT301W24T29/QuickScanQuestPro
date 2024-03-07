@@ -60,7 +60,6 @@ public class EventCreationFragment extends Fragment {
     private MainActivity mainActivity;
     private Button createButton;
     private ImageView posterImageView;
-    private EventDetailsFragment eventDetailsFragment = new EventDetailsFragment();
 
     public EventCreationFragment() {
         // Required empty public constructor
@@ -100,7 +99,7 @@ public class EventCreationFragment extends Fragment {
 
         Button uploadImageButton = view.findViewById(R.id.banner_upload_button);
 
-        uploadImageButton.setOnClickListener(creatingEvent.uploadPhoto(this, posterImageView, false, databaseService));
+        uploadImageButton.setOnClickListener(creatingEvent.uploadPhoto(this, posterImageView));
 
         // adds textwatchers that update the Event whenever text is changed
         titleEditText = view.findViewById(R.id.edit_text_event_title);
@@ -141,10 +140,11 @@ public class EventCreationFragment extends Fragment {
                 String organizerId = mainActivity.getUser().getUserId();
                 creatingEvent.setOrganizerId(organizerId);
                 // create a new event in the database
-                databaseService.addEvent(creatingEvent, null);
-                if (creatingEvent.getEventBanner() != null) {
-                    uploadImage(getImageToShare(creatingEvent.getEventBanner()));
-                }
+                databaseService.addEvent(creatingEvent);
+                // to later upload the event image to the database
+                // if (creatingEvent.getEventBanner() != null) {
+                //    uploadImage(getImageToShare(creatingEvent.getEventBanner()));
+                // }
                 Log.d("EventCreationFragment", "Event created: " + creatingEvent.toString() );
                 // set active fragment to the event dashboard again
                 mainActivity.transitionFragment(new EventDashboardFragment(), this.getString(R.string.title_dashboard));
@@ -269,8 +269,8 @@ public class EventCreationFragment extends Fragment {
         
         return valid;
     }
-
-    private void uploadImage(Uri file) {
+    // TODO: Add a method to upload the event image to the database
+    /*private void uploadImage(Uri file) {
         databaseService.uploadEventPhoto(file, creatingEvent, new DatabaseService.OnEventPhotoUpload() {
             @Override
             public void onSuccess(String imageUrl, String imagePath) {
@@ -286,9 +286,10 @@ public class EventCreationFragment extends Fragment {
             public void onProgress(double progress) {
             }
         });
-    }
+    }*/
 
-    public Uri getImageToShare(Bitmap imageQR) {
+    // This method will be used to convert a bitmat to a uri when uploading the event image to the database
+    /*public Uri getImageToShare(Bitmap imageQR) {
 
         File folder = new File(getActivity().getCacheDir(), "images");
         Uri uri = null;
@@ -309,6 +310,6 @@ public class EventCreationFragment extends Fragment {
             Toast.makeText(this.getActivity(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
         return uri;
-    }
+    }*/
 
 }

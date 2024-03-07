@@ -83,7 +83,7 @@ public class DatabaseService {
         usersRef = db.collection(USERS_COLLECTION);
     }
 
-    public void addEvent(Event event, String url) {
+    public void addEvent(Event event) {
         // Create a Map to store the data
         Map<String, Object> eventData = new HashMap<>();
         // Assuming your Event class has getters for its properties
@@ -91,14 +91,15 @@ public class DatabaseService {
         eventData.put("description", event.getDescription());
         eventData.put("location", event.getLocation());
         eventData.put("organizerId", event.getOrganizerId());
-        if (url == null) {
-            eventData.put("eventPictureUrl", "null");
-            eventData.put("eventPicturePath", "null");
+        // To implement when we have a way to store the event picture
+        /*if (url == null) {
+            eventData.put("eventPictureUrl", null);
+            eventData.put("eventPicturePath", null);
         }
         else {
             eventData.put("eventPictureUrl", url);
             eventData.put("eventPicturePath", "eventPictures/");
-        }
+        }*/
 
         // Combine all data into a single map
         Map<String, Object> combinedData = new HashMap<>();
@@ -279,8 +280,8 @@ public class DatabaseService {
                     .addOnFailureListener(callback::onFailure);
         }
     }
-
-    public void uploadEventPhoto(Uri fileUri, Event event, OnEventPhotoUpload callback) {
+    // TODO: Add method to delete event photo from Firebase Storage
+   /* public void uploadEventPhoto(Uri fileUri, Event event, OnEventPhotoUpload callback) {
         String refPath = "eventPictures/" + UUID.randomUUID().toString();
         StorageReference ref = storage.getReference().child(refPath);
 
@@ -296,5 +297,5 @@ public class DatabaseService {
                     callback.onSuccess(imageUrl, refPath);
                 }))
                 .addOnFailureListener(callback::onFailure);
-    }
+    }*/
 }
