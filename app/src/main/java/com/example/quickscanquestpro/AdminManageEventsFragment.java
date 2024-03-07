@@ -39,7 +39,7 @@ public class AdminManageEventsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         databaseService = new DatabaseService(); // Initialize your DatabaseService
-        ListView eventListView = view.findViewById(R.id.event_dashboard_list);
+        ListView eventListView = view.findViewById(R.id.admin_event_dashboard_list);
 
         view.findViewById(R.id.back_button).setOnClickListener(v -> {
             if (getFragmentManager() != null) {
@@ -60,6 +60,7 @@ public class AdminManageEventsFragment extends Fragment {
                     Toast.makeText(getActivity(), "No users found!", Toast.LENGTH_SHORT).show();
                 } else {
                     AdminEventAdapter adapter = new AdminEventAdapter(getActivity(), R.layout.list_admin_view, events);
+                    // Set the adapter for the eventListView
                     eventListView.setOnItemClickListener((parent, view, position, id) -> {
                         Log.d("ItemClick", "Item clicked at position: " + position);
                         Event event = events.get(position);
@@ -74,7 +75,6 @@ public class AdminManageEventsFragment extends Fragment {
                                     .commit();
                         }
                     });
-                    // Set the adapter for the eventListView
                     eventListView.setAdapter(adapter);
                     Log.d("Check", "Its gotten till here");
                 }

@@ -38,7 +38,7 @@ public class AdminProfileAdapter extends ArrayAdapter<User> {
         if (user != null) {
             TextView textView = convertView.findViewById(R.id.profile_name_text_view);
             textView.setText(user.getName());
-            Button deleteButton = convertView.findViewById(R.id.delete_profile_button);
+            Button deleteButton = convertView.findViewById(R.id.admin_delete_button);
             deleteButton.setOnClickListener(view -> {
 
                 databaseService.deleteUser(getItem(position));
