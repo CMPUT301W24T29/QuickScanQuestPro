@@ -36,12 +36,10 @@ public class DatabaseService {
 
     public interface OnUsersDataLoaded {
         void onUsersLoaded(List<User> users);
-        void onError(Exception e);
     }
 
     public interface OnUserDataLoaded {
         void onUserLoaded(User user);
-        void onError(Exception e);
     }
 
 
@@ -131,7 +129,7 @@ public class DatabaseService {
                 users.add(user);
             }
             callback.onUsersLoaded(users);
-        }).addOnFailureListener(callback::onError);
+        }).addOnFailureListener(e -> callback.onUsersLoaded(null));
     }
 
 
@@ -148,7 +146,7 @@ public class DatabaseService {
 //        user.setCheckins(documentSnapshot.getLong("check-ins").intValue());
 
             callback.onUserLoaded(user);
-        }).addOnFailureListener(e -> callback.onError(e));
+        }).addOnFailureListener(e -> callback.onUserLoaded(null));
     }
 
 

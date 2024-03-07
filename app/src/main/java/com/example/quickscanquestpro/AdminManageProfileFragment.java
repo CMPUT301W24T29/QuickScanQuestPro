@@ -18,7 +18,7 @@ import com.example.quickscanquestpro.DatabaseService;
 
 import java.util.List;
 
-public class AdminManageProfileFragment extends Fragment {
+public class AdminManageProfileFragment extends Fragment implements DatabaseService.OnUsersDataLoaded {
     private DatabaseService databaseService;
 
     public AdminManageProfileFragment() {
@@ -61,5 +61,10 @@ public class AdminManageProfileFragment extends Fragment {
                 Toast.makeText(getContext(), "Error fetching users", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public void onUsersLoaded(List<User> users) {
+
     }
 }
