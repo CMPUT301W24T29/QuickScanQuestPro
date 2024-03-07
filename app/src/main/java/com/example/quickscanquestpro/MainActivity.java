@@ -37,7 +37,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity{
+/**
+ * Main activity for the app, initializes DatabaseService on startup,
+ * checks/creates new UUID for User when app is started without one and stores reference to user for other fragments etc.
+ * Runs for full duration of app and allows for semi-persistence.
+ * Holds Navbar and starts with displaying QR scanner, used by other fragments to display in.
+ */
+public class MainActivity extends AppCompatActivity {
 
     private QRCodeScanner qrCodeScanner;
     private int newEventID = 0;
@@ -48,8 +54,11 @@ public class MainActivity extends AppCompatActivity{
 
     private User user;
 
+    private User testUser;
+
     private DatabaseService databaseService = new DatabaseService();
 
+    private String userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +68,7 @@ public class MainActivity extends AppCompatActivity{
         FirebaseApp.initializeApp(this);
         // Initiate user
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        String userId = prefs.getString(USER_ID_KEY, null);
+        userId = prefs.getString(USER_ID_KEY, null);
         databaseService.getUsers(new DatabaseService.OnUsersDataLoaded() {
             boolean userExists = false;
             @Override
@@ -73,6 +82,8 @@ public class MainActivity extends AppCompatActivity{
                 if (userExists) {
                     existingUser(userId);
                 } else {
+                    userId = UUID.randomUUID().toString();
+                    prefs.edit().putString(USER_ID_KEY, userId).apply();
                     newUser(userId);
                 }
             }
@@ -84,12 +95,9 @@ public class MainActivity extends AppCompatActivity{
             }
 
         });
-        User testUser = databaseService.getSpecificUser(userId);
+
         // display the main page / qr code reader fragment when the app starts
-        HomeViewFragment fragment = new HomeViewFragment();
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.title_qr_scanner));
-        fragmentTransaction.commit();
+        this.transitionFragment(new HomeViewFragment(), this.getString(R.string.title_qr_scanner));
 
         NavigationBarView navBarView = findViewById(R.id.bottom_navigation);
         // sets the default selected item for the main activity to the qrscanner button
@@ -115,18 +123,17 @@ public class MainActivity extends AppCompatActivity{
                 return false;
             }
 
+
             // create fragment of the type selected
             Fragment fragment1;
             if (Objects.equals(pressedTitle, dashboardTitle)) {
                 fragment1 = new EventDashboardFragment();
             } else if (Objects.equals(pressedTitle, profileTitle)) {
-
                 if (testUser.isAdmin()){
                     fragment1 = new AdminDashboardFragment();
                 }
                 else{
                     fragment1 = new ProfileFragment();
-
                 }
 
             } else {
@@ -135,9 +142,8 @@ public class MainActivity extends AppCompatActivity{
             }
 
             // actually display the fragment, using a tag with the same name as the button that was pressed
-            FragmentTransaction fragmentTransaction1 = getSupportFragmentManager().beginTransaction();
-            fragmentTransaction1.replace(R.id.content, fragment1, pressedTitle);
-            fragmentTransaction1.commit();
+            this.transitionFragment(fragment1, pressedTitle);
+
             return true;
         });
 
@@ -207,7 +213,8 @@ public class MainActivity extends AppCompatActivity{
 
         // Create a new user with a Map or a custom object
         Map<String, Object> user = new HashMap<>();
-        user.put("exists", "i dont know"); // Just a simple flag, you can add more user details here
+        user.put("exists", "i think so"); // Just a simple flag, you can add more user details here
+        user.put("admin", false);
 
         // Add a new document with the generated userId
         db.collection("users").document(userId).set(user)
@@ -217,11 +224,34 @@ public class MainActivity extends AppCompatActivity{
                 .addOnFailureListener(e -> {
                     // Potential failure stuff
                 });
+
+        databaseService.getSpecificUser(userId, new DatabaseService.OnUserDataLoaded() {
+            @Override
+            public void onUserLoaded(User user) {
+                testUser = new User(userId);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e("MainActivity", "Error loading user: " + e.getMessage());
+            }
+        });
     }
 
     //user constructor
     private void existingUser(String userId) {
         this.user = new User(userId);
+        databaseService.getSpecificUser(userId, new DatabaseService.OnUserDataLoaded() {
+            @Override
+            public void onUserLoaded(User user) {
+                testUser = user;
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e("MainActivity", "Error loading user: " + e.getMessage());
+            }
+        });
         Toast.makeText(getApplicationContext(), "Welcome Back!", Toast.LENGTH_SHORT).show();
 
     }
@@ -233,4 +263,16 @@ public class MainActivity extends AppCompatActivity{
     public void setUser(User user) {
         this.user = user;
     }
+
+    /**
+     * transitions the main fragment display (content) to the specified fragment with the given tag
+     * @param fragment fragment to move to
+     * @param tag internal tag that the app uses to know which fragment is open
+     */
+    public void transitionFragment(Fragment fragment, String tag) {
+        FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.content, fragment, tag);
+        fragmentTransaction.commit();
+    }
+
 }

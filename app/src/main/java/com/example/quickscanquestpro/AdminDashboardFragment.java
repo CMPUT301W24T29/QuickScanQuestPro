@@ -88,5 +88,39 @@ public class AdminDashboardFragment extends Fragment {
                 }
             }
         });
+
+        Button manageProfileButton = view.findViewById(R.id.button_manage_users);
+        manageProfileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AdminManageProfileFragment adminManageProfileFragment = new AdminManageProfileFragment();
+
+                if (isAdded() && getActivity() != null) {
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.content, adminManageProfileFragment)
+                            .addToBackStack(null)  // Optional, if you want to navigate back to the admin dashboard
+                            .commit();
+                }
+            }
+        });
+
+        Button viewProfileButton = view.findViewById(R.id.button_profile);
+        viewProfileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to ProfileFragment
+                ProfileFragment profileFragment = ProfileFragment.newInstance("param1", "param2"); // Use correct parameters or modify newInstance accordingly
+
+                if (isAdded() && getActivity() != null) {
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.content, profileFragment) // Make sure R.id.content is the ID of your fragment container
+                            .addToBackStack(null) // Add transaction to the back stack for proper navigation back
+                            .commit();
+                }
+            }
+        });
+
+
+
     }
 }

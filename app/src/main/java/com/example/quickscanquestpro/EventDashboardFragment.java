@@ -21,8 +21,7 @@ import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link EventDashboardFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Displays events that user has created or is attending.
  */
 public class EventDashboardFragment extends Fragment {
 
@@ -45,31 +44,9 @@ public class EventDashboardFragment extends Fragment {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment EventDashboard.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static EventDashboardFragment newInstance(String param1, String param2) {
-        EventDashboardFragment fragment = new EventDashboardFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
@@ -78,6 +55,13 @@ public class EventDashboardFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_event_dashboard, container, false);
     }
 
+    /**
+     * Runs when view is created and displayed. Currently adds a test event to the list if none exist, or otherwise displays attributes of the event stored in main activity.
+     * This should display a list of the users events they have created as organizer or are actively attending.
+     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         MainActivity mainActivity = (MainActivity) this.getActivity();
@@ -89,18 +73,12 @@ public class EventDashboardFragment extends Fragment {
 
         Button createButton = view.findViewById(R.id.event_dashboard_create_button);
         createButton.setOnClickListener(v -> {
-            EventCreationFragment fragment = new EventCreationFragment();
-            FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.events_list_title));
-            fragmentTransaction.commit();
+            mainActivity.transitionFragment(new EventCreationFragment(), "EventCreationFragment");
         });
 
         // set the event list to open the event details fragment when an event is clicked
         eventList.setOnItemClickListener((parent, view1, position, id) -> {
-            EventDetailsFragment fragment = new EventDetailsFragment(mainActivity.getTestEvent());
-            FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.events_list_title));
-            fragmentTransaction.commit();
+            mainActivity.transitionFragment(new EventDetailsFragment(mainActivity.getTestEvent()), "EventDetailsFragment");
         });
 
         eventList.setOnItemLongClickListener((parent, view12, position, id) -> {

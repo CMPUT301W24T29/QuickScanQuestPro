@@ -8,6 +8,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="create_event_button_string">Create Event</string>
     <string name="events_list_title">Events List</string>
+    <string name="profile_list_title">Profile List</string>
     <string name="attendee_list">Event Attendee List</string>
 
     // The following strings are used in the EventDetailsFragment

@@ -35,21 +35,12 @@ import org.w3c.dom.Text;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link EventCreationFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Used to create a new event. Allows organizers to create events with event details. Optionally select and upload a poster image when creating event.
+ * Optionally reuse an existing QRCode and associate it with the new event for either the promotional code or the checkin code. Stores the user that created the event as an organizer
  */
 public class EventCreationFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
     private Event creatingEvent;
-    private DatabaseService databaseService;
+    private DatabaseService databaseService = new DatabaseService();
     private EditText titleEditText;
     private EditText descriptionEditText;
     private EditText locationEditText;
@@ -66,32 +57,13 @@ public class EventCreationFragment extends Fragment {
     }
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment EventCreationFragment.
+     * Runs when the fragment is created, gets a new event ID for the event that is being created to use. This should be drawn from the database.
+     * @param savedInstanceState If the fragment is being re-created from
+     * a previous saved state, this is the state.
      */
-    // TODO: Rename and change types and number of parameters
-    public static EventCreationFragment newInstance(String param1, String param2) {
-        EventCreationFragment fragment = new EventCreationFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Initialize DatabaseService
-        databaseService = new DatabaseService();
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
         MainActivity mainActivity = (MainActivity) this.getActivity();
         this.creatingEvent = new Event(mainActivity.getNewEventID());
     }
@@ -102,39 +74,23 @@ public class EventCreationFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_event_creation, container, false);
     }
 
+    /**
+     * Runs when the view is displayed, adds on click listeners and validates input for the buttons and entry fields.
+     * Stores the event and generates qrcode for the event, or allows user to reuse an old event.
+     * Uses event methods and setters/getters, time/date picker fragments and ActivityResultLauncher.
+     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mainActivity = (MainActivity) this.getActivity();
 
         posterImageView = view.findViewById(R.id.create_event_poster);
-        // onclick listener for the button to upload a picture
-        ActivityResultLauncher<String> mGetContent = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
-            if (result != null) {
-                Bitmap newBitmap = null;
-                ContentResolver contentResolver = mainActivity.getContentResolver();
-                try {
-                    if(Build.VERSION.SDK_INT < 28) {
-                        newBitmap = MediaStore.Images.Media.getBitmap(contentResolver, result);
-                    } else {
-                        ImageDecoder.Source source = ImageDecoder.createSource(contentResolver, result);
-                        newBitmap = ImageDecoder.decodeBitmap(source);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                creatingEvent.setEventBanner(newBitmap);
-                posterImageView.setImageBitmap(newBitmap);
-                posterImageView.setVisibility(View.VISIBLE);
-            }
-        });
 
         Button uploadImageButton = view.findViewById(R.id.banner_upload_button);
-        uploadImageButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                mGetContent.launch("image/*");
-            }
-        });
+
+        uploadImageButton.setOnClickListener(creatingEvent.uploadPhoto(this, posterImageView));
 
         // adds textwatchers that update the Event whenever text is changed
         titleEditText = view.findViewById(R.id.edit_text_event_title);
@@ -178,10 +134,7 @@ public class EventCreationFragment extends Fragment {
                 databaseService.addEvent(creatingEvent);
                 Log.d("EventCreationFragment", "Event created: " + creatingEvent.toString() );
                 // set active fragment to the event dashboard again
-                EventDashboardFragment fragment = new EventDashboardFragment();
-                FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.title_dashboard));
-                fragmentTransaction.commit();
+                mainActivity.transitionFragment(new EventDashboardFragment(), this.getString(R.string.title_dashboard));
             }
         });
         
@@ -203,7 +156,6 @@ public class EventCreationFragment extends Fragment {
      *
      * @param reuseType The specific content type the ReuseQRFragment should display or operate with, such as "CHECK_IN" or "PROMO".
      */
-
     private void showReuseFragment(String reuseType) {
         // Pass the reuse type to the ReuseFragment using arguments
         Bundle args = new Bundle();
@@ -214,7 +166,7 @@ public class EventCreationFragment extends Fragment {
         // Perform the fragment transaction to display the ReuseFragment
         FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
         transaction.replace(R.id.content, reuseFragment);
-        transaction.addToBackStack(null); // Optional: Add transaction to back stack
+        transaction.addToBackStack(null);
         transaction.commit();
     }
 
@@ -246,6 +198,10 @@ public class EventCreationFragment extends Fragment {
         };
     }
 
+    /**
+     * Checks if all the required entry fields (title, description, location, start/end date/time) are valid, and enables/disables the button based on this.
+     * @return returns true if all valid, or false if not.
+     */
     public Boolean validateEntryFields() {
         Boolean valid = true;
 
