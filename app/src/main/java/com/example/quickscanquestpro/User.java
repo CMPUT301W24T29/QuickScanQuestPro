@@ -99,10 +99,6 @@ public class User {
         return userId;
     }
 
-    public int getCheckIns() {
-        return checkins;
-    }
-
     public void setAdmin(boolean admin){
         this.admin = admin;
     }

@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentTransaction;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationBarView;
@@ -26,9 +27,8 @@ import java.util.UUID;
  * Runs for full duration of app and allows for semi-persistence.
  * Holds Navbar and starts with displaying QR scanner, used by other fragments to display in.
  */
-public class MainActivity extends AppCompatActivity {
-
-    private QRCodeScanner qrCodeScanner;
+public class MainActivity extends AppCompatActivity implements DatabaseService.OnUsersDataLoaded, DatabaseService.OnUserDataLoaded {
+    // TODO: remove test event stuff before finishing project
     private String newEventID = UUID.randomUUID().toString();
     private Event testEvent;
 
@@ -36,186 +36,61 @@ public class MainActivity extends AppCompatActivity {
     private static final String USER_ID_KEY = "userId";
 
     private User user;
-
-    private User testUser;
+    private String userId;
+    private List<User> usersList;
 
     private DatabaseService databaseService = new DatabaseService();
 
-    private String userId;
+    private Boolean foundUser = false;
+
+    private Boolean foundUserList = false;
+
+    private SharedPreferences prefs;
+
+    private NavigationBarView navBarView;
+
+    private MenuItem item;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         FirebaseApp.initializeApp(this);
         // Initiate user
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         userId = prefs.getString(USER_ID_KEY, null);
-        databaseService.getUsers(new DatabaseService.OnUsersDataLoaded() {
-            boolean userExists = false;
-            @Override
-            public void onUsersLoaded(List<User> users) {
-                // Handle the list of users
-                for (User user : users) {
-                    if (user.getUserId().equals(userId)) {
-                        userExists = true;
-                    }
-                }
-                if (userExists) {
-                    existingUser(userId);
-                } else {
-                    userId = UUID.randomUUID().toString();
-                    prefs.edit().putString(USER_ID_KEY, userId).apply();
-                    testUser = new User(userId);
-                    newUser(userId);
-                }
-            }
+        databaseService.getUsers(this);
 
-            @Override
-            public void onError(Exception e) {
-                // Handle the error
-                Log.e("MainActivity", "Error loading users: " + e.getMessage());
-            }
-
-        });
-
-        // Initiate user
-        //SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        //String userId = prefs.getString(USER_ID_KEY, null);
-        databaseService.getUsers(new DatabaseService.OnUsersDataLoaded() {
-            boolean userExists = false;
-            @Override
-            public void onUsersLoaded(List<User> users) {
-                // Handle the list of users
-                for (User user : users) {
-                    if (user.getUserId().equals(userId)) {
-                        userExists = true;
-                    }
-                }
-                if (userExists) {
-                    existingUser(userId);
-                } else {
-                    newUser(userId);
-                }
-            }
-
-            @Override
-            public void onError(Exception e) {
-                // Handle the error
-                Log.e("MainActivity", "Error loading users: " + e.getMessage());
-            }
-
-        });
-
-        // display the main page / qr code reader fragment when the app starts
         this.transitionFragment(new HomeViewFragment(), this.getString(R.string.title_qr_scanner));
 
-        NavigationBarView navBarView = findViewById(R.id.bottom_navigation);
+        navBarView = findViewById(R.id.bottom_navigation);
         // sets the default selected item for the main activity to the qrscanner button
         navBarView.setSelectedItemId(R.id.navigation_qr_scanner);
         // adds functions to the navbar button
+
+
         navBarView.setOnItemSelectedListener(item -> {
-            Log.i("NavMenu", "navButtonPressed: title is " + item.getTitle());
-            String pressedTitle = (String) item.getTitle();
-
-            // gets the fragment currently loaded into the content view
-            Fragment callerFragment = getSupportFragmentManager().findFragmentById(R.id.content);
-            // gets the tag supplied to the fragment when displayed, which is the title of the button that opens it
-            String caller = callerFragment.getTag();
-
-            // gets the string resources for all the buttons
-            String dashboardTitle = callerFragment.getString(R.string.title_dashboard);
-            String qrTitle = callerFragment.getString(R.string.title_qr_scanner);
-            String profileTitle = callerFragment.getString(R.string.title_profile);
-
-            // if the button clicked is the same as the currently displayed fragment, do nothing!
-            if (Objects.equals(caller, pressedTitle)) {
-                Log.i("NavMenu", "ignoring press on " + item.getTitle() + " because it was already active");
-                return false;
-            }
-
-
-            // create fragment of the type selected
-            Fragment fragment1;
-            if (Objects.equals(pressedTitle, dashboardTitle)) {
-                fragment1 = new EventDashboardFragment();
-            } else if (Objects.equals(pressedTitle, profileTitle)) {
-                if (testUser != null &&testUser.isAdmin()){
-                    fragment1 = new AdminDashboardFragment();
-                }
-                else{
-                    fragment1 = new ProfileFragment();
-                }
-
-            } else {
-                // default to qr code home view
-                fragment1 = new HomeViewFragment();
-            }
-
-            // actually display the fragment, using a tag with the same name as the button that was pressed
-            this.transitionFragment(fragment1, pressedTitle);
-
+            this.item = item;
+            databaseService.getSpecificUserDetails(userId, this);
             return true;
         });
-
-
-
-        // josephs code ----
-
-////         If UserID not found then create a new one and add to firebase
-//        if (userId == null) {
-//            userId = UUID.randomUUID().toString();
-//            prefs.edit().putString(USER_ID_KEY, userId).apply();
-//
-//            newUser(userId);
-//        } else {
-//            // UserID exists, proceed with existing UserID
-//            // Optionally, you can verify or update this user's details in Firestore
-//            existingUser(userId);
-//        }
-
-        // josephs code ----
-
-
-
-        //Toast.makeText(getApplicationContext(), userId, Toast.LENGTH_SHORT).show();
-        //user.saveToFirestore();
-
-
-        /*
-        String userId = FirebaseFirestore.getInstance().collection("users").document().getId();
-
-        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("UserID", userId);
-        editor.apply();
-
-        Map<String, Object> user = new HashMap<>();
-        user.put("name", "John Doe");
-        user.put("email", "john.doe@example.com");
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        //String userId = sharedPreferences.getString("UserID", null);
-        db.collection("users").document(userId).set(user)
-                .addOnSuccessListener(aVoid -> Log.d("TAG", "DocumentSnapshot successfully written!"))
-                .addOnFailureListener(e -> Log.w("TAG", "Error writing document", e));
-
-
-         */
     }
 
+    // TODO: remove test event stuff before finishing project
     public String getNewEventID() {
         newEventID = UUID.randomUUID().toString();
-
         return newEventID;
     }
 
+    // TODO: remove test event stuff before finishing project
     public void setTestEvent(Event event) {
         this.testEvent = event;
     }
 
+    // TODO: remove test event stuff before finishing project
     public Event getTestEvent() {
         if (this.testEvent == null) {
             setTestEvent(Event.createTestEvent(getNewEventID()));
@@ -233,8 +108,14 @@ public class MainActivity extends AppCompatActivity {
 
         // Create a new user with a Map or a custom object
         Map<String, Object> user = new HashMap<>();
-        user.put("exists", "i think so"); // Just a simple flag, you can add more user details here
-        user.put("admin", false);
+        user.put("exists", "LMFAO"); // Just a simple flag, you can add more user details here
+        user.put("admin", true);
+        user.put("check-ins", 0);
+        user.put("name", "ERIC MAH");
+        user.put("homepage", "https://disney.com");
+        user.put("mobileNum", "123-456-7890");
+        user.put("email", "");
+        user.put("geolocation", true);
 
         // Add a new document with the generated userId
         db.collection("users").document(userId).set(user)
@@ -244,18 +125,6 @@ public class MainActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     // Potential failure stuff
                 });
-
-        databaseService.getSpecificUser(userId, new DatabaseService.OnUserDataLoaded() {
-            @Override
-            public void onUserLoaded(User user) {
-                testUser = new User(userId);
-            }
-
-            @Override
-            public void onError(Exception e) {
-                Log.e("MainActivity", "Error loading user: " + e.getMessage());
-            }
-        });
     }
 
     /**
@@ -264,20 +133,8 @@ public class MainActivity extends AppCompatActivity {
      * @param userId A string for userId to pass to the constructor
      */
     private void existingUser(String userId) {
-        this.user = new User(userId);
-        databaseService.getSpecificUser(userId, new DatabaseService.OnUserDataLoaded() {
-            @Override
-            public void onUserLoaded(User user) {
-                testUser = user;
-            }
-
-            @Override
-            public void onError(Exception e) {
-                Log.e("MainActivity", "Error loading user: " + e.getMessage());
-            }
-        });
+        user = new User(userId);
         Toast.makeText(getApplicationContext(), "Welcome Back!", Toast.LENGTH_SHORT).show();
-
     }
 
     /**
@@ -307,4 +164,88 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.commit();
     }
 
+    @Override
+    public void onUsersLoaded(List<User> users)
+    {
+        if(users == null)
+        {
+            Toast.makeText(getApplicationContext(), "There was so such userList", Toast.LENGTH_SHORT).show();
+            foundUserList = false;
+        }
+        else
+        {
+            foundUserList = true;
+            usersList = users;
+
+            // Handle the list of users
+            for (User user : usersList) {
+                if (user.getUserId().equals(userId)) {
+                    foundUser = true;
+                    break;
+                }
+            }
+            if (foundUser) {
+                existingUser(userId);
+            } else {
+                userId = UUID.randomUUID().toString();
+                prefs.edit().putString(USER_ID_KEY, userId).apply();
+                user = new User(userId);
+                newUser(userId);
+            }
+        }
+    }
+
+    @Override
+    public void onUserLoaded(User user) {
+
+        if(user == null)
+        {
+            Toast.makeText(getApplicationContext(), "There was no such user", Toast.LENGTH_SHORT).show();
+            foundUser = false;
+        }
+        else
+        {
+            this.user = user;
+            Log.i("NavMenu", "navButtonPressed: title is " + item.getTitle());
+            String pressedTitle = (String) item.getTitle();
+
+            // gets the fragment currently loaded into the content view
+            Fragment callerFragment = getSupportFragmentManager().findFragmentById(R.id.content);
+            // gets the tag supplied to the fragment when displayed, which is the title of the button that opens it
+            String caller = callerFragment.getTag();
+
+            // gets the string resources for all the buttons
+            String dashboardTitle = callerFragment.getString(R.string.title_dashboard);
+            String qrTitle = callerFragment.getString(R.string.title_qr_scanner);
+            String profileTitle = callerFragment.getString(R.string.title_profile);
+
+            // if the button clicked is the same as the currently displayed fragment, do nothing!
+            if (Objects.equals(caller, pressedTitle)) {
+                Log.i("NavMenu", "ignoring press on " + item.getTitle() + " because it was already active");
+//                return false;
+            }
+
+            // create fragment of the type selected
+            Fragment fragment1;
+            if (Objects.equals(pressedTitle, dashboardTitle)) {
+                fragment1 = new EventDashboardFragment();
+            } else if (Objects.equals(pressedTitle, profileTitle)) {
+                if (this.user != null && this.user.isAdmin()){
+                    fragment1 = new AdminDashboardFragment();
+                }
+                else{
+                    fragment1 = new ProfileFragment();
+                }
+
+            } else {
+                // default to qr code home view
+                fragment1 = new HomeViewFragment();
+            }
+
+            // actually display the fragment, using a tag with the same name as the button that was pressed
+            this.transitionFragment(fragment1, pressedTitle);
+
+        }
+
+    }
 }
