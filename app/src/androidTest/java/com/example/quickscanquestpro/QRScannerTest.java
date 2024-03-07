@@ -68,7 +68,7 @@ public class QRScannerTest {
     {
         // Wait for EventDetails to fully load
         try {
-            Thread.sleep(2000);
+            Thread.sleep(7000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

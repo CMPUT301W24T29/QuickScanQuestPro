@@ -1,35 +1,22 @@
 package com.example.quickscanquestpro;
 
-import static androidx.camera.core.impl.utils.ContextUtil.getApplicationContext;
-
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
-import androidx.annotation.NonNull;
-
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.OnProgressListener;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
-import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -76,7 +63,7 @@ public class DatabaseService {
         void onEventLoaded(Event event);
     }
 
-    public interface onEventsDataLoaded {
+    public interface OnEventsDataLoaded {
         void onEventsLoaded(List<Event> events);
     }
 
@@ -147,7 +134,7 @@ public class DatabaseService {
         usersRef.document(String.valueOf(user.getUserId())).set(userData, SetOptions.merge());
     }
 
-    public void getEvents(onEventsDataLoaded callback) {
+    public void getEvents(OnEventsDataLoaded callback) {
         eventsRef.get().addOnSuccessListener(queryDocumentSnapshots -> {
             List<Event> events = new ArrayList<>();
             for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
@@ -336,7 +323,7 @@ public class DatabaseService {
         });
     }
 
-    public void listenForEventUpdates(onEventsDataLoaded callback) {
+    public void listenForEventUpdates(OnEventsDataLoaded callback) {
         eventsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {

@@ -5,7 +5,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
-import com.example.quickscanquestpro.Event;
 
 import java.util.List;
 
@@ -48,7 +46,7 @@ public class AdminManageEventsFragment extends Fragment {
         });
 
         // Fetch users from Firestore and update the ListView
-        databaseService.listenForEventUpdates(new DatabaseService.onEventsDataLoaded() {
+        databaseService.listenForEventUpdates(new DatabaseService.OnEventsDataLoaded() {
             @Override
             public void onEventsLoaded(List<Event> events) {
                 if (getActivity() == null) {
