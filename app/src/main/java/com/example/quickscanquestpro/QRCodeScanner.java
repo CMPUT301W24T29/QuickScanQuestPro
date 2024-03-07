@@ -21,6 +21,7 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
@@ -192,9 +193,9 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
             Toast.makeText(mainActivity.getApplicationContext(), "Invalid QR", Toast.LENGTH_SHORT).show();
             processingQr = false;
         } else {
-            // the database found a match, so continue
-            // transition to the test event's details page
             if (processingQrType.equals("c")){
+                databaseService.recordCheckIn(event.getId(), mainActivity.getUser().getUserId(), "The location where QR is scanned");
+
                 Toast.makeText(mainActivity.getApplicationContext(), "Checked in!", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(mainActivity.getApplicationContext(), "Promotion code scanned!", Toast.LENGTH_SHORT).show();
@@ -211,3 +212,6 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
         }
     }
 }
+
+// Add a check in object to events
+// Everytime someone checks in the database needs to update the location, where it was checked in from, create a new collection for every check in even though it is from the same person

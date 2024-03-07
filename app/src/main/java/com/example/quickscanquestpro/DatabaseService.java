@@ -12,7 +12,9 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldPath;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.OnProgressListener;
 import com.google.firebase.firestore.Query;
@@ -77,6 +79,26 @@ public class DatabaseService {
         // Reference to the "Events" collection
         eventsRef = db.collection(EVENTS_COLLECTION);
         usersRef = db.collection(USERS_COLLECTION);
+    }
+
+    /**
+     * Updates the check-ins array in a specified event document with a new check-in entry.
+     * @param eventId The ID of the event to update.
+     * @param userId The ID of the user checking in.
+     * @param location The location associated with the check-in.
+     */
+    public void recordCheckIn(String eventId, String userId, String location) {
+        DocumentReference eventRef = db.collection("events").document(eventId);
+
+        // Create a new check-in map to append to the 'checkins' array
+        Map<String, Object> checkInMap = new HashMap<>();
+        checkInMap.put("userId", userId);
+        checkInMap.put("location", location);
+
+        // Append the new check-in map to the 'checkins' array field
+        eventRef.update("checkins", FieldValue.arrayUnion(checkInMap))
+                .addOnSuccessListener(aVoid -> Log.d("DatabaseService", "New check-in added successfully."))
+                .addOnFailureListener(e -> Log.e("DatabaseService", "Error adding new check-in.", e));
     }
 
     public void addEvent(Event event) {
