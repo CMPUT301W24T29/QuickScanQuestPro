@@ -114,6 +114,13 @@ public class ProfileFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 
+    /**
+     * Initializes the the view and the edits texts in the view
+     * Has text Listeners for the edit texts so update changes to the database
+     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -213,6 +220,11 @@ public class ProfileFragment extends Fragment {
         pickImageLauncher.launch(intent);
     }
 
+    /**
+     * This method is called when the view is created, it gets the parameters from the database and
+     * passes the information into updates to the profile UI
+     * @param user The user that is passed in to find in the database
+     */
     private void fetchAndPopulateUserData(User user) {
         // Assuming you have a way to get the current user's ID
         String userId = user.getUserId()/* Retrieve the user ID, possibly from SharedPreferences or passed through arguments */;
@@ -240,6 +252,15 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+    /**
+     * This method takes parameters and from the fetched data from the database to update the UI
+     * and populates the edit text
+     * @param name String representing user name
+     * @param homepage String representing user homepage
+     * @param mobileNum String representing user mobile number
+     * @param email String representing user email
+     * @param geolocation Boolean representing is geolocation is on or off
+     */
     private void updateUIWithUserData(String name, String homepage, String mobileNum, String email, Boolean geolocation) {
         View view = getView();
         if (view == null) return; // Ensure view is available
