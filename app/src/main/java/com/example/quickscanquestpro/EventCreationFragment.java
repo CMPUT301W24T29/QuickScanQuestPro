@@ -33,6 +33,8 @@ import com.google.zxing.MultiFormatWriter;
 
 import org.w3c.dom.Text;
 
+import java.util.UUID;
+
 /**
  * A simple {@link Fragment} subclass.
  * Used to create a new event. Allows organizers to create events with event details. Optionally select and upload a poster image when creating event.
@@ -65,7 +67,7 @@ public class EventCreationFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         MainActivity mainActivity = (MainActivity) this.getActivity();
-        this.creatingEvent = new Event(mainActivity.getNewEventID());
+        this.creatingEvent = new Event(UUID.randomUUID().toString());
     }
 
     @Override
@@ -127,7 +129,7 @@ public class EventCreationFragment extends Fragment {
         createButton = view.findViewById(R.id.create_event_confirm_button);
         createButton.setOnClickListener(v -> {
             if (validateEntryFields()) {
-//                mainActivity.setTestEvent(this.creatingEvent);
+                mainActivity.setTestEvent(this.creatingEvent);
                 String organizerId = mainActivity.getUser().getUserId();
                 creatingEvent.setOrganizerId(organizerId);
                 // create a new event in the database

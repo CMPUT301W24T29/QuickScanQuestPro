@@ -5,15 +5,19 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.List;
 
 public class AdminManageEventsFragment extends Fragment {
 
-    DatabaseService dbService = new DatabaseService();
+    private DatabaseService databaseService;
 
     public AdminManageEventsFragment() {
         // Required empty public constructor
@@ -32,16 +36,32 @@ public class AdminManageEventsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        // get all the events from the database
-        List<Event> events = dbService.getEvents();
+        databaseService = new DatabaseService(); // Initialize your DatabaseService
+        ListView eventListView = view.findViewById(R.id.event_dashboard_list);
 
 
         view.findViewById(R.id.back_button).setOnClickListener(v -> {
-            // Check if there are entries in the back stack
-            if (getParentFragmentManager().getBackStackEntryCount() > 0) {
-                // If there are, pop the back stack to go to the previous fragment
-                getParentFragmentManager().popBackStack();
+            if (getFragmentManager() != null) {
+                getFragmentManager().popBackStack();
+            }
+        });
+
+        // Fetch users from Firestore and update the ListView
+        databaseService.listenForEventUpdates(new DatabaseService.onEventsDataLoaded() {
+            @Override
+            public void onEventsLoaded(List<Event> events) {
+                if (getActivity() == null) {
+                    Log.e("AdminProfileFragment", "Activity is null. Skipping setup.");
+                    return;
+                }
+
+                if (events.isEmpty()) {
+                    Toast.makeText(getActivity(), "No users found!", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Use AdminProfileAdapter to display the users in the ListView
+                    AdminEventAdapter adapter = new AdminEventAdapter(getActivity(), R.layout.list_admin_view, events);
+                    eventListView.setAdapter(adapter);
+                }
             }
         });
     }
