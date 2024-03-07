@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,6 +95,7 @@ public class DatabaseService {
         Map<String, Object> checkInMap = new HashMap<>();
         checkInMap.put("userId", userId);
         checkInMap.put("location", location);
+        checkInMap.put("timestamp", new Date());
 
         // Append the new check-in map to the 'checkins' array field
         eventRef.update("checkins", FieldValue.arrayUnion(checkInMap))

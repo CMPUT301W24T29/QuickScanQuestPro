@@ -213,5 +213,3 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
     }
 }
 
-// Add a check in object to events
-// Everytime someone checks in the database needs to update the location, where it was checked in from, create a new collection for every check in even though it is from the same person
