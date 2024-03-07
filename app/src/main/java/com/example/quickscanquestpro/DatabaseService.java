@@ -178,6 +178,7 @@ public class DatabaseService {
                 user.setName(document.getString("name"));
                 user.setEmail(document.getString("email"));
                 user.setMobileNum(document.getString("phone"));
+                user.setHomepage(document.getString("Homepage"));
 //                user.setGeolocation(document.getBoolean("geoLocation"));
 //                user.setCheckins(document.getLong("check-ins").intValue());
                 users.add(user);
@@ -200,6 +201,7 @@ public class DatabaseService {
             user.setName(queryDocumentSnapshot.getString("name"));
             user.setEmail(queryDocumentSnapshot.getString("email"));
             user.setMobileNum(queryDocumentSnapshot.getString("phone"));
+            user.setHomepage(queryDocumentSnapshot.getString("Homepage"));
             user.setAdmin(queryDocumentSnapshot.getBoolean("admin"));
 //            user.setGeolocation(queryDocumentSnapshot.getBoolean("geoLocation"));
 //            user.setCheckins(queryDocumentSnapshot.getLong("check-ins").intValue());

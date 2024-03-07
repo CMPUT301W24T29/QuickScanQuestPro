@@ -148,6 +148,14 @@ public class ProfileFragment extends Fragment {
     }
 
 
+    /**
+     * Initializes views within the fragment and sets up listeners for user interactions.
+     * This method is responsible for binding UI components to their respective views in the layout,
+     * setting click listeners for buttons, adding text change listeners for EditText fields,
+     * and initializing switch interactions. It also prepopulates user data into the UI components.
+     *
+     * @param view The parent view of the fragment in which the UI components are located.
+     */
     private void initializeViews(View view) {
         profilePicturePlaceholder = view.findViewById(R.id.profilePicturePlaceholder);
         deleteProfilePictureButton = view.findViewById(R.id.deleteProfilePictureButton);
@@ -309,7 +317,17 @@ public class ProfileFragment extends Fragment {
 
 
 
-
+    /**
+     * Fetches the current user's data from the Firestore database and populates the UI with the fetched data.
+     * This method retrieves user information such as name, homepage, mobile number, email, profile picture URL,
+     * and geolocation preference from the database using the user's unique ID. Once the data is fetched successfully,
+     * it updates the UI elements accordingly.
+     *
+     * Note: This method assumes the presence of a valid {@link User} object and that the Firestore database is
+     * properly initialized and accessible. It also assumes that the user data is stored under a collection named "users".
+     *
+     * @param user The {@link User} object representing the current user. It should contain the user's unique ID.
+     */
     private void fetchAndPopulateUserData(User user) {
         // Assuming you have a way to get the current user's ID
         String userId = user.getUserId()/* Retrieve the user ID, possibly from SharedPreferences or passed through arguments */;
@@ -323,7 +341,7 @@ public class ProfileFragment extends Fragment {
 
                     String name = document.getString("name");
                     String homepage = document.getString("homepage");
-                    String mobileNum = document.getString("mobileNum");
+                    String mobileNum = document.getString("phone");
                     String email = document.getString("email");
                     String profilePictureUrl = document.getString("profilePictureUrl");
                     Boolean geolocation = document.getBoolean("geolocation");
@@ -340,6 +358,24 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+
+    /**
+     * Updates the UI with the user's data fetched from the database.
+     * This method is responsible for setting the text of EditText fields for the user's name, homepage,
+     * mobile number, and email address. It also sets the state of a Switch for geolocation preference and
+     * loads the user's profile picture using Glide if a URL is provided. If no profile picture URL is provided,
+     * or it is empty, the method hides the delete profile picture button.
+     *
+     * Note: This method assumes it is called on the UI thread. If called from a background thread, you should use
+     * {@code getActivity().runOnUiThread(Runnable)} to ensure UI operations are performed safely.
+     *
+     * @param name The user's name to be set in the UI.
+     * @param homepage The URL of the user's homepage to be set in the UI.
+     * @param mobileNum The user's mobile number to be set in the UI.
+     * @param email The user's email address to be set in the UI.
+     * @param geolocation The user's geolocation preference to be updated in the UI.
+     * @param profilePictureUrl The URL of the user's profile picture. If provided, it is loaded into the profile picture view.
+     */
     private void updateUIWithUserData(String name, String homepage, String mobileNum, String email, Boolean geolocation, String profilePictureUrl) {
         View view = getView();
         if (view == null) return; // Ensure view is available
