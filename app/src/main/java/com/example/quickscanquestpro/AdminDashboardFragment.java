@@ -2,20 +2,15 @@ package com.example.quickscanquestpro;
 
 
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 
-import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
-import com.example.quickscanquestpro.EventDashboardFragment;
 
 public class AdminDashboardFragment extends Fragment {
 
@@ -35,7 +30,7 @@ public class AdminDashboardFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Find the "Manage Events" button and set up the click listener
-        Button manageEventsButton = view.findViewById(R.id.button_manage_events);
+        Button manageEventsButton = view.findViewById(R.id.admin_button_manage_events);
         manageEventsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -52,7 +47,7 @@ public class AdminDashboardFragment extends Fragment {
             }
         });
 
-        Button manageProfileButton = view.findViewById(R.id.button_manage_users);
+        Button manageProfileButton = view.findViewById(R.id.admin_button_manage_users);
         manageProfileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,7 +67,7 @@ public class AdminDashboardFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 // Navigate to ProfileFragment
-                ProfileFragment profileFragment = ProfileFragment.newInstance("param1", "param2"); // Use correct parameters or modify newInstance accordingly
+                ProfileFragment profileFragment = new ProfileFragment();
 
                 if (isAdded() && getActivity() != null) {
                     getActivity().getSupportFragmentManager().beginTransaction()

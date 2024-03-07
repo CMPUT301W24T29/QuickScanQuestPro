@@ -108,7 +108,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         user.put("check-ins", 0);
         user.put("name", "ERIC MAH");
         user.put("homepage", "https://disney.com");
-        user.put("mobileNum", "123-456-7890");
         user.put("email", "");
         user.put("geolocation", true);
 

@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * A class to handle all database operations
+ */
 public class DatabaseService {
 
     private static final String EVENTS_COLLECTION = "events";
@@ -38,6 +41,9 @@ public class DatabaseService {
 
     private ArrayList<Event> events = new ArrayList<Event>();
 
+    /**
+     * Interfaces to handle the callback when the data is loaded
+     */
     public interface OnUsersDataLoaded {
         void onUsersLoaded(List<User> users);
     }
@@ -67,6 +73,9 @@ public class DatabaseService {
         void onEventsLoaded(List<Event> events);
     }
 
+    /**
+     * Constructor to initialize the Firestore database
+     */
     public DatabaseService() {
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
@@ -96,6 +105,10 @@ public class DatabaseService {
                 .addOnFailureListener(e -> Log.e("DatabaseService", "Error adding new check-in.", e));
     }
 
+    /**
+     * Method to add an event to the Firestore database
+     * @param event The event to be added
+     */
     public void addEvent(Event event) {
         // Create a Map to store the data
         Map<String, Object> eventData = new HashMap<>();
@@ -117,6 +130,11 @@ public class DatabaseService {
         eventsRef.document(String.valueOf(event.getId())).set(combinedData, SetOptions.merge());
     }
 
+    /**
+     * Method to add a user to the Firestore database
+     * @param user The user to be added
+     */
+
     public void addUser(User user) {
         // Create a Map to store the data
         Map<String, Object> userData = new HashMap<>();
@@ -133,6 +151,11 @@ public class DatabaseService {
         // Add the user data to the Firestore "users" collection with the incremented document number
         usersRef.document(String.valueOf(user.getUserId())).set(userData, SetOptions.merge());
     }
+
+    /**
+     * Method to get all events from the Firestore database
+     * @param callback The callback to be called when the data is loaded
+     */
 
     public void getEvents(OnEventsDataLoaded callback) {
         eventsRef.get().addOnSuccessListener(queryDocumentSnapshots -> {
@@ -156,6 +179,11 @@ public class DatabaseService {
         }).addOnFailureListener(e -> callback.onEventsLoaded(null));
     }
 
+    /**
+     * Method to get all users from the Firestore database
+     * @param callback The callback to be called when the data is loaded
+     */
+
     public void getUsers(OnUsersDataLoaded callback) {
         usersRef.get().addOnSuccessListener(queryDocumentSnapshots -> {
             List<User> users = new ArrayList<>();
@@ -178,6 +206,11 @@ public class DatabaseService {
         }).addOnFailureListener(e -> callback.onUsersLoaded(null));
     }
 
+    /**
+     * Method to get a specific user from the Firestore database
+     * @param userId The ID of the user to be fetched
+     * @param callback The callback to be called when the data is loaded
+     */
 
     public void getSpecificUserDetails(String userId, OnUserDataLoaded callback) {
         usersRef.document(userId).get().addOnSuccessListener(queryDocumentSnapshot -> {
@@ -202,7 +235,7 @@ public class DatabaseService {
     }
 
     /**
-     * This will get a requested event from the database, then call a callback when the data is loaded into an event class
+     * This will get a requested event from the Firestore database, then call a callback when the data is loaded into an event class
      * @param eventId the id of the event to search for in the database
      * @param callback the callback function in the class that called this, which will run when the data is loaded
      */
@@ -293,14 +326,10 @@ public class DatabaseService {
         }
     }
 
-
-
-
-    public void deleteUser(String userId)
-    {
-        usersRef.document(userId).delete();
-    }
-
+    /**
+     * Method to listen for updates to the users collection in the Firestore database
+     * @param callback The callback to be called when the data is loaded
+     */
     public void listenForUsersUpdates(OnUsersDataLoaded callback) {
         usersRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -322,6 +351,11 @@ public class DatabaseService {
             }
         });
     }
+
+    /**
+     * Method to listen for updates to the events collection in the Firestore database
+     * @param callback The callback to be called when the data is loaded
+     */
 
     public void listenForEventUpdates(OnEventsDataLoaded callback) {
         eventsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -345,9 +379,18 @@ public class DatabaseService {
         });
     }
 
+    /**
+     * Method to delete a user in the Firestore database
+     * @param user The user to be updated
+     */
     public void deleteUser(User user){
         usersRef.document(user.getUserId()).delete();
     }
+
+    /**
+     * Method to delete an event in the Firestore database
+     * @param event The event to be updated
+     */
 
     public void deleteEvent(Event event){
         eventsRef.document(event.getId()).delete();
