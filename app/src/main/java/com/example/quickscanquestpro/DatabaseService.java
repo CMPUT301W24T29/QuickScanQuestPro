@@ -46,6 +46,10 @@ public class DatabaseService {
         void onEventLoaded(Event event);
     }
 
+    public interface onEventsDataLoaded {
+        void onEventsLoaded(List<Event> events);
+    }
+
     public DatabaseService() {
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
@@ -126,7 +130,6 @@ public class DatabaseService {
                 user.setMobileNum(document.getString("phone"));
 //                user.setGeolocation(document.getBoolean("geoLocation"));
 //                user.setCheckins(document.getLong("check-ins").intValue());
-
                 users.add(user);
             }
             callback.onUsersLoaded(users);

@@ -153,7 +153,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
                 .addOnFailureListener(e -> {
                     // Potential failure stuff
                 });
-
     }
 
     //user constructor
