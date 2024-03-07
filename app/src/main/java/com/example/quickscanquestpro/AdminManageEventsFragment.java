@@ -33,9 +33,6 @@ public class AdminManageEventsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // get all the events from the database
-        List<Event> events = dbService.getEvents();
-
 
         view.findViewById(R.id.back_button).setOnClickListener(v -> {
             // Check if there are entries in the back stack

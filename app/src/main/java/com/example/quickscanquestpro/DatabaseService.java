@@ -93,15 +93,14 @@ public class DatabaseService {
         usersRef.document(String.valueOf(user.getUserId())).set(userData, SetOptions.merge());
     }
 
-    public List<Event> getEvents() {
-        List<Event> events = new ArrayList<>();
-
+    public void getEvents(onEventsDataLoaded callback) {
         eventsRef.get().addOnSuccessListener(queryDocumentSnapshots -> {
+            List<Event> events = new ArrayList<>();
             for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                 String eventId = document.getId(); // Get the document ID
                 Event event = new Event(eventId);
 
-                // Set other fields as before
+                // Set event fields based on queryDocumentSnapshot
                 event.setTitle(document.getString("title"));
                 event.setDescription(document.getString("description"));
                 event.setLocation(document.getString("location"));
@@ -110,11 +109,10 @@ public class DatabaseService {
                 event.setEndDate(LocalDate.parse(document.getString("End-date")));
                 event.setStartTime(LocalTime.parse(document.getString("Start-time")));
                 event.setEndTime(LocalTime.parse(document.getString("End-time")));
-
                 events.add(event);
             }
-        });
-        return events;
+            callback.onEventsLoaded(events);
+        }).addOnFailureListener(e -> callback.onEventsLoaded(null));
     }
 
     public void getUsers(OnUsersDataLoaded callback) {
@@ -179,7 +177,12 @@ public class DatabaseService {
 
                 callback.onEventLoaded(event);
         }).addOnFailureListener(e -> callback.onEventLoaded(null));
+    }
 
+
+    public void deleteUser(String userId)
+    {
+        usersRef.document(userId).delete();
     }
 
 }

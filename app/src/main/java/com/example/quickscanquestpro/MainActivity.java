@@ -221,6 +221,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         else
         {
             testUser = user;
+
         }
 
     }
