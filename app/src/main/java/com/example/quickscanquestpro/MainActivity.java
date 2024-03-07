@@ -205,6 +205,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
             } else {
                 userId = UUID.randomUUID().toString();
                 prefs.edit().putString(USER_ID_KEY, userId).apply();
+                testUser = new User(userId);
                 newUser(userId);
             }
         }
