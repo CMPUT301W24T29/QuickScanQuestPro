@@ -18,6 +18,7 @@ public class AdminProfileAdapter extends ArrayAdapter<User> {
     private int resourceLayout;
     private Context mContext;
 
+
     public AdminProfileAdapter(@NonNull Context context, int resource, List<User> items) {
         super(context, resource, items);
         this.resourceLayout = resource;
@@ -37,7 +38,8 @@ public class AdminProfileAdapter extends ArrayAdapter<User> {
             textView.setText(user.getName());
             Button deleteButton = convertView.findViewById(R.id.delete_profile_button);
             deleteButton.setOnClickListener(view -> {
-                // Implement user deletion here if desired
+                remove(getItem(position)); // Remove the user from the adapter
+                notifyDataSetChanged(); // Refresh the adapter
             });
         }
 

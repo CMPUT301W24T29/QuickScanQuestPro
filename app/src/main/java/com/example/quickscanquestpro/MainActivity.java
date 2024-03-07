@@ -88,11 +88,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            @Override
-            public void onError(Exception e) {
-                // Handle the error
-                Log.e("MainActivity", "Error loading users: " + e.getMessage());
-            }
+
 
         });
 
@@ -231,10 +227,7 @@ public class MainActivity extends AppCompatActivity {
                 testUser = new User(userId);
             }
 
-            @Override
-            public void onError(Exception e) {
-                Log.e("MainActivity", "Error loading user: " + e.getMessage());
-            }
+
         });
     }
 
@@ -247,10 +240,7 @@ public class MainActivity extends AppCompatActivity {
                 testUser = user;
             }
 
-            @Override
-            public void onError(Exception e) {
-                Log.e("MainActivity", "Error loading user: " + e.getMessage());
-            }
+
         });
         Toast.makeText(getApplicationContext(), "Welcome Back!", Toast.LENGTH_SHORT).show();
 

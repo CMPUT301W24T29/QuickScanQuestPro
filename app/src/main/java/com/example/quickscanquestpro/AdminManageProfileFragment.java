@@ -20,7 +20,7 @@ import java.util.List;
 
 public class AdminManageProfileFragment extends Fragment implements DatabaseService.OnUsersDataLoaded {
     private DatabaseService databaseService;
-
+    private MainActivity mainActivity;
     public AdminManageProfileFragment() {
         // Required empty public constructor
     }
@@ -46,25 +46,26 @@ public class AdminManageProfileFragment extends Fragment implements DatabaseServ
             }
         });
 
-        // Fetch users from Firestore and update the ListView
-        databaseService.getUsers(new DatabaseService.OnUsersDataLoaded() {
-            @Override
-            public void onUsersLoaded(List<User> users) {
-                if (getActivity() != null) {
-                    AdminProfileAdapter adapter = new AdminProfileAdapter(getActivity(), R.layout.list_profile_admin_view, users);
-                    profileListView.setAdapter(adapter);
-                }
-            }
 
-            @Override
-            public void onError(Exception e) {
-                Toast.makeText(getContext(), "Error fetching users", Toast.LENGTH_SHORT).show();
-            }
-        });
+        databaseService.getUsers(this);
+
+        // Fetch users from Firestore and update the ListView
+
     }
 
     @Override
     public void onUsersLoaded(List<User> users) {
+        if (users.isEmpty()){
+            Toast.makeText(mainActivity.getApplicationContext(), "No users found!", Toast.LENGTH_SHORT).show();
 
+        }
+        else{
+
+
+            ListView profileListView = getView().findViewById(R.id.profile_dashboard_list);
+            AdminProfileAdapter adapter = new AdminProfileAdapter(getActivity(), R.layout.list_profile_admin_view, users);
+            profileListView.setAdapter(adapter);
+
+        }
     }
 }
