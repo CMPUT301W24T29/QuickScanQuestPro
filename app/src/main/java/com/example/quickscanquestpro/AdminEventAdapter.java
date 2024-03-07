@@ -1,6 +1,7 @@
 package com.example.quickscanquestpro;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,10 @@ public class AdminEventAdapter extends ArrayAdapter<Event>{
             convertView = LayoutInflater.from(mContext).inflate(resourceLayout, parent, false);
         }
 
+        convertView.setOnClickListener(v -> {
+            Log.d("AdapterItemClick", "Item clicked at position: " + position);
+            // Handle click event as needed
+        });
         Event event = getItem(position);
         if (event != null) {
             TextView textView = convertView.findViewById(R.id.profile_name_text_view);

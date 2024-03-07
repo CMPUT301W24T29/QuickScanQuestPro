@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
+import com.example.quickscanquestpro.Event;
 
 import java.util.List;
 
@@ -39,7 +41,6 @@ public class AdminManageEventsFragment extends Fragment {
         databaseService = new DatabaseService(); // Initialize your DatabaseService
         ListView eventListView = view.findViewById(R.id.event_dashboard_list);
 
-
         view.findViewById(R.id.back_button).setOnClickListener(v -> {
             if (getFragmentManager() != null) {
                 getFragmentManager().popBackStack();
@@ -58,12 +59,28 @@ public class AdminManageEventsFragment extends Fragment {
                 if (events.isEmpty()) {
                     Toast.makeText(getActivity(), "No users found!", Toast.LENGTH_SHORT).show();
                 } else {
-                    // Use AdminProfileAdapter to display the users in the ListView
                     AdminEventAdapter adapter = new AdminEventAdapter(getActivity(), R.layout.list_admin_view, events);
+                    eventListView.setOnItemClickListener((parent, view, position, id) -> {
+                        Log.d("ItemClick", "Item clicked at position: " + position);
+                        Event event = events.get(position);
+                        // Create an instance of EventDetailsFragment
+                        EventDetailsFragment adminEventDetailsFragment = new EventDetailsFragment(event);
+
+                        // Use FragmentManager to replace the AdminManageEventsFragment with EventDetailsFragment
+                        if (isAdded() && getActivity() != null) {
+                            getChildFragmentManager().beginTransaction()
+                                    .replace(R.id.content, adminEventDetailsFragment)
+                                    .addToBackStack(null)  // Optional, if you want to navigate back to the admin manage events
+                                    .commit();
+                        }
+                    });
+                    // Set the adapter for the eventListView
                     eventListView.setAdapter(adapter);
+                    Log.d("Check", "Its gotten till here");
                 }
             }
         });
+
     }
 
 }
