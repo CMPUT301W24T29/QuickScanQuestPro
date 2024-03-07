@@ -47,5 +47,3 @@ public class AdminManageEventsFragment extends Fragment {
     }
 
 }
-
-
