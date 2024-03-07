@@ -3,6 +3,7 @@ package com.example.quickscanquestpro;
 import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.pressKey;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.intended;
@@ -19,6 +20,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 
 import android.Manifest;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.TimePicker;
@@ -87,6 +89,34 @@ public class MainActivityTest {
         // the homescreen should appear, be granted camera privileges, scan the virtual QR inserted in %LocalAppData%\Android\Sdk\emulator\resources
         // and then finally transition to the event details page (of the test event with id 0)
         onView(withId(R.id.event_title)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void testUS02_06_01NoLogin(){
+        onView(withId(R.id.navigation_profile)).perform(click());
+    }
+
+    @Test
+    public void testUS02_02_03ChangeInfo(){
+        onView(isRoot()).perform(waitFor(7000));
+        onView(withId(R.id.navigation_profile)).perform(click());
+        for(int i=0; i<20;i++) {
+            onView(withId(R.id.fullNameInput)).perform(click()).perform(pressKey(KeyEvent.KEYCODE_DEL));
+        }
+        Espresso.closeSoftKeyboard();
+        onView(withId(R.id.fullNameInput)).perform(ViewActions.typeText("John Doe"));
+        Espresso.closeSoftKeyboard();
+        onView(withId(R.id.homepageInput)).perform(ViewActions.typeText("www.johndoe.com"));
+        Espresso.closeSoftKeyboard();
+        onView(withId(R.id.mobileNumberInput)).perform(ViewActions.typeText("123-456-7890"));
+        Espresso.closeSoftKeyboard();
+        onView(withId(R.id.emailAddressInput)).perform(ViewActions.typeText("john@example.com"));
+        Espresso.closeSoftKeyboard();
+
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(withId(R.id.navigation_profile)).perform(click());
+
+        onView(withText("John Doe")).check(matches(isDisplayed()));
     }
 
     public static void setDate(int datePickerLaunchViewId, int year, int monthOfYear, int dayOfMonth) {
