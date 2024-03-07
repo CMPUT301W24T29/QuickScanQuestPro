@@ -3,6 +3,7 @@ package com.example.quickscanquestpro;
 import static androidx.camera.core.impl.utils.ContextUtil.getApplicationContext;
 
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
@@ -11,6 +12,10 @@ import androidx.annotation.Nullable;
 
 import androidx.annotation.NonNull;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
@@ -91,7 +96,7 @@ public class DatabaseService {
         usersRef = db.collection(USERS_COLLECTION);
     }
 
-    public void addEvent(Event event) {
+    public void addEvent(Event event, String url, String path) {
         // Create a Map to store the data
         Map<String, Object> eventData = new HashMap<>();
         // Assuming your Event class has getters for its properties
@@ -99,15 +104,8 @@ public class DatabaseService {
         eventData.put("description", event.getDescription());
         eventData.put("location", event.getLocation());
         eventData.put("organizerId", event.getOrganizerId());
-        // To implement when we have a way to store the event picture
-        /*if (url == null) {
-            eventData.put("eventPictureUrl", null);
-            eventData.put("eventPicturePath", null);
-        }
-        else {
-            eventData.put("eventPictureUrl", url);
-            eventData.put("eventPicturePath", "eventPictures/");
-        }*/
+        eventData.put("eventPictureUrl", url);
+        eventData.put("eventPicturePath", path);
 
         // Combine all data into a single map
         Map<String, Object> combinedData = new HashMap<>();
@@ -208,7 +206,7 @@ public class DatabaseService {
      * @param eventId the id of the event to search for in the database
      * @param callback the callback function in the class that called this, which will run when the data is loaded
      */
-    public void getEvent(String eventId, OnEventDataLoaded callback) {
+    public void getEvent(String eventId, OnEventDataLoaded callback, MainActivity mainActivity) {
         eventsRef.document(eventId).get().addOnSuccessListener(queryDocumentSnapshot -> {
                 if (!queryDocumentSnapshot.exists()) {
                     callback.onEventLoaded(null);
@@ -227,6 +225,23 @@ public class DatabaseService {
                 event.setEndDate(LocalDate.parse(queryDocumentSnapshot.getString("End-date")));
                 event.setStartTime(LocalTime.parse(queryDocumentSnapshot.getString("Start-time")));
                 event.setEndTime(LocalTime.parse(queryDocumentSnapshot.getString("End-time")));
+
+                // This is supposed to load event picture, but unsure if it works properly
+                /*String eventPictureUrl = queryDocumentSnapshot.getString("eventPictureUrl");
+                if (eventPictureUrl != null) {
+                    Glide.with(mainActivity)
+                            .asBitmap()
+                            .load(eventPictureUrl)
+                            .into(new CustomTarget<Bitmap>() {
+                                @Override
+                                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                                    event.setEventBanner(resource);
+                                }
+                                @Override
+                                public void onLoadCleared(@Nullable Drawable placeholder) {
+                                }
+                            });
+                }*/
 
                 callback.onEventLoaded(event);
         }).addOnFailureListener(e -> callback.onEventLoaded(null));
@@ -351,8 +366,7 @@ public class DatabaseService {
                     .addOnFailureListener(callback::onFailure);
         }
     }
-    // TODO: Add method to delete event photo from Firebase Storage
-   /* public void uploadEventPhoto(Uri fileUri, Event event, OnEventPhotoUpload callback) {
+   public void uploadEventPhoto(Uri fileUri, Event event, OnEventPhotoUpload callback) {
         String refPath = "eventPictures/" + UUID.randomUUID().toString();
         StorageReference ref = storage.getReference().child(refPath);
 
@@ -364,9 +378,9 @@ public class DatabaseService {
                 .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(uri -> {
                     String imageUrl = uri.toString();
                     // Update Firestore document for this user
-                    addEvent(event, imageUrl);
+                    addEvent(event, imageUrl, refPath);
                     callback.onSuccess(imageUrl, refPath);
                 }))
                 .addOnFailureListener(callback::onFailure);
-    }*/
+    }
 }

@@ -1,5 +1,7 @@
 package com.example.quickscanquestpro;
 
+import static android.content.ContentValues.TAG;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContentResolver;
@@ -21,6 +23,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,7 +59,7 @@ import java.util.Objects;
 public class EventDetailsFragment extends Fragment {
 
     private Event event;
-    // private DatabaseService databaseService = new DatabaseService();
+    private DatabaseService databaseService = new DatabaseService();
 
     /**
      * This is the default constructor for the EventDetailsFragment class. If no event is passed in,
@@ -119,6 +122,7 @@ public class EventDetailsFragment extends Fragment {
         // Set the image of the event to the event banner if it exists, otherwise hide the imageview
         if (event.getEventBanner() != null) {
             eventImage.setImageBitmap(event.getEventBanner());
+            uploadImageButton.setVisibility(View.GONE);
         }
         else {
             eventImage.setVisibility(View.GONE);
@@ -142,15 +146,15 @@ public class EventDetailsFragment extends Fragment {
         // Set an on click listener for the back button
         backButton.setOnClickListener(v -> {
             // Uploading image to database has not been implemented yet
-            // uploadImage(getImageToShare(event.getEventBanner()));
             mainActivity.transitionFragment(new EventDashboardFragment(), "EventDashboardFragment");
         });
 
-        /* Enable these buttons if the user is the organizer of the event
-        if (event.getOrganizer() == mainActivity.getUser().getUserId()) {
+        // Enable these buttons if the user is the organizer of the event
+        if (event.getOrganizerId() == mainActivity.getUser().getUserId()) {
             uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
-            eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
-            setShareButton();
+            // For now, option to change event banner is unavailable
+            // eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
+            setShareButton(shareButton);
 
         }
         // Hide these buttons if user is not the organizer
@@ -158,12 +162,17 @@ public class EventDetailsFragment extends Fragment {
             uploadImageButton.setVisibility(View.GONE);
             shareButton.setVisibility(View.GONE);
         }
-        */
 
-        // These will be removed when the organizer functionality is implemented
+        // For now, the option to change the event banner is unavailable
+        // eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
         uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
-        eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
         setShareButton(shareButton);
+    }
+
+    @Override
+    public void onDestroyView() {
+        uploadImage(getImageToShare(event.getEventBanner()));
+        super.onDestroyView();
     }
 
     /**
@@ -249,22 +258,22 @@ public class EventDetailsFragment extends Fragment {
         }
         return uri;
     }
-    // TODO: Create a method to upload an event image to the database
-    /*private void uploadImage(Uri file) {
+    private void uploadImage(Uri file) {
         databaseService.uploadEventPhoto(file, event, new DatabaseService.OnEventPhotoUpload() {
             @Override
             public void onSuccess(String imageUrl, String imagePath) {
-                Toast.makeText(getContext(), "Profile Picture Uploaded", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "onSuccess: " + imageUrl);
             }
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getContext(), "Failed To Upload Profile Picture: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "onFailure: " + e.getMessage());
             }
 
             @Override
             public void onProgress(double progress) {
+                Log.d(TAG, "onProgress: " + progress);
             }
         });
-    }*/
+    }
 }

@@ -1,5 +1,7 @@
 package com.example.quickscanquestpro;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
@@ -140,11 +142,11 @@ public class EventCreationFragment extends Fragment {
                 String organizerId = mainActivity.getUser().getUserId();
                 creatingEvent.setOrganizerId(organizerId);
                 // create a new event in the database
-                databaseService.addEvent(creatingEvent);
+                databaseService.addEvent(creatingEvent, null, null);
                 // to later upload the event image to the database
-                // if (creatingEvent.getEventBanner() != null) {
-                //    uploadImage(getImageToShare(creatingEvent.getEventBanner()));
-                // }
+                if (creatingEvent.getEventBanner() != null) {
+                    uploadImage(getImageToShare(creatingEvent.getEventBanner()));
+                }
                 Log.d("EventCreationFragment", "Event created: " + creatingEvent.toString() );
                 // set active fragment to the event dashboard again
                 mainActivity.transitionFragment(new EventDashboardFragment(), this.getString(R.string.title_dashboard));
@@ -269,27 +271,27 @@ public class EventCreationFragment extends Fragment {
         
         return valid;
     }
-    // TODO: Add a method to upload the event image to the database
-    /*private void uploadImage(Uri file) {
+    private void uploadImage(Uri file) {
         databaseService.uploadEventPhoto(file, creatingEvent, new DatabaseService.OnEventPhotoUpload() {
             @Override
             public void onSuccess(String imageUrl, String imagePath) {
-                Toast.makeText(getContext(), "Profile Picture Uploaded", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "onSuccess: " + imageUrl);
             }
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getContext(), "Failed To Upload Profile Picture: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "onFailure: " + e.getMessage());
             }
 
             @Override
             public void onProgress(double progress) {
+                Log.d(TAG, "onProgress: " + progress);
             }
         });
-    }*/
+    }
 
     // This method will be used to convert a bitmat to a uri when uploading the event image to the database
-    /*public Uri getImageToShare(Bitmap imageQR) {
+    public Uri getImageToShare(Bitmap imageQR) {
 
         File folder = new File(getActivity().getCacheDir(), "images");
         Uri uri = null;
@@ -310,6 +312,6 @@ public class EventCreationFragment extends Fragment {
             Toast.makeText(this.getActivity(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
         return uri;
-    }*/
+    }
 
 }
