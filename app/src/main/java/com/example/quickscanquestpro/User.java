@@ -5,6 +5,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class represents the User object
+ */
 public class User {
 
     private String userId;
@@ -27,18 +30,14 @@ public class User {
     * text file storing ID
     * */
 
+    /**
+     * User Constructor
+     * @param userId The string passed to initialize userId
+     */
     public User(String userId){
         this.userId = userId;
     }
 
-    public void UpdateUser(String name, int checkins, String mobileNum, String email, String homepage, boolean geolocation) {
-        this.name = name;
-        this.checkins = checkins;
-        this.mobileNum = mobileNum;
-        this.email = email;
-        this.homepage = homepage;
-        this.geolocation = geolocation;
-    }
 
     public String getName() {
         return name;

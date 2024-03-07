@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         FirebaseApp.initializeApp(this);
         // Initiate user
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
@@ -85,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
                     userId = UUID.randomUUID().toString();
                     prefs.edit().putString(USER_ID_KEY, userId).apply();
                     newUser(userId);
+                    //databaseService.addUser(testUser);
                 }
             }
 
@@ -97,8 +99,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Initiate user
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        String userId = prefs.getString(USER_ID_KEY, null);
+        //SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        //String userId = prefs.getString(USER_ID_KEY, null);
         databaseService.getUsers(new DatabaseService.OnUsersDataLoaded() {
             boolean userExists = false;
             @Override
@@ -157,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
             if (Objects.equals(pressedTitle, dashboardTitle)) {
                 fragment1 = new EventDashboardFragment();
             } else if (Objects.equals(pressedTitle, profileTitle)) {
-                if (testUser.isAdmin()){
+                if (testUser != null &&testUser.isAdmin()){
                     fragment1 = new AdminDashboardFragment();
                 }
                 else{
@@ -236,6 +238,11 @@ public class MainActivity extends AppCompatActivity {
         return this.testEvent;
     }
 
+    /**
+     * This method called to create a new user if it doesn't already exist in the database
+     * It takes the User Id and creates a new user in the database
+     * @param userId a String representing the User ID
+     */
     private void newUser(String userId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -266,7 +273,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    //user constructor
+    /**
+     * This method calls the constructor to create a the user object if the user already
+     * exists in the database.
+     * @param userId A string for userId to pass to the constructor
+     */
     private void existingUser(String userId) {
         this.user = new User(userId);
         databaseService.getSpecificUser(userId, new DatabaseService.OnUserDataLoaded() {
@@ -284,10 +295,18 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Getter for the User object
+     * @return User Object
+     */
     public User getUser() {
         return user;
     }
 
+    /**
+     * Setter for the User object
+     * @param user Takes a user object to set
+     */
     public void setUser(User user) {
         this.user = user;
     }
