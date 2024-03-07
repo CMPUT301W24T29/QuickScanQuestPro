@@ -185,7 +185,6 @@ public class EventCreationFragment extends Fragment {
         transaction.commit();
     }
 
-
     private TextWatcher getTextWatcher(final EditText editText) {
         return new TextWatcher() {
             @Override
@@ -271,6 +270,12 @@ public class EventCreationFragment extends Fragment {
         
         return valid;
     }
+
+    /**
+     * This method uploads an image to the database. It takes a URI of the image file and uploads the image
+     * to the database.
+     * @param file
+     */
     private void uploadImage(Uri file) {
         databaseService.uploadEventPhoto(file, creatingEvent, new DatabaseService.OnEventPhotoUpload() {
             @Override
@@ -290,7 +295,11 @@ public class EventCreationFragment extends Fragment {
         });
     }
 
-    // This method will be used to convert a bitmat to a uri when uploading the event image to the database
+    /**
+     * Creates a new file in the cache directory and writes the image to it. Returns the URI of the file.
+     * @param imageQR The image to be saved.
+     * @return The URI of the file.
+     */
     public Uri getImageToShare(Bitmap imageQR) {
 
         File folder = new File(getActivity().getCacheDir(), "images");

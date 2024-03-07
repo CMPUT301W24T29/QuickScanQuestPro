@@ -131,7 +131,7 @@ public class EventDetailsFragment extends Fragment {
         // Set the text of the event details to the event details
         eventTitle.setText(event.getTitle());
         eventDescription.setText(event.getDescription());
-        String eventDateString = event.getStartDate() + " at " + event.getStartTime() + " until " + event.getEndDate() + " at " + event.getEndTime();
+        String eventDateString = event.getStartDate().toString() + " at " + event.getStartTime().toString() + " until " + event.getEndDate().toString() + " at " + event.getEndTime().toString();
         eventDate.setText(eventDateString);
         eventLocation.setText(event.getLocation());
         ArrayList<String >announcementList = event.getAnnouncements();
@@ -171,7 +171,9 @@ public class EventDetailsFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        uploadImage(getImageToShare(event.getEventBanner()));
+        if (event.getEventBanner() != null) {
+            uploadImage(getImageToShare(event.getEventBanner()));
+        }
         super.onDestroyView();
     }
 
@@ -258,6 +260,12 @@ public class EventDetailsFragment extends Fragment {
         }
         return uri;
     }
+
+    /**
+     * This method uploads an image to the database. It takes a URI of the image file and uploads the image
+     * to the database.
+     * @param file
+     */
     private void uploadImage(Uri file) {
         databaseService.uploadEventPhoto(file, event, new DatabaseService.OnEventPhotoUpload() {
             @Override

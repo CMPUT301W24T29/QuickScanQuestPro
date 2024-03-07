@@ -59,24 +59,7 @@ public class MainActivityTest {
 
     @Test
     public void testUS01_01_01CreateEventAndQR(){
-        onView(withId(R.id.navigation_dashboard)).perform(click());
-
-        onView(withId(R.id.event_dashboard_create_button)).perform(click());
-
-        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("My Event Title"));
-        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
-        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
-        Espresso.closeSoftKeyboard();
-
-        setDate(R.id.text_event_start_date, 2024, 8, 18);
-        Espresso.closeSoftKeyboard();
-        setDate(R.id.text_event_end_date, 2024, 8, 19);
-        Espresso.closeSoftKeyboard();
-
-        setTime(R.id.text_event_start_time, 12, 30);
-        Espresso.closeSoftKeyboard();
-        setTime(R.id.text_event_end_time, 19, 36);
-        Espresso.closeSoftKeyboard();
+        createNewEvent();
 
         onView(withId(R.id.create_event_confirm_button)).perform(click());
 
@@ -136,7 +119,61 @@ public class MainActivityTest {
 
     @Test
     public void testUS02_04_01ViewEventDetails() {
+        createNewEvent();
+        Espresso.closeSoftKeyboard();
+
+        onView(withId(R.id.create_event_confirm_button)).perform(click());
+        onView(isRoot()).perform(waitFor(1000));
+
+        onData(is(instanceOf(String.class))).inAdapterView(withId(R.id.event_dashboard_list)).atPosition(0).perform(click());
+        onView(isRoot()).perform(waitFor(1000));
+
+        onView(withId(R.id.event_title)).check(matches(withText("My Event Title")));
+        onView(withId(R.id.event_description)).check(matches(withText("My Event Description")));
+        onView(withId(R.id.event_location)).check(matches(withText("My Event Location")));
+        onView(withId(R.id.event_date)).check(matches(withText("2024-07-18 at 12:30 until 2024-07-19 at 19:36")));
+
+    }
+
+    @Test
+    public void testUS01_04_01UploadEventPicture() {
+        createNewEvent();
+
+        onView(withId(R.id.create_event_confirm_button)).perform(click());
+        onView(isRoot()).perform(waitFor(1000));
+
+        onView(withId(R.id.banner_upload_button)).perform(click());
+
+
+
+        onData(is(instanceOf(String.class))).inAdapterView(withId(R.id.event_dashboard_list)).atPosition(0).perform(click());
+        onView(isRoot()).perform(waitFor(1000));
+    }
+
+
+    public static ViewAction waitFor(long delay) {
+        return new ViewAction() {
+            @Override public Matcher<View> getConstraints() {
+                return isRoot();
+            }
+
+            @Override public String getDescription() {
+                return "wait for " + delay + "milliseconds";
+            }
+
+            @Override public void perform(UiController uiController, View view) {
+                uiController.loopMainThreadForAtLeast(delay);
+            }
+        };
+    }
+
+    public static void createNewEvent() {
+
+        onView(isRoot()).perform(waitFor(1000));
         onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(1000));
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(1000));
 
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
 
@@ -154,31 +191,5 @@ public class MainActivityTest {
         Espresso.closeSoftKeyboard();
         setTime(R.id.text_event_end_time, 19, 36);
         Espresso.closeSoftKeyboard();
-
-        onView(withId(R.id.create_event_confirm_button)).perform(click());
-
-        //onData(is(instanceOf(String.class))).inAdapterView(withId(R.id.event_dashboard_list)).atPosition(0).perform(click());
-
-        onView(withId(R.id.event_title)).check(matches(withText("My Event Title")));
-        onView(withId(R.id.event_description)).check(matches(withText("My Event Description")));
-        onView(withId(R.id.event_location)).check(matches(withText("My Event Location")));
-        onView(withId(R.id.event_date)).check(matches(withText("2024-08-18 at 12:30 until 2024-08-19 at 19:36")));
-
-    }
-
-    public static ViewAction waitFor(long delay) {
-        return new ViewAction() {
-            @Override public Matcher<View> getConstraints() {
-                return isRoot();
-            }
-
-            @Override public String getDescription() {
-                return "wait for " + delay + "milliseconds";
-            }
-
-            @Override public void perform(UiController uiController, View view) {
-                uiController.loopMainThreadForAtLeast(delay);
-            }
-        };
     }
 }

@@ -2,6 +2,7 @@ package com.example.quickscanquestpro;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -318,5 +319,4 @@ public class Event {
             }
         };
     }
-
 }
