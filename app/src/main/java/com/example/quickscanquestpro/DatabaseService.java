@@ -36,12 +36,10 @@ public class DatabaseService {
 
     public interface OnUsersDataLoaded {
         void onUsersLoaded(List<User> users);
-        void onError(Exception e);
     }
 
     public interface OnUserDataLoaded {
         void onUserLoaded(User user);
-        void onError(Exception e);
     }
 
     public interface OnEventDataLoaded {

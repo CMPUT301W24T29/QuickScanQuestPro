@@ -26,7 +26,7 @@ import java.util.UUID;
  * Runs for full duration of app and allows for semi-persistence.
  * Holds Navbar and starts with displaying QR scanner, used by other fragments to display in.
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DatabaseService.OnUserDataLoaded {
 
     private QRCodeScanner qrCodeScanner;
     private String newEventID = UUID.randomUUID().toString();
@@ -42,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseService databaseService = new DatabaseService();
 
     private String userId;
+
+    private Boolean foundUser = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,11 +73,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            @Override
-            public void onError(Exception e) {
-                // Handle the error
-                Log.e("MainActivity", "Error loading users: " + e.getMessage());
-            }
 
         });
 
@@ -214,11 +211,6 @@ public class MainActivity extends AppCompatActivity {
             public void onUserLoaded(User user) {
                 testUser = new User(userId);
             }
-
-            @Override
-            public void onError(Exception e) {
-                Log.e("MainActivity", "Error loading user: " + e.getMessage());
-            }
         });
 
         // Add a new document with the generated userId
@@ -239,11 +231,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onUserLoaded(User user) {
                 testUser = user;
-            }
-
-            @Override
-            public void onError(Exception e) {
-                Log.e("MainActivity", "Error loading user: " + e.getMessage());
             }
         });
         Toast.makeText(getApplicationContext(), "Welcome Back!", Toast.LENGTH_SHORT).show();
@@ -269,4 +256,13 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.commit();
     }
 
+    @Override
+    public void onUserLoaded(User user)
+    {
+        if(user == null)
+        {
+            Toast.makeText(getApplicationContext(), "Invalid QR", Toast.LENGTH_SHORT).show();
+            foundUser = false;
+        }
+    }
 }
