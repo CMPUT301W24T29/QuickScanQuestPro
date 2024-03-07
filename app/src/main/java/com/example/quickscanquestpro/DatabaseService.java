@@ -26,7 +26,7 @@ import java.util.Map;
 
 public class DatabaseService {
 
-    private static final String EVENTS_COLLECTION = "Events";
+    private static final String EVENTS_COLLECTION = "events";
     private static final String USERS_COLLECTION = "users";
     private FirebaseFirestore db;
     private CollectionReference eventsRef;
@@ -42,6 +42,10 @@ public class DatabaseService {
     public interface OnUserDataLoaded {
         void onUserLoaded(User user);
         void onError(Exception e);
+    }
+
+    public interface OnEventDataLoaded {
+        void onEventLoaded(Event event);
     }
 
     public DatabaseService() {
@@ -93,7 +97,7 @@ public class DatabaseService {
         eventsRef.get().addOnSuccessListener(queryDocumentSnapshots -> {
             for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                 String eventId = document.getId(); // Get the document ID
-                Event event = new Event(Integer.parseInt(eventId));
+                Event event = new Event(eventId);
 
                 // Set other fields as before
                 event.setTitle(document.getString("title"));
@@ -148,5 +152,28 @@ public class DatabaseService {
         }).addOnFailureListener(e -> callback.onError(e));
     }
 
+    public void getEvent(String eventId, OnEventDataLoaded callback) {
+        eventsRef.document(eventId).get().addOnSuccessListener(queryDocumentSnapshot -> {
+                if (!queryDocumentSnapshot.exists()) {
+                    callback.onEventLoaded(null);
+                    return;
+                }
+
+                Event event = new Event(eventId);
+
+                // Set other fields as before
+                event.setTitle(queryDocumentSnapshot.getString("title"));
+                event.setDescription(queryDocumentSnapshot.getString("description"));
+                event.setLocation(queryDocumentSnapshot.getString("location"));
+                event.setOrganizerId(queryDocumentSnapshot.getString("organizerId"));
+                event.setStartDate(LocalDate.parse(queryDocumentSnapshot.getString("Start-date")));
+                event.setEndDate(LocalDate.parse(queryDocumentSnapshot.getString("End-date")));
+                event.setStartTime(LocalTime.parse(queryDocumentSnapshot.getString("Start-time")));
+                event.setEndTime(LocalTime.parse(queryDocumentSnapshot.getString("End-time")));
+
+                callback.onEventLoaded(event);
+        }).addOnFailureListener(e -> callback.onEventLoaded(null));
+
+    }
 
 }
