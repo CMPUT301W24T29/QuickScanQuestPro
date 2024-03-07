@@ -177,7 +177,6 @@ public class DatabaseService {
 
     /**
      * Uploads a profile picture to Firebase Storage and updates the user's profile in Firestore.
-     *
      * This method uploads the given image file to Firebase Storage under a unique path and,
      * upon successful upload, retrieves the image's URL. It then updates the User object with
      * this URL and the storage path, and finally updates the corresponding user document in Firestore.
@@ -189,7 +188,7 @@ public class DatabaseService {
      *                 progress, success, or failure of the upload operation.
      */
     public void uploadProfilePicture(Uri fileUri, User user, OnProfilePictureUpload callback) {
-        String refPath = "images/" + UUID.randomUUID().toString();
+        String refPath = "profilePictures/" + UUID.randomUUID().toString();
         StorageReference ref = storage.getReference().child(refPath);
 
         ref.putFile(fileUri)

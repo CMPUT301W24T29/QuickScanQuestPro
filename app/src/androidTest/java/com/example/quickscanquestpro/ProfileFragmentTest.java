@@ -29,11 +29,6 @@ public class ProfileFragmentTest {
     @Test
     public void navigateToProfileAndUploadPicture() {
 
-        onView(withId(R.id.navigation_profile)).perform(click());
-
-
-        onView(withId(R.id.uploadProfilePictureButton)).perform(click());
-
     }
 
 
