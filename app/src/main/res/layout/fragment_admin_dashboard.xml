@@ -19,7 +19,7 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <Button
-        android:id="@+id/button_manage_events"
+        android:id="@+id/admin_button_manage_events"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="88dp"
@@ -31,7 +31,7 @@
         app:layout_constraintVertical_chainStyle="spread_inside" />
 
     <Button
-        android:id="@+id/button_manage_users"
+        android:id="@+id/admin_button_manage_users"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -39,7 +39,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_manage_events" />
+        app:layout_constraintTop_toBottomOf="@id/admin_button_manage_events" />
 
     <Button
         android:id="@+id/button_view_reports"
@@ -50,7 +50,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_manage_users" />
+        app:layout_constraintTop_toBottomOf="@id/admin_button_manage_users" />
 
     <Button
         android:id="@+id/button_profile"

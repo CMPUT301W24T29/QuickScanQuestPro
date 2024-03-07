@@ -48,38 +48,19 @@ public class ProfileFragment extends Fragment {
 
     private DatabaseService databaseService = new DatabaseService();
 
-    //User user;
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_USER_ID = "userId";
-    private static final String ARG_USER_NAME = "userName";
-
-    // TODO: Rename and change types of parameters
-    private String userId;
-    private String userName;
+    private User user;
 
     public ProfileFragment() {
         // Required empty public constructor
     }
 
-
-    public static ProfileFragment newInstance(String userId, String userName) {
-        ProfileFragment fragment = new ProfileFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_USER_ID, userId);
-        args.putString(ARG_USER_NAME, userName);
-        fragment.setArguments(args);
-        return fragment;
+    public ProfileFragment(User user) {
+        this.user = user;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            userId = getArguments().getString(ARG_USER_ID);
-            userName = getArguments().getString(ARG_USER_NAME);
-        }
 
         // Initialize the permission request launcher
         requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
@@ -128,10 +109,12 @@ public class ProfileFragment extends Fragment {
         EditText emailAddressInput = view.findViewById(R.id.emailAddressInput);
         SwitchMaterial geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
 
+        if(user == null)
+        {
+            MainActivity mainActivity = (MainActivity) getActivity();
+            user = mainActivity.getUser();
+        }
         //Get User from Main activity
-        MainActivity mainActivity = (MainActivity) getActivity();
-        User user = mainActivity.getUser();
-
 
         //Update information
         fullNameInput.addTextChangedListener(new TextWatcher() {

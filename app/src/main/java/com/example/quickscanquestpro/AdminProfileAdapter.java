@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -23,8 +24,6 @@ public class AdminProfileAdapter extends ArrayAdapter<User> {
     private Context mContext;
 
     private DatabaseService databaseService = new DatabaseService();
-
-
 
     public AdminProfileAdapter(@NonNull Context context, int resource, List<User> items) {
         super(context, resource, items);
@@ -51,18 +50,13 @@ public class AdminProfileAdapter extends ArrayAdapter<User> {
             });
 
             textView.setOnClickListener(view -> {
-                ProfileFragment profileFragment = ProfileFragment.newInstance(user.getUserId(), user.getName());
+                ProfileFragment profileFragment = new ProfileFragment(user);
                 FragmentManager fragmentManager = ((FragmentActivity) mContext).getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.content, profileFragment); // Make sure R.id.content is the ID of your fragment container
+                fragmentTransaction.replace(R.id.content, profileFragment);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
-
-
-
             });
-
-
         }
 
         return convertView;
