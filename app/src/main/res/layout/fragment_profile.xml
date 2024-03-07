@@ -31,15 +31,25 @@
         android:layout_alignParentTop="true"
         android:layout_marginStart="16dp"/>
 
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/profilePicturePlaceholder"
-        android:layout_width="match_parent"
+        android:layout_width="300dp"
         android:layout_height="300dp"
         android:layout_below="@id/editProfileTitle"
         android:layout_marginTop="24dp"
-        android:background="@android:color/darker_gray"
-        android:scaleType="centerInside"
-        android:src="@drawable/ic_profile_picture_placeholder" />
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/ic_profile_picture_placeholder"
+        android:scaleType="centerCrop"/>
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressIndicator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_below="@id/profilePicturePlaceholder"
+            style="@style/Widget.MaterialComponents.LinearProgressIndicator"
+            android:indeterminate="false"
+            android:visibility="gone"/>
 
     <Button
         android:id="@+id/uploadProfilePictureButton"
@@ -50,6 +60,16 @@
         android:layout_margin="10dp"
         android:text="+"
         android:contentDescription="@string/upload_picture"/>
+
+    <Button
+        android:id="@+id/deleteProfilePictureButton"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:layout_alignStart="@id/profilePicturePlaceholder"
+        android:layout_alignTop="@id/profilePicturePlaceholder"
+        android:text="Delete Profile Picture"
+        android:visibility="gone"/>
 
 
 

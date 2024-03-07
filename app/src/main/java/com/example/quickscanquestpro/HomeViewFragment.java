@@ -17,9 +17,7 @@ import android.widget.Toast;
 
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link HomeViewFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * This class starts the home view of the app, initializes the camera to start scanning QR code
  */
 public class HomeViewFragment extends Fragment {
 
@@ -99,6 +97,9 @@ public class HomeViewFragment extends Fragment {
 
     }
 
+    /**
+     * This method initializes the camera for QR Code Scanning
+     */
     private void setupCamera()
     {
         View view = getView();
