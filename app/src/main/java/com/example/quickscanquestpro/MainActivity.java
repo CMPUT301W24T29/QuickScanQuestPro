@@ -47,7 +47,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
     private SharedPreferences prefs;
 
-    private List<User> usersList;
     private NavigationBarView navBarView;
 
     private MenuItem item;
@@ -210,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
             if (Objects.equals(pressedTitle, dashboardTitle)) {
                 fragment1 = new EventDashboardFragment();
             } else if (Objects.equals(pressedTitle, profileTitle)) {
-                if (testUser != null && testUser.isAdmin()){
+                if (this.user != null && this.user.isAdmin()){
                     fragment1 = new AdminDashboardFragment();
                 }
                 else{
