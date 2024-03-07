@@ -69,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
                     userId = UUID.randomUUID().toString();
                     prefs.edit().putString(USER_ID_KEY, userId).apply();
                     newUser(userId);
-                    //databaseService.addUser(testUser);
                 }
             }
 

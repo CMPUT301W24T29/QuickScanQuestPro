@@ -117,4 +117,20 @@ public class MainActivityTest {
         };
     }
 
+    @Test
+    public void testUS02_06_01NoLogin(){
+
+    }
+
+    @Test
+    public void testUS02_02_03ChangeInfo(){
+
+    }
+
+    @Test
+    public void testUS02_02_02DelPfp(){
+
+    }
+
+
 }
