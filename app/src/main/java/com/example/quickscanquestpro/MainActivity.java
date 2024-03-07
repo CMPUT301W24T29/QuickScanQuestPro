@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     userId = UUID.randomUUID().toString();
                     prefs.edit().putString(USER_ID_KEY, userId).apply();
+                    testUser = new User(userId);
                     newUser(userId);
                 }
             }
