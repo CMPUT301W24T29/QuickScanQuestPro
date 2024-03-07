@@ -6,11 +6,15 @@ import android.graphics.Bitmap;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -121,7 +125,9 @@ public class DatabaseService {
             List<User> users = new ArrayList<>();
             for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                 String userId = document.getId(); // Get the document ID
+                String name = document.getString("name");
                 User user = new User(userId);
+                user.setName(name);
 
                 // Set user fields based on queryDocumentSnapshot
                 user.setName(document.getString("name"));
@@ -185,6 +191,58 @@ public class DatabaseService {
     public void deleteUser(String userId)
     {
         usersRef.document(userId).delete();
+    }
+
+    public void listenForUsersUpdates(OnUsersDataLoaded callback) {
+        usersRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w("DatabaseService", "Listen failed.", e);
+                    return;
+                }
+
+                List<User> userList = new ArrayList<>();
+                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                    String userId = doc.getId();
+                    User user = new User(userId);
+                    // Assuming you have a method in User class to set the name directly from Firestore document
+                    user.setName(doc.getString("name")); // Ensure field name matches your Firestore structure
+                    userList.add(user);
+                }
+                callback.onUsersLoaded(userList);
+            }
+        });
+    }
+
+    public void listenForEventUpdates(onEventsDataLoaded callback) {
+        eventsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w("DatabaseService", "Listen failed.", e);
+                    return;
+                }
+
+                List<Event> eventList = new ArrayList<>();
+                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                    String eventId = doc.getId();
+                    Event event = new Event(eventId);
+                    // Assuming you have a method in User class to set the name directly from Firestore document
+                    event.setTitle(doc.getString("title")); // Ensure field name matches your Firestore structure
+                    eventList.add(event);
+                }
+                callback.onEventsLoaded(eventList);
+            }
+        });
+    }
+
+    public void deleteUser(User user){
+        usersRef.document(user.getUserId()).delete();
+    }
+
+    public void deleteEvent(Event event){
+        eventsRef.document(event.getId()).delete();
     }
 
 }
