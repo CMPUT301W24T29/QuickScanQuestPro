@@ -27,8 +27,7 @@ import java.util.UUID;
  * Holds Navbar and starts with displaying QR scanner, used by other fragments to display in.
  */
 public class MainActivity extends AppCompatActivity implements DatabaseService.OnUsersDataLoaded, DatabaseService.OnUserDataLoaded {
-
-    private QRCodeScanner qrCodeScanner;
+    // TODO: remove test event stuff before finishing project
     private String newEventID = UUID.randomUUID().toString();
     private Event testEvent;
 
@@ -36,20 +35,16 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     private static final String USER_ID_KEY = "userId";
 
     private User user;
-
-    private User testUser;
+    private String userId;
+    private List<User> usersList;
 
     private DatabaseService databaseService = new DatabaseService();
-
-    private String userId;
 
     private Boolean foundUser = false;
 
     private Boolean foundUserList = false;
 
     private SharedPreferences prefs;
-
-    private List<User> usersList;
 
 
 
@@ -96,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
             if (Objects.equals(pressedTitle, dashboardTitle)) {
                 fragment1 = new EventDashboardFragment();
             } else if (Objects.equals(pressedTitle, profileTitle)) {
-                if (testUser != null && testUser.isAdmin()){
+                if (user != null && user.isAdmin()){
                     fragment1 = new AdminDashboardFragment();
                 }
                 else{
@@ -115,15 +110,18 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         });
     }
 
+    // TODO: remove test event stuff before finishing project
     public String getNewEventID() {
         newEventID = UUID.randomUUID().toString();
         return newEventID;
     }
 
+    // TODO: remove test event stuff before finishing project
     public void setTestEvent(Event event) {
         this.testEvent = event;
     }
 
+    // TODO: remove test event stuff before finishing project
     public Event getTestEvent() {
         if (this.testEvent == null) {
             setTestEvent(Event.createTestEvent(getNewEventID()));
@@ -157,16 +155,12 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
     //user constructor
     private void existingUser(String userId) {
-        testUser = new User(userId);
+        user = new User(userId);
         Toast.makeText(getApplicationContext(), "Welcome Back!", Toast.LENGTH_SHORT).show();
     }
 
     public User getUser() {
-        return testUser;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
+        return user;
     }
 
     /**
@@ -205,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
             } else {
                 userId = UUID.randomUUID().toString();
                 prefs.edit().putString(USER_ID_KEY, userId).apply();
-                testUser = new User(userId);
+                user = new User(userId);
                 newUser(userId);
             }
         }
@@ -221,7 +215,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         }
         else
         {
-            testUser = user;
+            this.user = user;
         }
 
     }
