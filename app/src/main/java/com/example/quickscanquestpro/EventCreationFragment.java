@@ -179,7 +179,7 @@ public class EventCreationFragment extends Fragment {
         // Perform the fragment transaction to display the ReuseFragment
         FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
         transaction.replace(R.id.content, reuseFragment);
-        transaction.addToBackStack(null); // Optional: Add transaction to back stack
+        transaction.addToBackStack(null);
         transaction.commit();
     }
 

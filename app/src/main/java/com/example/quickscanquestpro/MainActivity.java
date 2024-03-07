@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentTransaction;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationBarView;
@@ -27,8 +28,7 @@ import java.util.UUID;
  * Holds Navbar and starts with displaying QR scanner, used by other fragments to display in.
  */
 public class MainActivity extends AppCompatActivity implements DatabaseService.OnUsersDataLoaded, DatabaseService.OnUserDataLoaded {
-
-    private QRCodeScanner qrCodeScanner;
+    // TODO: remove test event stuff before finishing project
     private String newEventID = UUID.randomUUID().toString();
     private Event testEvent;
 
@@ -36,12 +36,10 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     private static final String USER_ID_KEY = "userId";
 
     private User user;
-
-    private User testUser;
+    private String userId;
+    private List<User> usersList;
 
     private DatabaseService databaseService = new DatabaseService();
-
-    private String userId;
 
     private Boolean foundUser = false;
 
@@ -49,7 +47,9 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
     private SharedPreferences prefs;
 
-    private List<User> usersList;
+    private NavigationBarView navBarView;
+
+    private MenuItem item;
 
 
 
@@ -63,67 +63,34 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         userId = prefs.getString(USER_ID_KEY, null);
         databaseService.getUsers(this);
+
         this.transitionFragment(new HomeViewFragment(), this.getString(R.string.title_qr_scanner));
 
-        NavigationBarView navBarView = findViewById(R.id.bottom_navigation);
+        navBarView = findViewById(R.id.bottom_navigation);
         // sets the default selected item for the main activity to the qrscanner button
         navBarView.setSelectedItemId(R.id.navigation_qr_scanner);
         // adds functions to the navbar button
+
+
         navBarView.setOnItemSelectedListener(item -> {
+            this.item = item;
             databaseService.getSpecificUserDetails(userId, this);
-            Log.i("NavMenu", "navButtonPressed: title is " + item.getTitle());
-            String pressedTitle = (String) item.getTitle();
-
-            // gets the fragment currently loaded into the content view
-            Fragment callerFragment = getSupportFragmentManager().findFragmentById(R.id.content);
-            // gets the tag supplied to the fragment when displayed, which is the title of the button that opens it
-            String caller = callerFragment.getTag();
-
-            // gets the string resources for all the buttons
-            String dashboardTitle = callerFragment.getString(R.string.title_dashboard);
-            String qrTitle = callerFragment.getString(R.string.title_qr_scanner);
-            String profileTitle = callerFragment.getString(R.string.title_profile);
-
-            // if the button clicked is the same as the currently displayed fragment, do nothing!
-            if (Objects.equals(caller, pressedTitle)) {
-                Log.i("NavMenu", "ignoring press on " + item.getTitle() + " because it was already active");
-                return false;
-            }
-
-
-            // create fragment of the type selected
-            Fragment fragment1;
-            if (Objects.equals(pressedTitle, dashboardTitle)) {
-                fragment1 = new EventDashboardFragment();
-            } else if (Objects.equals(pressedTitle, profileTitle)) {
-                if (testUser != null && testUser.isAdmin()){
-                    fragment1 = new AdminDashboardFragment();
-                }
-                else{
-                    fragment1 = new ProfileFragment();
-                }
-
-            } else {
-                // default to qr code home view
-                fragment1 = new HomeViewFragment();
-            }
-
-            // actually display the fragment, using a tag with the same name as the button that was pressed
-            this.transitionFragment(fragment1, pressedTitle);
-
             return true;
         });
     }
 
+    // TODO: remove test event stuff before finishing project
     public String getNewEventID() {
         newEventID = UUID.randomUUID().toString();
         return newEventID;
     }
 
+    // TODO: remove test event stuff before finishing project
     public void setTestEvent(Event event) {
         this.testEvent = event;
     }
 
+    // TODO: remove test event stuff before finishing project
     public Event getTestEvent() {
         if (this.testEvent == null) {
             setTestEvent(Event.createTestEvent(getNewEventID()));
@@ -139,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         user.put("exists", "LMFAO"); // Just a simple flag, you can add more user details here
         user.put("admin", true);
         user.put("check-ins", 0);
-        user.put("name", "Mickey Mouse");
+        user.put("name", "ERIC MAH");
         user.put("homepage", "https://disney.com");
         user.put("mobileNum", "123-456-7890");
         user.put("email", "");
@@ -153,21 +120,16 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
                 .addOnFailureListener(e -> {
                     // Potential failure stuff
                 });
-
     }
 
     //user constructor
     private void existingUser(String userId) {
-        testUser = new User(userId);
+        user = new User(userId);
         Toast.makeText(getApplicationContext(), "Welcome Back!", Toast.LENGTH_SHORT).show();
     }
 
     public User getUser() {
-        return testUser;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
+        return user;
     }
 
     /**
@@ -206,6 +168,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
             } else {
                 userId = UUID.randomUUID().toString();
                 prefs.edit().putString(USER_ID_KEY, userId).apply();
+                user = new User(userId);
                 newUser(userId);
             }
         }
@@ -221,7 +184,46 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         }
         else
         {
-            testUser = user;
+            this.user = user;
+            Log.i("NavMenu", "navButtonPressed: title is " + item.getTitle());
+            String pressedTitle = (String) item.getTitle();
+
+            // gets the fragment currently loaded into the content view
+            Fragment callerFragment = getSupportFragmentManager().findFragmentById(R.id.content);
+            // gets the tag supplied to the fragment when displayed, which is the title of the button that opens it
+            String caller = callerFragment.getTag();
+
+            // gets the string resources for all the buttons
+            String dashboardTitle = callerFragment.getString(R.string.title_dashboard);
+            String qrTitle = callerFragment.getString(R.string.title_qr_scanner);
+            String profileTitle = callerFragment.getString(R.string.title_profile);
+
+            // if the button clicked is the same as the currently displayed fragment, do nothing!
+            if (Objects.equals(caller, pressedTitle)) {
+                Log.i("NavMenu", "ignoring press on " + item.getTitle() + " because it was already active");
+//                return false;
+            }
+
+            // create fragment of the type selected
+            Fragment fragment1;
+            if (Objects.equals(pressedTitle, dashboardTitle)) {
+                fragment1 = new EventDashboardFragment();
+            } else if (Objects.equals(pressedTitle, profileTitle)) {
+                if (this.user != null && this.user.isAdmin()){
+                    fragment1 = new AdminDashboardFragment();
+                }
+                else{
+                    fragment1 = new ProfileFragment();
+                }
+
+            } else {
+                // default to qr code home view
+                fragment1 = new HomeViewFragment();
+            }
+
+            // actually display the fragment, using a tag with the same name as the button that was pressed
+            this.transitionFragment(fragment1, pressedTitle);
+
         }
 
     }
