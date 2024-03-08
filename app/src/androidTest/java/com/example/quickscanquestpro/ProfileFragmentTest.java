@@ -77,6 +77,7 @@ public class ProfileFragmentTest {
 
         // Navigate to the profile section
         onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.button_profile)).perform(click());
 
         // Prepare the result data for the gallery intent
         Intent resultData = new Intent();
@@ -94,7 +95,7 @@ public class ProfileFragmentTest {
 
         // Wait for the image to be uploaded and processed
         try {
-            Thread.sleep(2000); // Adjust based on your app's upload time
+            Thread.sleep(10000); // Adjust based on your app's upload time
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -115,6 +116,7 @@ public class ProfileFragmentTest {
 
 
         onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.button_profile)).perform(click());
 
         Intent resultData = new Intent();
         Uri imageUri = Uri.parse("android.resource://com.example.quickscanquestpro/drawable/testprofilepicture");
@@ -128,7 +130,7 @@ public class ProfileFragmentTest {
         intended(hasAction(Intent.ACTION_PICK));
 
         try {
-            Thread.sleep(2000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
