@@ -23,12 +23,17 @@ public class User {
     private boolean geolocation;
 
     private String homepage;
+
     private boolean admin;
 
+    private String profilePictureUrl;
+
+    private String profilePicturePath;
+
     /*
-    * user preference
-    * text file storing ID
-    * */
+     * user preference
+     * text file storing ID
+     * */
 
     /**
      * User Constructor
@@ -38,6 +43,15 @@ public class User {
         this.userId = userId;
     }
 
+    public void updateUser(String name, int checkins, String mobileNum, String email, String homepage, boolean geolocation, String profilePictureUrl) {
+        this.name = name;
+        this.checkins = checkins;
+        this.mobileNum = mobileNum;
+        this.email = email;
+        this.homepage = homepage;
+        this.geolocation = geolocation;
+        this.profilePictureUrl = profilePictureUrl;
+    }
 
     public String getName() {
         return name;
@@ -57,7 +71,7 @@ public class User {
 
     // return name and checkins as a string
     public String toString() {
-        return "NAME: "+ name + "  " + "CHECK-INS: " +checkins;
+        return "NAME: " + name + "  " + "CHECK-INS: " + checkins;
     }
 
     public String getMobileNum() {
@@ -83,6 +97,7 @@ public class User {
     public void setGeolocation(boolean geolocation) {
         this.geolocation = geolocation;
     }
+
     public boolean isAdmin() {
         return admin;
     }
@@ -99,9 +114,30 @@ public class User {
         return userId;
     }
 
+    public String getProfilePictureUrl() {
+        return profilePictureUrl;
+    }
+
+
+    public void setProfilePictureUrl(String profilePictureUrl) {
+        this.profilePictureUrl = profilePictureUrl;
+    }
+
+    public void setProfilePicturePath(String profilePicturePath) {
+        this.profilePicturePath = profilePicturePath;
+    }
+
+    public String getProfilePicturePath() {
+        return profilePicturePath;
+    }
+
+
     public void setAdmin(boolean admin){
         this.admin = admin;
     }
 
 
 }
+
+
+
