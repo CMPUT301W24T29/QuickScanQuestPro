@@ -36,7 +36,7 @@ public class AdminManageProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         databaseService = new DatabaseService(); // Initialize your DatabaseService
-        ListView profileListView = view.findViewById(R.id.profile_dashboard_list);
+        ListView profileListView = view.findViewById(R.id.admin_profile_dashboard_list);
 
         view.findViewById(R.id.back_button).setOnClickListener(v -> {
             if (getFragmentManager() != null) {

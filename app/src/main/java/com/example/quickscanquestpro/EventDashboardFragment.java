@@ -71,13 +71,13 @@ public class EventDashboardFragment extends Fragment {
             mainActivity.transitionFragment(new EventDetailsFragment(mainActivity.getTestEvent()), "EventDetailsFragment");
         });
 
-        eventList.setOnItemLongClickListener((parent, view12, position, id) -> {
-            EventAttendeeFragment fragment = new EventAttendeeFragment();
-            FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.events_list_title));
-            fragmentTransaction.commit();
-            return true;
-        });
+//        eventList.setOnItemLongClickListener((parent, view12, position, id) -> {
+//            EventAttendeeFragment fragment = new EventAttendeeFragment();
+//            FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
+//            fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.events_list_title));
+//            fragmentTransaction.commit();
+//            return true;
+//        });
     }
 
 }

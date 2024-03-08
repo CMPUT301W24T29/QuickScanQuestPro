@@ -94,7 +94,7 @@ public class ProfileFragmentTest {
 
         // Wait for the image to be uploaded and processed
         try {
-            Thread.sleep(4000); // Adjust based on your app's upload time
+            Thread.sleep(7000); // Adjust based on your app's upload time
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
