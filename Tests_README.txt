@@ -7,6 +7,8 @@ How to set up for the QRCode Scanner:
 
 	•	Go to your user directory -> Library -> Android- > sdk -> emulator -> resources
 	•	Save the checkin and promo QR pictures in this directory
+	•	https://raw.githubusercontent.com/CMPUT301W24T29/QuickScanQuestPro/main/checkinQR.png
+	•	https://raw.githubusercontent.com/CMPUT301W24T29/QuickScanQuestPro/main/promoQR.png
 	•	Name the QR code to be displayed promoQR.png or checkinQR.png
 
 For testing with promo QR code:
