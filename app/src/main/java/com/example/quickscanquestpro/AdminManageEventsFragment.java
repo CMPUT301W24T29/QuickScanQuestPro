@@ -17,6 +17,9 @@ import com.example.quickscanquestpro.Event;
 
 import java.util.List;
 
+/**
+    this  fragment is used to show the admin the events that are currently in the database
+ */
 public class AdminManageEventsFragment extends Fragment {
 
     private DatabaseService databaseService;
