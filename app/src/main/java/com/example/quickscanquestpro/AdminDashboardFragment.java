@@ -109,7 +109,7 @@ public class AdminDashboardFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 // Navigate to ProfileFragment
-                ProfileFragment profileFragment = ProfileFragment.newInstance("param1", "param2"); // Use correct parameters or modify newInstance accordingly
+                ProfileFragment profileFragment = new ProfileFragment();// Use correct parameters or modify newInstance accordingly
 
                 if (isAdded() && getActivity() != null) {
                     getActivity().getSupportFragmentManager().beginTransaction()
