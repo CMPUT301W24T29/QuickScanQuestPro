@@ -200,6 +200,8 @@ public class MainActivityTest {
 
     public static void createNewEvent() {
 
+        onView(isRoot()).perform(waitFor(5000));
+        onView(withId(R.id.navigation_dashboard)).perform(click());
         onView(isRoot()).perform(waitFor(1000));
         onView(withId(R.id.navigation_dashboard)).perform(click());
         onView(isRoot()).perform(waitFor(1000));
