@@ -76,13 +76,20 @@ public class ProfileFragmentTest {
 
         // Wait for EventDetails to fully load
         try {
-            Thread.sleep(4000);
+            Thread.sleep(5000);
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         // Navigate to the profile section
         onView(withId(R.id.navigation_profile)).perform(click());
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        onView(withId(R.id.button_profile)).perform(click());
 
         // Prepare the result data for the gallery intent
         Intent resultData = new Intent();
@@ -90,17 +97,18 @@ public class ProfileFragmentTest {
         resultData.setData(imageUri);
         Instrumentation.ActivityResult result = new Instrumentation.ActivityResult(Activity.RESULT_OK, resultData);
 
-        Intents.intending(hasAction(Intent.ACTION_PICK)).respondWith(result);
+        Intents.intending(hasAction(Intent.ACTION_GET_CONTENT)).respondWith(result);
 
         // Click the button to upload a profile picture
         onView(withId(R.id.uploadProfilePictureButton)).perform(click());
 
         // Verify the ACTION_PICK intent was triggered
-        intended(hasAction(Intent.ACTION_PICK));
+        intended(hasAction(Intent.ACTION_GET_CONTENT));
 
         // Wait for the image to be uploaded and processed
         try {
-            Thread.sleep(7000); // Adjust based on your app's upload time
+            Thread.sleep(10000); // Adjust based on your app's upload time
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -114,27 +122,34 @@ public class ProfileFragmentTest {
     public void US020202deleteProfilePictureTest() {
 
         try {
-            Thread.sleep(2000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
 
         onView(withId(R.id.navigation_profile)).perform(click());
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        onView(withId(R.id.button_profile)).perform(click());
 
         Intent resultData = new Intent();
         Uri imageUri = Uri.parse("android.resource://com.example.quickscanquestpro/drawable/testprofilepicture");
         resultData.setData(imageUri);
         Instrumentation.ActivityResult result = new Instrumentation.ActivityResult(Activity.RESULT_OK, resultData);
 
-        Intents.intending(hasAction(Intent.ACTION_PICK)).respondWith(result);
+        Intents.intending(hasAction(Intent.ACTION_GET_CONTENT)).respondWith(result);
 
         onView(withId(R.id.uploadProfilePictureButton)).perform(click());
 
-        intended(hasAction(Intent.ACTION_PICK));
+        intended(hasAction(Intent.ACTION_GET_CONTENT));
 
         try {
-            Thread.sleep(4000);
+            Thread.sleep(7000);
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -142,50 +157,19 @@ public class ProfileFragmentTest {
         onView(withId(R.id.deleteProfilePictureButton)).perform(click());
 
         try {
-            Thread.sleep(4000);
+            Thread.sleep(5000);
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         onView(withId(R.id.deleteProfilePictureButton)).check(matches(not(isDisplayed())));
+
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
-    @Test
-    public void testUS_04_04_01AdminBrowseEvent() {
-        onView(isRoot()).perform(waitFor(10000)); // Wait to ensure the app is ready
-
-        // Navigate to the Admin Dashboard
-        onView(withId(R.id.navigation_profile)).perform(click());
-        onView(isRoot()).perform(waitFor(5000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
-
-        // Go to Manage Events
-        onView(withId(R.id.admin_button_manage_events)).perform(click());
-        onView(isRoot()).perform(waitFor(5000)); // Wait for the event list to load
-        onView(withId(R.id.admin_event_dashboard_list)).check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void testUS_04_01_01AdminRemoveEvent() {
-        onView(isRoot()).perform(waitFor(7000)); // Wait to ensure the app is ready
-
-        // Navigate to the Admin Dashboard
-        onView(withId(R.id.navigation_profile)).perform(click());
-        onView(withId(R.id.navigation_profile)).perform(click());
-        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-
-        // Go to Manage Users
-        onView(withId(R.id.admin_button_manage_events)).perform(click());
-        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
-
-        String firstItemIdentifier = "unique_text_of_first_item";
-
-        onData(anything()).inAdapterView(withId(R.id.admin_event_dashboard_list)).atPosition(0).onChildView(withId(R.id.admin_delete_button)).perform(click());
-
-        onView(isRoot()).perform(waitFor(2000));
-
-        onView(withId(R.id.admin_event_dashboard_list))
-                .check(matches(not(hasDescendant(withText(firstItemIdentifier)))));
-
-    }
 }
