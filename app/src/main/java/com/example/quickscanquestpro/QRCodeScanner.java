@@ -160,7 +160,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
                 String eventId = rawValue.substring(1);
 
                 // request the event from the database service / check if this event exists in the database
-                databaseService.getEvent(eventId, this, mainActivity);
+                databaseService.getEvent(eventId, this);
                 // this returns now because when the data is retrieved or fails to retrieve the data, it will call onEventLoaded
                 // to continue the processing
                 return;

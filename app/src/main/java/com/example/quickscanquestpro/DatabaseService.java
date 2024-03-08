@@ -88,10 +88,13 @@ public class DatabaseService {
         void onEventsLoaded(List<Event> events);
     }
 
+    /**
+     * Callback interface for uploading event photos to Firebase Storage.
+     * This interface is used to notify the caller of the progress, success, or failure of the upload operation.
+     */
     public interface OnEventPhotoUpload {
         void onSuccess(String imageUrl, String imagePath);
         void onFailure(Exception e);
-        void onProgress(double progress);
     }
 
     public DatabaseService() {
@@ -256,6 +259,7 @@ public class DatabaseService {
                 event.setEndTime(LocalTime.parse(queryDocumentSnapshot.getString("End-time")));
 
                 // This is supposed to load event picture, but unsure if it works properly
+                // To be implemented later
                 /*String eventPictureUrl = queryDocumentSnapshot.getString("eventPictureUrl");
                 if (eventPictureUrl != null) {
                     Glide.with(mainActivity)
@@ -398,15 +402,17 @@ public class DatabaseService {
         eventsRef.document(event.getId()).delete();
     }
 
+    /**
+     * Uploads an event photo to Firebase Storage and updates the event's document in Firestore.
+     * @param fileUri The URI of the file to upload. Must not be null.
+     * @param event The event to which the photo belongs. This object is updated with the new photo URL and path upon successful upload.
+     * @param callback An instance of {@link OnEventPhotoUpload}, which will be called with the success, or failure of the upload operation.
+     */
     public void uploadEventPhoto(Uri fileUri, Event event, OnEventPhotoUpload callback) {
         String refPath = "eventPictures/" + UUID.randomUUID().toString();
         StorageReference ref = storage.getReference().child(refPath);
 
         ref.putFile(fileUri)
-                .addOnProgressListener(taskSnapshot -> {
-                    double progressPercentage = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-                    callback.onProgress(progressPercentage);
-                })
                 .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(uri -> {
                     String imageUrl = uri.toString();
                     // Update Firestore document for this user

@@ -86,13 +86,13 @@ public class UploadEventPhotoTest extends MainActivityTest{
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        onView(isRoot()).perform(waitFor(2000));
+        onView(isRoot()).perform(waitFor(1000));
 
         onView(withId(R.id.create_Event_Fragment_Scrollview)).perform(ViewActions.swipeUp());
 
         // Confirm creation of event
         onView(withId(R.id.create_event_confirm_button)).perform(click());
-        onView(isRoot()).perform(waitFor(2000));
+        onView(isRoot()).perform(waitFor(1000));
 
         // Check if the image is displayed in the event details
         onData(is(instanceOf(String.class))).inAdapterView(withId(R.id.event_dashboard_list)).atPosition(0).perform(click());

@@ -264,7 +264,7 @@ public class EventDetailsFragment extends Fragment {
     /**
      * This method uploads an image to the database. It takes a URI of the image file and uploads the image
      * to the database.
-     * @param file
+     * @param file A URI of the image file to be uploaded
      */
     private void uploadImage(Uri file) {
         databaseService.uploadEventPhoto(file, event, new DatabaseService.OnEventPhotoUpload() {
@@ -278,10 +278,6 @@ public class EventDetailsFragment extends Fragment {
                 Log.d(TAG, "onFailure: " + e.getMessage());
             }
 
-            @Override
-            public void onProgress(double progress) {
-                Log.d(TAG, "onProgress: " + progress);
-            }
         });
     }
 }
