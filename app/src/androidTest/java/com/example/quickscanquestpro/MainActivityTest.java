@@ -107,6 +107,14 @@ public class MainActivityTest {
     public void testUS02_02_03ChangeInfo() {
         onView(isRoot()).perform(waitFor(7000));
         onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
+
+        // Go to Manage Users
+        onView(withId(R.id.button_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
+
         for (int i = 0; i < 20; i++) {
             onView(withId(R.id.fullNameInput)).perform(click()).perform(pressKey(KeyEvent.KEYCODE_DEL));
         }
@@ -122,6 +130,13 @@ public class MainActivityTest {
 
         onView(withId(R.id.navigation_dashboard)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
+
+        // Go to Manage Users
+        onView(withId(R.id.button_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
 
         onView(withText("John Doe")).check(matches(isDisplayed()));
     }
@@ -166,6 +181,7 @@ public class MainActivityTest {
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
 
         // Go to Manage Users
         onView(withId(R.id.admin_button_manage_users)).perform(click());
@@ -190,6 +206,7 @@ public class MainActivityTest {
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
 
         // Go to Manage Users
         onView(withId(R.id.admin_button_manage_users)).perform(click());
