@@ -7,6 +7,7 @@ import static androidx.test.espresso.action.ViewActions.pressKey;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.intended;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
@@ -20,6 +21,13 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.Instrumentation;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Environment;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.DatePicker;
@@ -45,6 +53,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.File;
 import java.util.Map;
 
 @RunWith(AndroidJUnit4.class)
@@ -137,18 +146,40 @@ public class MainActivityTest {
 
     @Test
     public void testUS01_04_01UploadEventPicture() {
+        // Prepare the result data for the gallery intent
+        Intents.init();
+
+        // Assuming you've copied pork_ribs.jpg to external storage
+        File imageFile = new File(Environment.getExternalStorageDirectory(), "pork_ribs.jpg");
+        Uri imageUri = Uri.fromFile(imageFile);
+
+        Intent resultData = new Intent();
+        resultData.setData(imageUri);
+
+        Instrumentation.ActivityResult result = new Instrumentation.ActivityResult(Activity.RESULT_OK, resultData);
+
         createNewEvent();
 
-        onView(withId(R.id.create_event_confirm_button)).perform(click());
-        onView(isRoot()).perform(waitFor(1000));
-
+        // Perform click to trigger image upload
         onView(withId(R.id.banner_upload_button)).perform(click());
 
+        // Mock the gallery picker intent
+        Intents.intending(hasAction(Intent.ACTION_PICK)).respondWith(result);
 
+        // Perform click again to simulate selecting an image
+        onView(withId(R.id.banner_upload_button)).perform(click());
 
-        onData(is(instanceOf(String.class))).inAdapterView(withId(R.id.event_dashboard_list)).atPosition(0).perform(click());
-        onView(isRoot()).perform(waitFor(1000));
+        // Wait for any asynchronous operations to finish
+        try {
+            Thread.sleep(2000); // It's better to use IdlingResource for synchronization
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // After the image is picked, the ImageView with ID profilePicturePlaceholder should display the image
+        onView(withId(R.id.create_event_confirm_button)).perform(click());
     }
+
 
 
     public static ViewAction waitFor(long delay) {
@@ -174,6 +205,7 @@ public class MainActivityTest {
         onView(isRoot()).perform(waitFor(1000));
         onView(withId(R.id.navigation_dashboard)).perform(click());
         onView(isRoot()).perform(waitFor(1000));
+        onView(withId(R.id.navigation_dashboard)).perform(click());
 
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
 
@@ -192,4 +224,5 @@ public class MainActivityTest {
         setTime(R.id.text_event_end_time, 19, 36);
         Espresso.closeSoftKeyboard();
     }
+
 }
