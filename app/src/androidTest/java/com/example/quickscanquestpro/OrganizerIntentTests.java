@@ -11,26 +11,37 @@ import static androidx.test.espresso.intent.matcher.IntentMatchers.hasExtra;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
+import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.allOf;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
 import android.net.Uri;
+import android.view.View;
+import android.widget.DatePicker;
+import android.widget.TimePicker;
 
 import androidx.test.espresso.Espresso;
+import androidx.test.espresso.UiController;
+import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.action.ViewActions;
+import androidx.test.espresso.contrib.PickerActions;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
+import androidx.test.rule.GrantPermissionRule;
 
 import com.google.firebase.auth.FirebaseAuth;
 
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,7 +52,10 @@ import java.util.UUID;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
-public class OrganizerIntentTests extends MainActivityTest{
+public class OrganizerIntentTests {
+
+    @Rule
+    public GrantPermissionRule permissionCamera = GrantPermissionRule.grant(Manifest.permission.CAMERA);
 
     @Rule
     public ActivityScenarioRule<MainActivity> mActivityScenarioRule =
@@ -176,6 +190,37 @@ public class OrganizerIntentTests extends MainActivityTest{
 
         // Verify the chooser intent was triggered
         intended(hasAction(Intent.ACTION_CHOOSER));
+    }
+
+    public static void setDate(int datePickerLaunchViewId, int year, int monthOfYear, int dayOfMonth) {
+        onView(withId(datePickerLaunchViewId)).perform(click());
+        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(year, monthOfYear, dayOfMonth));
+        onView(withId(android.R.id.button1)).perform(click());
+    }
+
+    public static void setTime(int timePickerLaunchViewId, int hour, int minute) {
+        onView(withId(timePickerLaunchViewId)).perform(click());
+        onView(withClassName(Matchers.equalTo(TimePicker.class.getName()))).perform(PickerActions.setTime(hour, minute));
+        onView(withId(android.R.id.button1)).perform(click());
+    }
+
+    public static ViewAction waitFor(long delay) {
+        return new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return isRoot();
+            }
+
+            @Override
+            public String getDescription() {
+                return "wait for " + delay + "milliseconds";
+            }
+
+            @Override
+            public void perform(UiController uiController, View view) {
+                uiController.loopMainThreadForAtLeast(delay);
+            }
+        };
     }
 
 }

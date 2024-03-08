@@ -228,67 +228,6 @@ public class MainActivityTest {
 
     }
 
-    @Test
-    public void testUS01_06_01ShareEventQR() {
-        Intent resultData = new Intent();
-        Instrumentation.ActivityResult result = new Instrumentation.ActivityResult(Activity.RESULT_OK, resultData);
-
-        onView(isRoot()).perform(waitFor(2000));
-        onView(withId(R.id.navigation_dashboard)).perform(click());
-        onView(isRoot()).perform(waitFor(2000));
-        onView(withId(R.id.navigation_dashboard)).perform(click());
-        onView(isRoot()).perform(waitFor(2000));
-        onView(withId(R.id.navigation_dashboard)).perform(click());
-
-        onView(withId(R.id.event_dashboard_create_button)).perform(click());
-
-        String eventTitle = UUID.randomUUID().toString();
-        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText(eventTitle));
-        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
-        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
-        Espresso.closeSoftKeyboard();
-
-        setDate(R.id.text_event_start_date, 2024, 8, 18);
-        Espresso.closeSoftKeyboard();
-        setDate(R.id.text_event_end_date, 2024, 8, 19);
-        Espresso.closeSoftKeyboard();
-
-        setTime(R.id.text_event_start_time, 12, 30);
-        Espresso.closeSoftKeyboard();
-        setTime(R.id.text_event_end_time, 19, 36);
-        Espresso.closeSoftKeyboard();
-
-        onView(withId(R.id.create_event_confirm_button)).perform(click());
-        onView(isRoot()).perform(waitFor(1000));
-
-        onView(withId(R.id.navigation_profile)).perform(click());
-        onView(withId(R.id.admin_button_manage_events)).perform(click());
-        onView(isRoot()).perform(waitFor(2000));
-
-        while (true) {
-            onView(isRoot()).perform(waitFor(3000));
-            try {
-                onView(allOf(withText(eventTitle), isDescendantOfA(withId(R.id.admin_event_dashboard_list))))
-                        .perform(click());
-                break;
-            } catch (Exception e) {
-                onView(withId(R.id.admin_event_dashboard_list)).perform(ViewActions.swipeUp());
-            }
-        }
-
-        onView(isRoot()).perform(waitFor(4000));
-
-        onView(withId(R.id.share_event_button)).perform(click());
-        onView(isRoot()).perform(waitFor(2000));
-
-        Intents.intending(hasAction(Intent.ACTION_SEND)).respondWith(result);
-
-        onView(withId(R.id.share_promo_button)).perform(click());
-
-        intended(hasAction(equalTo(Intent.ACTION_SEND)));
-
-    }
-
     public static ViewAction waitFor(long delay) {
         return new ViewAction() {
             @Override
