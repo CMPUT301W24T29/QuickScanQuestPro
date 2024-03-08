@@ -70,13 +70,18 @@ public class ProfileFragmentTest {
 
         // Wait for EventDetails to fully load
         try {
-            Thread.sleep(2000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         // Navigate to the profile section
         onView(withId(R.id.navigation_profile)).perform(click());
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         onView(withId(R.id.button_profile)).perform(click());
 
         // Prepare the result data for the gallery intent
@@ -109,13 +114,18 @@ public class ProfileFragmentTest {
     public void US020202deleteProfilePictureTest() {
 
         try {
-            Thread.sleep(2000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
 
         onView(withId(R.id.navigation_profile)).perform(click());
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         onView(withId(R.id.button_profile)).perform(click());
 
         Intent resultData = new Intent();
@@ -130,7 +140,7 @@ public class ProfileFragmentTest {
         intended(hasAction(Intent.ACTION_PICK));
 
         try {
-            Thread.sleep(5000);
+            Thread.sleep(7000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -138,11 +148,17 @@ public class ProfileFragmentTest {
         onView(withId(R.id.deleteProfilePictureButton)).perform(click());
 
         try {
-            Thread.sleep(2000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         onView(withId(R.id.deleteProfilePictureButton)).check(matches(not(isDisplayed())));
+
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
