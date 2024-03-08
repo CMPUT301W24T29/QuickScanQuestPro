@@ -3,24 +3,29 @@ package com.example.quickscanquestpro;
 import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.pressKey;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
+import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 import static androidx.test.espresso.matcher.ViewMatchers.withSubstring;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.anything;
+import static org.junit.Assert.assertEquals;
 
 import android.Manifest;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.DatePicker;
+import android.widget.ListView;
 import android.widget.TimePicker;
 
 import androidx.test.espresso.Espresso;
@@ -28,8 +33,6 @@ import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.contrib.PickerActions;
-import androidx.test.espresso.intent.Intents;
-import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
@@ -37,7 +40,6 @@ import androidx.test.rule.GrantPermissionRule;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -89,6 +91,35 @@ public class MainActivityTest {
         onView(withId(R.id.event_title)).check(matches(isDisplayed()));
     }
 
+    @Test
+    public void testUS02_06_01NoLogin(){
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+    }
+
+    @Test
+    public void testUS02_02_03ChangeInfo(){
+        onView(isRoot()).perform(waitFor(7000));
+        onView(withId(R.id.navigation_profile)).perform(click());
+        for(int i=0; i<20;i++) {
+            onView(withId(R.id.fullNameInput)).perform(click()).perform(pressKey(KeyEvent.KEYCODE_DEL));
+        }
+        Espresso.closeSoftKeyboard();
+        onView(withId(R.id.fullNameInput)).perform(ViewActions.typeText("John Doe"));
+        Espresso.closeSoftKeyboard();
+        onView(withId(R.id.homepageInput)).perform(ViewActions.typeText("www.johndoe.com"));
+        Espresso.closeSoftKeyboard();
+        onView(withId(R.id.mobileNumberInput)).perform(ViewActions.typeText("123-456-7890"));
+        Espresso.closeSoftKeyboard();
+        onView(withId(R.id.emailAddressInput)).perform(ViewActions.typeText("john@example.com"));
+        Espresso.closeSoftKeyboard();
+
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(withId(R.id.navigation_profile)).perform(click());
+
+        onView(withText("John Doe")).check(matches(isDisplayed()));
+    }
+
     public static void setDate(int datePickerLaunchViewId, int year, int monthOfYear, int dayOfMonth) {
         onView(withId(datePickerLaunchViewId)).perform(click());
         onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(year, monthOfYear, dayOfMonth));
@@ -116,5 +147,4 @@ public class MainActivityTest {
             }
         };
     }
-
 }

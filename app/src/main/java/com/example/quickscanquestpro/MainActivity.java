@@ -28,8 +28,7 @@ import java.util.UUID;
  * Holds Navbar and starts with displaying QR scanner, used by other fragments to display in.
  */
 public class MainActivity extends AppCompatActivity implements DatabaseService.OnUsersDataLoaded, DatabaseService.OnUserDataLoaded {
-
-    private QRCodeScanner qrCodeScanner;
+    // TODO: remove test event stuff before finishing project
     private String newEventID = UUID.randomUUID().toString();
     private Event testEvent;
 
@@ -37,12 +36,10 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     private static final String USER_ID_KEY = "userId";
 
     private User user;
-
-    private User testUser;
+    private String userId;
+    private List<User> usersList;
 
     private DatabaseService databaseService = new DatabaseService();
-
-    private String userId;
 
     private Boolean foundUser = false;
 
@@ -50,7 +47,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
     private SharedPreferences prefs;
 
-    private List<User> usersList;
     private NavigationBarView navBarView;
 
     private MenuItem item;
@@ -83,15 +79,18 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         });
     }
 
+    // TODO: remove test event stuff before finishing project
     public String getNewEventID() {
         newEventID = UUID.randomUUID().toString();
         return newEventID;
     }
 
+    // TODO: remove test event stuff before finishing project
     public void setTestEvent(Event event) {
         this.testEvent = event;
     }
 
+    // TODO: remove test event stuff before finishing project
     public Event getTestEvent() {
         if (this.testEvent == null) {
             setTestEvent(Event.createTestEvent(getNewEventID()));
@@ -99,6 +98,11 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         return this.testEvent;
     }
 
+    /**
+     * This method called to create a new user if it doesn't already exist in the database
+     * It takes the User Id and creates a new user in the database
+     * @param userId a String representing the User ID
+     */
     private void newUser(String userId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -122,16 +126,28 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
                 });
     }
 
-    //user constructor
+    /**
+     * This method calls the constructor to create a the user object if the user already
+     * exists in the database.
+     * @param userId A string for userId to pass to the constructor
+     */
     private void existingUser(String userId) {
-        testUser = new User(userId);
+        user = new User(userId);
         Toast.makeText(getApplicationContext(), "Welcome Back!", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Getter for the User object
+     * @return User Object
+     */
     public User getUser() {
-        return testUser;
+        return user;
     }
 
+    /**
+     * Setter for the User object
+     * @param user Takes a user object to set
+     */
     public void setUser(User user) {
         this.user = user;
     }
@@ -172,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
             } else {
                 userId = UUID.randomUUID().toString();
                 prefs.edit().putString(USER_ID_KEY, userId).apply();
-                testUser = new User(userId);
+                user = new User(userId);
                 newUser(userId);
             }
         }
@@ -188,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         }
         else
         {
-            testUser = user;
+            this.user = user;
             Log.i("NavMenu", "navButtonPressed: title is " + item.getTitle());
             String pressedTitle = (String) item.getTitle();
 
@@ -213,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
             if (Objects.equals(pressedTitle, dashboardTitle)) {
                 fragment1 = new EventDashboardFragment();
             } else if (Objects.equals(pressedTitle, profileTitle)) {
-                if (testUser != null && testUser.isAdmin()){
+                if (this.user != null && this.user.isAdmin()){
                     fragment1 = new AdminDashboardFragment();
                 }
                 else{

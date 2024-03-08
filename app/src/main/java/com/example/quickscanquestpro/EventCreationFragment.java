@@ -66,7 +66,6 @@ public class EventCreationFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MainActivity mainActivity = (MainActivity) this.getActivity();
         this.creatingEvent = new Event(UUID.randomUUID().toString());
     }
 
@@ -148,7 +147,6 @@ public class EventCreationFragment extends Fragment {
         validateEntryFields();
     }
 
-
     /**
      * Initiates the display of the ReuseQRFragment with specified content.
      * This method creates a bundle to carry the type of content (reuseType) to be displayed in the ReuseQRFragment.
@@ -171,7 +169,6 @@ public class EventCreationFragment extends Fragment {
         transaction.addToBackStack(null);
         transaction.commit();
     }
-
 
     private TextWatcher getTextWatcher(final EditText editText) {
         return new TextWatcher() {

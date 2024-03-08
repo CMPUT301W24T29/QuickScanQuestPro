@@ -3,19 +3,21 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="8dp">
+    android:padding="8dp"
+    android:clickable="true">
 
     <TextView
         android:id="@+id/profile_name_text_view"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:textSize="16sp"
         android:textColor="@color/black"
-        android:gravity="center_vertical" />
+        android:gravity="center_vertical"
+        android:clickable="true"/>
 
     <Button
-        android:id="@+id/delete_profile_button"
+        android:id="@+id/admin_delete_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Delete" />

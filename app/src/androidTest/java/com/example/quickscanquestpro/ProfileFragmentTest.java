@@ -71,6 +71,7 @@ public class ProfileFragmentTest {
         // Wait for EventDetails to fully load
         try {
             Thread.sleep(5000);
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -101,6 +102,7 @@ public class ProfileFragmentTest {
         // Wait for the image to be uploaded and processed
         try {
             Thread.sleep(10000); // Adjust based on your app's upload time
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -141,6 +143,7 @@ public class ProfileFragmentTest {
 
         try {
             Thread.sleep(7000);
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -149,6 +152,7 @@ public class ProfileFragmentTest {
 
         try {
             Thread.sleep(5000);
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

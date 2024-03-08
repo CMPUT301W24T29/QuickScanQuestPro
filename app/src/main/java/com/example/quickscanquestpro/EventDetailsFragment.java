@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.provider.MediaStore;
@@ -140,7 +141,9 @@ public class EventDetailsFragment extends Fragment {
 
         // Set an on click listener for the back button
         backButton.setOnClickListener(v -> {
-            mainActivity.transitionFragment(new EventDashboardFragment(), "EventDashboardFragment");
+            // if the user is organiser, i want to go back to admin event dashboard
+            FragmentManager fragmentManager = getParentFragmentManager();
+            fragmentManager.popBackStack();
         });
 
         /* Enable these buttons if the user is the organizer of the event
