@@ -16,7 +16,13 @@ import android.widget.Toast;
 import com.example.quickscanquestpro.Event;
 
 import java.util.List;
+/**
+    this  fragment is used to show the admin the events that are currently in the database
+ */
 
+/**
+    this  fragment is used to show the admin the events that are currently in the database
+ */
 public class AdminManageEventsFragment extends Fragment {
 
     private DatabaseService databaseService;
@@ -35,6 +41,10 @@ public class AdminManageEventsFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_admin_events_manage, container, false);
     }
 
+    /**
+     * onViewCreated is called immediately after onCreateView.
+     * This is where you should do your view setup.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -42,13 +52,15 @@ public class AdminManageEventsFragment extends Fragment {
         ListView eventListView = view.findViewById(R.id.admin_event_dashboard_list);
 
         view.findViewById(R.id.back_button).setOnClickListener(v -> {
-            if (getFragmentManager() != null) {
-                getFragmentManager().popBackStack();
-            }
+            // i want to go back to the prev fragment
+            FragmentManager fragmentManager = getParentFragmentManager();
+            fragmentManager.popBackStack();
         });
 
-        // Fetch users from Firestore and update the ListView
-        databaseService.listenForEventUpdates(new DatabaseService.onEventsDataLoaded() {
+        /**
+         * Fetch events from Firestore and update the ListView
+         */
+        databaseService.listenForEventUpdates(new DatabaseService.OnEventsDataLoaded() {
             @Override
             public void onEventsLoaded(List<Event> events) {
                 if (getActivity() == null) {

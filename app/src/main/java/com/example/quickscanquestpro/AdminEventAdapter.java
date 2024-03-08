@@ -17,18 +17,34 @@ import androidx.fragment.app.FragmentTransaction;
 
 import java.util.List;
 
+/**
+ * Adapter for the AdminEventFragment
+ */
 public class AdminEventAdapter extends ArrayAdapter<Event> implements DatabaseService.OnEventDataLoaded{
     private int resourceLayout;
     private Context mContext;
 
     private DatabaseService databaseService = new DatabaseService();
 
+    /**
+     * Constructor for the AdminEventAdapter
+     * @param context
+     * @param resource
+     * @param items
+     */
     public AdminEventAdapter(@NonNull Context context, int resource, List<Event> items) {
         super(context, resource, items);
         this.resourceLayout = resource;
         this.mContext = context;
     }
 
+    /**
+     * Method to get the view
+     * @param position
+     * @param convertView
+     * @param parent
+     * @return
+     */
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -39,6 +55,7 @@ public class AdminEventAdapter extends ArrayAdapter<Event> implements DatabaseSe
         Event event = getItem(position);
         if (event != null) {
             TextView textView = convertView.findViewById(R.id.profile_name_text_view);
+            // Set the title of the event
             textView.setText(event.getTitle());
             Button deleteButton = convertView.findViewById(R.id.admin_delete_button);
             deleteButton.setOnClickListener(view -> {
@@ -54,6 +71,10 @@ public class AdminEventAdapter extends ArrayAdapter<Event> implements DatabaseSe
         return convertView;
     }
 
+    /**
+     * Method to handle the event loaded
+     * @param event
+     */
     @Override
     public void onEventLoaded(Event event) {
         if (event != null) {

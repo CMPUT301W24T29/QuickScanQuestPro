@@ -1,33 +1,34 @@
 package com.example.quickscanquestpro;
 
-import static androidx.camera.core.impl.utils.ContextUtil.getApplicationContext;
-
-import android.graphics.Bitmap;
+import android.net.Uri;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FieldPath;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
-import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
+/**
+ * A class to handle all database operations
+ */
 public class DatabaseService {
 
     private static final String EVENTS_COLLECTION = "events";
@@ -36,8 +37,13 @@ public class DatabaseService {
     private CollectionReference eventsRef;
     private CollectionReference usersRef;
 
+    private FirebaseStorage storage = FirebaseStorage.getInstance();
+
     private ArrayList<Event> events = new ArrayList<Event>();
 
+    /**
+     * Interfaces to handle the callback when the data is loaded
+     */
     public interface OnUsersDataLoaded {
         void onUsersLoaded(List<User> users);
     }
@@ -46,15 +52,30 @@ public class DatabaseService {
         void onUserLoaded(User user);
     }
 
+    public interface OnProfilePictureUpload {
+        void onSuccess(String imageUrl, String imagePath);
+        void onFailure(Exception e);
+        void onProgress(double progress);
+    }
+
+    public interface OnProfilePictureDelete {
+        void onSuccess();
+        void onFailure(Exception e);
+    }
+
+
+
     public interface OnEventDataLoaded {
         void onEventLoaded(Event event);
     }
 
-    public interface onEventsDataLoaded {
+    public interface OnEventsDataLoaded {
         void onEventsLoaded(List<Event> events);
-
     }
 
+    /**
+     * Constructor to initialize the Firestore database
+     */
     public DatabaseService() {
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
@@ -63,6 +84,31 @@ public class DatabaseService {
         usersRef = db.collection(USERS_COLLECTION);
     }
 
+    /**
+     * Updates the check-ins array in a specified event document with a new check-in entry.
+     * @param eventId The ID of the event to update.
+     * @param userId The ID of the user checking in.
+     * @param location The location associated with the check-in.
+     */
+    public void recordCheckIn(String eventId, String userId, String location) {
+        DocumentReference eventRef = db.collection("events").document(eventId);
+
+        // Create a new check-in map to append to the 'checkins' array
+        Map<String, Object> checkInMap = new HashMap<>();
+        checkInMap.put("userId", userId);
+        checkInMap.put("location", location);
+        checkInMap.put("timestamp", new Date());
+
+        // Append the new check-in map to the 'checkins' array field
+        eventRef.update("checkins", FieldValue.arrayUnion(checkInMap))
+                .addOnSuccessListener(aVoid -> Log.d("DatabaseService", "New check-in added successfully."))
+                .addOnFailureListener(e -> Log.e("DatabaseService", "Error adding new check-in.", e));
+    }
+
+    /**
+     * Method to add an event to the Firestore database
+     * @param event The event to be added
+     */
     public void addEvent(Event event) {
         // Create a Map to store the data
         Map<String, Object> eventData = new HashMap<>();
@@ -84,6 +130,11 @@ public class DatabaseService {
         eventsRef.document(String.valueOf(event.getId())).set(combinedData, SetOptions.merge());
     }
 
+    /**
+     * Method to add a user to the Firestore database
+     * @param user The user to be added
+     */
+
     public void addUser(User user) {
         // Create a Map to store the data
         Map<String, Object> userData = new HashMap<>();
@@ -93,12 +144,20 @@ public class DatabaseService {
         userData.put("phone", user.getMobileNum());
         userData.put("geoLocation", user.isGeolocation());
         userData.put("check-ins", user.getCheckins());
+        userData.put("Homepage", user.getHomepage());
+        userData.put("profilePictureUrl", user.getProfilePictureUrl());
+        userData.put("profilePicturePath", user.getProfilePicturePath());
 
         // Add the user data to the Firestore "users" collection with the incremented document number
         usersRef.document(String.valueOf(user.getUserId())).set(userData, SetOptions.merge());
     }
 
-    public void getEvents(onEventsDataLoaded callback) {
+    /**
+     * Method to get all events from the Firestore database
+     * @param callback The callback to be called when the data is loaded
+     */
+
+    public void getEvents(OnEventsDataLoaded callback) {
         eventsRef.get().addOnSuccessListener(queryDocumentSnapshots -> {
             List<Event> events = new ArrayList<>();
             for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
@@ -120,6 +179,11 @@ public class DatabaseService {
         }).addOnFailureListener(e -> callback.onEventsLoaded(null));
     }
 
+    /**
+     * Method to get all users from the Firestore database
+     * @param callback The callback to be called when the data is loaded
+     */
+
     public void getUsers(OnUsersDataLoaded callback) {
         usersRef.get().addOnSuccessListener(queryDocumentSnapshots -> {
             List<User> users = new ArrayList<>();
@@ -133,6 +197,7 @@ public class DatabaseService {
                 user.setName(document.getString("name"));
                 user.setEmail(document.getString("email"));
                 user.setMobileNum(document.getString("phone"));
+                user.setHomepage(document.getString("Homepage"));
 //                user.setGeolocation(document.getBoolean("geoLocation"));
 //                user.setCheckins(document.getLong("check-ins").intValue());
                 users.add(user);
@@ -141,6 +206,11 @@ public class DatabaseService {
         }).addOnFailureListener(e -> callback.onUsersLoaded(null));
     }
 
+    /**
+     * Method to get a specific user from the Firestore database
+     * @param userId The ID of the user to be fetched
+     * @param callback The callback to be called when the data is loaded
+     */
 
     public void getSpecificUserDetails(String userId, OnUserDataLoaded callback) {
         usersRef.document(userId).get().addOnSuccessListener(queryDocumentSnapshot -> {
@@ -155,6 +225,7 @@ public class DatabaseService {
             user.setName(queryDocumentSnapshot.getString("name"));
             user.setEmail(queryDocumentSnapshot.getString("email"));
             user.setMobileNum(queryDocumentSnapshot.getString("phone"));
+            user.setHomepage(queryDocumentSnapshot.getString("Homepage"));
             user.setAdmin(queryDocumentSnapshot.getBoolean("admin"));
 //            user.setGeolocation(queryDocumentSnapshot.getBoolean("geoLocation"));
 //            user.setCheckins(queryDocumentSnapshot.getLong("check-ins").intValue());
@@ -163,6 +234,11 @@ public class DatabaseService {
         }).addOnFailureListener(e -> callback.onUserLoaded(null));
     }
 
+    /**
+     * This will get a requested event from the Firestore database, then call a callback when the data is loaded into an event class
+     * @param eventId the id of the event to search for in the database
+     * @param callback the callback function in the class that called this, which will run when the data is loaded
+     */
     public void getEvent(String eventId, OnEventDataLoaded callback) {
         eventsRef.document(eventId).get().addOnSuccessListener(queryDocumentSnapshot -> {
                 if (!queryDocumentSnapshot.exists()) {
@@ -170,6 +246,7 @@ public class DatabaseService {
                     return;
                 }
 
+                // creating an event using its id will also create a QR code from the id it was given, which will always be the same
                 Event event = new Event(eventId);
 
                 // Set other fields as before
@@ -187,12 +264,72 @@ public class DatabaseService {
 
     }
 
+    /**
+     * Uploads a profile picture to Firebase Storage and updates the user's profile in Firestore.
+     * This method uploads the given image file to Firebase Storage under a unique path and,
+     * upon successful upload, retrieves the image's URL. It then updates the User object with
+     * this URL and the storage path, and finally updates the corresponding user document in Firestore.
+     *
+     * @param fileUri The URI of the file to upload. Must not be null.
+     * @param user The user whose profile picture is being uploaded. This object is updated with
+     *             the new profile picture URL and path upon successful upload.
+     * @param callback An instance of {@link OnProfilePictureUpload}, which will be called with the
+     *                 progress, success, or failure of the upload operation.
+     */
+    public void uploadProfilePicture(Uri fileUri, User user, OnProfilePictureUpload callback) {
+        String refPath = "profilePictures/" + UUID.randomUUID().toString();
+        StorageReference ref = storage.getReference().child(refPath);
 
-    public void deleteUser(String userId)
-    {
-        usersRef.document(userId).delete();
+        ref.putFile(fileUri)
+                .addOnProgressListener(taskSnapshot -> {
+                    double progressPercentage = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                    callback.onProgress(progressPercentage);
+                })
+                .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(uri -> {
+                    String imageUrl = uri.toString();
+                    // Update user with new profile picture URL and path
+                    user.setProfilePictureUrl(imageUrl);
+                    user.setProfilePicturePath(refPath);
+                    // Update Firestore document for this user
+                    addUser(user);
+                    callback.onSuccess(imageUrl, refPath);
+                }))
+                .addOnFailureListener(callback::onFailure);
     }
 
+
+    /**
+     * Deletes the user's profile picture from Firebase Storage and updates the user's profile in Firestore.
+     *
+     * This method deletes the profile picture currently associated with the user from Firebase Storage.
+     * Upon successful deletion, it clears the profile picture URL and path stored in the User object,
+     * then updates the user's document in Firestore to reflect these changes.
+     *
+     * @param user The user whose profile picture is to be deleted. This object's profile picture URL
+     *             and path are cleared upon successful deletion.
+     * @param callback An instance of {@link OnProfilePictureDelete}, which will be called on the
+     *                 success or failure of the deletion operation.
+     */
+    public void deleteProfilePicture(User user, OnProfilePictureDelete callback) {
+        if (user.getProfilePicturePath() != null && !user.getProfilePicturePath().isEmpty()) {
+            StorageReference picRef = storage.getReference().child(user.getProfilePicturePath());
+            picRef.delete()
+                    .addOnSuccessListener(aVoid -> {
+                        // Clear profile picture URL and path
+                        user.setProfilePictureUrl(null);
+                        user.setProfilePicturePath(null);
+                        // Update Firestore document for this user
+                        addUser(user);
+                        callback.onSuccess();
+                    })
+                    .addOnFailureListener(callback::onFailure);
+        }
+    }
+
+    /**
+     * Method to listen for updates to the users collection in the Firestore database
+     * @param callback The callback to be called when the data is loaded
+     */
     public void listenForUsersUpdates(OnUsersDataLoaded callback) {
         usersRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -215,7 +352,12 @@ public class DatabaseService {
         });
     }
 
-    public void listenForEventUpdates(onEventsDataLoaded callback) {
+    /**
+     * Method to listen for updates to the events collection in the Firestore database
+     * @param callback The callback to be called when the data is loaded
+     */
+
+    public void listenForEventUpdates(OnEventsDataLoaded callback) {
         eventsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
@@ -237,9 +379,18 @@ public class DatabaseService {
         });
     }
 
+    /**
+     * Method to delete a user in the Firestore database
+     * @param user The user to be updated
+     */
     public void deleteUser(User user){
         usersRef.document(user.getUserId()).delete();
     }
+
+    /**
+     * Method to delete an event in the Firestore database
+     * @param event The event to be updated
+     */
 
     public void deleteEvent(Event event){
         eventsRef.document(event.getId()).delete();
