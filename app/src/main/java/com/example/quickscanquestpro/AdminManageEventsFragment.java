@@ -16,6 +16,9 @@ import android.widget.Toast;
 import com.example.quickscanquestpro.Event;
 
 import java.util.List;
+/**
+    this  fragment is used to show the admin the events that are currently in the database
+ */
 
 public class AdminManageEventsFragment extends Fragment {
 
@@ -42,9 +45,9 @@ public class AdminManageEventsFragment extends Fragment {
         ListView eventListView = view.findViewById(R.id.admin_event_dashboard_list);
 
         view.findViewById(R.id.back_button).setOnClickListener(v -> {
-            if (getFragmentManager() != null) {
-                getFragmentManager().popBackStack();
-            }
+            // i want to go back to the prev fragment
+            FragmentManager fragmentManager = getParentFragmentManager();
+            fragmentManager.popBackStack();
         });
 
         /**

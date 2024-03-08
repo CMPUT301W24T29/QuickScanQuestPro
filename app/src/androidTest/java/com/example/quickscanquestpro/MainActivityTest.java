@@ -6,6 +6,7 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
+import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
@@ -15,10 +16,13 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.anything;
+import static org.junit.Assert.assertEquals;
 
 import android.Manifest;
 import android.view.View;
 import android.widget.DatePicker;
+import android.widget.ListView;
 import android.widget.TimePicker;
 
 import androidx.test.espresso.Espresso;
@@ -113,13 +117,68 @@ public class MainActivityTest {
     }
 
     @Test
-    public static void testUS_04_01_01AdminRemoveEvent(){
-        // i want to navigate to admin event dashboard and delete the first event
-        onView(withId(R.id.navigation_profile)).perform(click());
-        onView(withId(R.id.admin_button_manage_events)).perform(click());
+    public void testUS_04_02_01AdminRemoveProfile() {
+        final int[] numberOfProfilesBefore = new int[1];
+        final int[] numberOfProfilesAfter = new int[1];
 
+        // Navigate to the Admin Dashboard
+        onView(withId(R.id.bottom_navigation)).perform(click());
+        onView(withId(R.id.admin_button_manage_users)).perform(click());
 
+        // Wait for the profile list to load
+        onView(isRoot()).perform(waitFor(5000));
 
+        // Capture number of profiles before deletion
+        onView(withId(R.id.admin_profile_dashboard_list)).perform(new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return isAssignableFrom(ListView.class);
+            }
+
+            @Override
+            public String getDescription() {
+                return "Get number of profiles before deletion";
+            }
+
+            @Override
+            public void perform(UiController uiController, View view) {
+                ListView listView = (ListView) view;
+                numberOfProfilesBefore[0] = listView.getAdapter().getCount();
+            }
+        });
+
+        // Click on the first profile in the list
+        onData(anything()).inAdapterView(withId(R.id.admin_profile_dashboard_list)).atPosition(0).perform(click());
+
+        // Click on the delete button
+        onView(withId(R.id.admin_delete_button)).perform(click());
+
+        // Confirm the deletion
+        onView(withText("YES")).perform(click());
+
+        // Wait for the deletion to process and the list to refresh
+        onView(isRoot()).perform(waitFor(5000));
+
+        // Capture number of profiles after deletion
+        onView(withId(R.id.admin_profile_dashboard_list)).perform(new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return isAssignableFrom(ListView.class);
+            }
+
+            @Override
+            public String getDescription() {
+                return "Get number of profiles after deletion";
+            }
+
+            @Override
+            public void perform(UiController uiController, View view) {
+                ListView listView = (ListView) view;
+                numberOfProfilesAfter[0] = listView.getAdapter().getCount();
+            }
+        });
+
+        // Assert that the number of profiles after deletion is one less than before
+        assertEquals(numberOfProfilesBefore[0] - 1, numberOfProfilesAfter[0]);
     }
-
 }
