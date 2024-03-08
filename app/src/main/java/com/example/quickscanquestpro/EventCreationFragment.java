@@ -75,7 +75,6 @@ public class EventCreationFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MainActivity mainActivity = (MainActivity) this.getActivity();
         this.creatingEvent = new Event(UUID.randomUUID().toString());
     }
 
@@ -160,7 +159,6 @@ public class EventCreationFragment extends Fragment {
         // must do this at the end, last thing before showing user the fields
         validateEntryFields();
     }
-
 
     /**
      * Initiates the display of the ReuseQRFragment with specified content.

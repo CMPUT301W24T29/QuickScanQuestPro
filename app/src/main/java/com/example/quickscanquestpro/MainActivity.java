@@ -98,13 +98,18 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         return this.testEvent;
     }
 
+    /**
+     * This method called to create a new user if it doesn't already exist in the database
+     * It takes the User Id and creates a new user in the database
+     * @param userId a String representing the User ID
+     */
     private void newUser(String userId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // Create a new user with a Map or a custom object
         Map<String, Object> user = new HashMap<>();
         user.put("exists", "LMFAO"); // Just a simple flag, you can add more user details here
-        user.put("admin", true);
+        user.put("admin", false);
         user.put("check-ins", 0);
         user.put("name", "ERIC MAH");
         user.put("homepage", "https://disney.com");
@@ -122,14 +127,30 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
                 });
     }
 
-    //user constructor
+    /**
+     * This method calls the constructor to create a the user object if the user already
+     * exists in the database.
+     * @param userId A string for userId to pass to the constructor
+     */
     private void existingUser(String userId) {
         user = new User(userId);
         Toast.makeText(getApplicationContext(), "Welcome Back!", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Getter for the User object
+     * @return User Object
+     */
     public User getUser() {
         return user;
+    }
+
+    /**
+     * Setter for the User object
+     * @param user Takes a user object to set
+     */
+    public void setUser(User user) {
+        this.user = user;
     }
 
     /**

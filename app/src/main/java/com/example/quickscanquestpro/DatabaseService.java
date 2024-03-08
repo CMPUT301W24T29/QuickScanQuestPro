@@ -12,6 +12,8 @@ import androidx.annotation.Nullable;
 
 import androidx.annotation.NonNull;
 
+import androidx.annotation.NonNull;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.target.SimpleTarget;
@@ -20,10 +22,13 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldPath;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.OnProgressListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.OnProgressListener;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -36,6 +41,7 @@ import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,6 +100,27 @@ public class DatabaseService {
         // Reference to the "Events" collection
         eventsRef = db.collection(EVENTS_COLLECTION);
         usersRef = db.collection(USERS_COLLECTION);
+    }
+
+    /**
+     * Updates the check-ins array in a specified event document with a new check-in entry.
+     * @param eventId The ID of the event to update.
+     * @param userId The ID of the user checking in.
+     * @param location The location associated with the check-in.
+     */
+    public void recordCheckIn(String eventId, String userId, String location) {
+        DocumentReference eventRef = db.collection("events").document(eventId);
+
+        // Create a new check-in map to append to the 'checkins' array
+        Map<String, Object> checkInMap = new HashMap<>();
+        checkInMap.put("userId", userId);
+        checkInMap.put("location", location);
+        checkInMap.put("timestamp", new Date());
+
+        // Append the new check-in map to the 'checkins' array field
+        eventRef.update("checkins", FieldValue.arrayUnion(checkInMap))
+                .addOnSuccessListener(aVoid -> Log.d("DatabaseService", "New check-in added successfully."))
+                .addOnFailureListener(e -> Log.e("DatabaseService", "Error adding new check-in.", e));
     }
 
     public void addEvent(Event event, String url, String path) {
@@ -171,6 +198,7 @@ public class DatabaseService {
                 user.setName(document.getString("name"));
                 user.setEmail(document.getString("email"));
                 user.setMobileNum(document.getString("phone"));
+                user.setHomepage(document.getString("Homepage"));
 //                user.setGeolocation(document.getBoolean("geoLocation"));
 //                user.setCheckins(document.getLong("check-ins").intValue());
                 users.add(user);
@@ -193,6 +221,7 @@ public class DatabaseService {
             user.setName(queryDocumentSnapshot.getString("name"));
             user.setEmail(queryDocumentSnapshot.getString("email"));
             user.setMobileNum(queryDocumentSnapshot.getString("phone"));
+            user.setHomepage(queryDocumentSnapshot.getString("Homepage"));
             user.setAdmin(queryDocumentSnapshot.getBoolean("admin"));
 //            user.setGeolocation(queryDocumentSnapshot.getBoolean("geoLocation"));
 //            user.setCheckins(queryDocumentSnapshot.getLong("check-ins").intValue());
@@ -206,7 +235,7 @@ public class DatabaseService {
      * @param eventId the id of the event to search for in the database
      * @param callback the callback function in the class that called this, which will run when the data is loaded
      */
-    public void getEvent(String eventId, OnEventDataLoaded callback, MainActivity mainActivity) {
+    public void getEvent(String eventId, OnEventDataLoaded callback) {
         eventsRef.document(eventId).get().addOnSuccessListener(queryDocumentSnapshot -> {
                 if (!queryDocumentSnapshot.exists()) {
                     callback.onEventLoaded(null);
@@ -246,64 +275,6 @@ public class DatabaseService {
                 callback.onEventLoaded(event);
         }).addOnFailureListener(e -> callback.onEventLoaded(null));
 
-    }
-
-
-    public void deleteUser(String userId)
-    {
-        usersRef.document(userId).delete();
-    }
-
-    public void listenForUsersUpdates(OnUsersDataLoaded callback) {
-        usersRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w("DatabaseService", "Listen failed.", e);
-                    return;
-                }
-
-                List<User> userList = new ArrayList<>();
-                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                    String userId = doc.getId();
-                    User user = new User(userId);
-                    // Assuming you have a method in User class to set the name directly from Firestore document
-                    user.setName(doc.getString("name")); // Ensure field name matches your Firestore structure
-                    userList.add(user);
-                }
-                callback.onUsersLoaded(userList);
-            }
-        });
-    }
-
-    public void listenForEventUpdates(onEventsDataLoaded callback) {
-        eventsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w("DatabaseService", "Listen failed.", e);
-                    return;
-                }
-
-                List<Event> eventList = new ArrayList<>();
-                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                    String eventId = doc.getId();
-                    Event event = new Event(eventId);
-                    // Assuming you have a method in User class to set the name directly from Firestore document
-                    event.setTitle(doc.getString("title")); // Ensure field name matches your Firestore structure
-                    eventList.add(event);
-                }
-                callback.onEventsLoaded(eventList);
-            }
-        });
-    }
-
-    public void deleteUser(User user){
-        usersRef.document(user.getUserId()).delete();
-    }
-
-    public void deleteEvent(Event event){
-        eventsRef.document(event.getId()).delete();
     }
 
     /**
@@ -366,7 +337,68 @@ public class DatabaseService {
                     .addOnFailureListener(callback::onFailure);
         }
     }
-   public void uploadEventPhoto(Uri fileUri, Event event, OnEventPhotoUpload callback) {
+
+
+
+
+    public void deleteUser(String userId)
+    {
+        usersRef.document(userId).delete();
+    }
+
+    public void listenForUsersUpdates(OnUsersDataLoaded callback) {
+        usersRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w("DatabaseService", "Listen failed.", e);
+                    return;
+                }
+
+                List<User> userList = new ArrayList<>();
+                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                    String userId = doc.getId();
+                    User user = new User(userId);
+                    // Assuming you have a method in User class to set the name directly from Firestore document
+                    user.setName(doc.getString("name")); // Ensure field name matches your Firestore structure
+                    userList.add(user);
+                }
+                callback.onUsersLoaded(userList);
+            }
+        });
+    }
+
+    public void listenForEventUpdates(onEventsDataLoaded callback) {
+        eventsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w("DatabaseService", "Listen failed.", e);
+                    return;
+                }
+
+                List<Event> eventList = new ArrayList<>();
+                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                    String eventId = doc.getId();
+                    Event event = new Event(eventId);
+                    // Assuming you have a method in User class to set the name directly from Firestore document
+                    event.setTitle(doc.getString("title")); // Ensure field name matches your Firestore structure
+                    eventList.add(event);
+                }
+                callback.onEventsLoaded(eventList);
+            }
+        });
+    }
+
+    public void deleteUser(User user){
+        usersRef.document(user.getUserId()).delete();
+    }
+
+    public void deleteEvent(Event event){
+        eventsRef.document(event.getId()).delete();
+    }
+
+    public void uploadEventPhoto(Uri fileUri, Event event, OnEventPhotoUpload callback) {
         String refPath = "eventPictures/" + UUID.randomUUID().toString();
         StorageReference ref = storage.getReference().child(refPath);
 
@@ -384,3 +416,5 @@ public class DatabaseService {
                 .addOnFailureListener(callback::onFailure);
     }
 }
+
+

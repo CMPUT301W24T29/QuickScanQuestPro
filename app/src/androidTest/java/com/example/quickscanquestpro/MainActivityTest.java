@@ -3,11 +3,9 @@ package com.example.quickscanquestpro;
 import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.pressKey;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.intended;
-import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
@@ -143,44 +141,6 @@ public class MainActivityTest {
         onView(withId(R.id.event_date)).check(matches(withText("2024-07-18 at 12:30 until 2024-07-19 at 19:36")));
 
     }
-
-    @Test
-    public void testUS01_04_01UploadEventPicture() {
-        // Prepare the result data for the gallery intent
-        Intents.init();
-
-        // Assuming you've copied pork_ribs.jpg to external storage
-        File imageFile = new File(Environment.getExternalStorageDirectory(), "pork_ribs.jpg");
-        Uri imageUri = Uri.fromFile(imageFile);
-
-        Intent resultData = new Intent();
-        resultData.setData(imageUri);
-
-        Instrumentation.ActivityResult result = new Instrumentation.ActivityResult(Activity.RESULT_OK, resultData);
-
-        createNewEvent();
-
-        // Perform click to trigger image upload
-        onView(withId(R.id.banner_upload_button)).perform(click());
-
-        // Mock the gallery picker intent
-        Intents.intending(hasAction(Intent.ACTION_PICK)).respondWith(result);
-
-        // Perform click again to simulate selecting an image
-        onView(withId(R.id.banner_upload_button)).perform(click());
-
-        // Wait for any asynchronous operations to finish
-        try {
-            Thread.sleep(2000); // It's better to use IdlingResource for synchronization
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        // After the image is picked, the ImageView with ID profilePicturePlaceholder should display the image
-        onView(withId(R.id.create_event_confirm_button)).perform(click());
-    }
-
-
 
     public static ViewAction waitFor(long delay) {
         return new ViewAction() {
