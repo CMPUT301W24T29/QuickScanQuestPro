@@ -52,12 +52,19 @@ public class DatabaseService {
         void onUserLoaded(User user);
     }
 
+    /**
+     * Interfaces to handle uploading profile picture
+     */
     public interface OnProfilePictureUpload {
         void onSuccess(String imageUrl, String imagePath);
         void onFailure(Exception e);
         void onProgress(double progress);
     }
 
+
+    /**
+     * Interfaces to handle deleting profile picture
+     */
     public interface OnProfilePictureDelete {
         void onSuccess();
         void onFailure(Exception e);
