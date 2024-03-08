@@ -90,6 +90,7 @@ public class MainActivityTest {
     @Test
     public void testUS02_06_01NoLogin(){
         onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.navigation_dashboard)).perform(click());
     }
 
     @Test
