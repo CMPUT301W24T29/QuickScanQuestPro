@@ -13,8 +13,12 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 /**
- * this fragment shows the admin dashboard with all the options the admin has
+ * A {@link Fragment} subclass that represents the admin dashboard within the application.
+ * It provides the admin user with various management options including managing events,
+ * managing user profiles, and viewing profiles. This serves as a central hub for
+ * administrative tasks.
  */
+
 public class AdminDashboardFragment extends Fragment {
 
     public AdminDashboardFragment() {
@@ -27,6 +31,15 @@ public class AdminDashboardFragment extends Fragment {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_admin_dashboard, container, false);
     }
+
+    /**
+     * Sets up the interaction for all buttons within the fragment after the view is created.
+     * This includes setting click listeners for managing events, managing user profiles, and
+     * viewing profiles, providing navigation to the respective fragments for each action.
+     *
+     * @param view The View returned by onCreateView(LayoutInflater, ViewGroup, Bundle).
+     * @param savedInstanceState If non-null, the fragment is being re-constructed from a previous saved state.
+     */
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {

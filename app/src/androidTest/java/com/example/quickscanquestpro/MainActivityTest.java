@@ -6,6 +6,7 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.pressKey;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
@@ -19,17 +20,20 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.anything;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 
 import android.Manifest;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.DatePicker;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ListView;
 import android.widget.TimePicker;
 
+import androidx.annotation.IdRes;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
@@ -57,7 +61,7 @@ public class MainActivityTest {
     public ActivityScenarioRule<MainActivity> scenario = new ActivityScenarioRule<MainActivity>(MainActivity.class);
 
     @Test
-    public void testUS01_01_01CreateEventAndQR(){
+    public void testUS01_01_01CreateEventAndQR() {
         onView(withId(R.id.navigation_dashboard)).perform(click());
 
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
@@ -86,7 +90,7 @@ public class MainActivityTest {
     }
 
     @Test
-    public void testUS01_07_01ScanPromoQRDetails(){
+    public void testUS01_07_01ScanPromoQRDetails() {
         onView(isRoot()).perform(waitFor(7000));
         // the homescreen should appear, be granted camera privileges, scan the virtual QR inserted in %LocalAppData%\Android\Sdk\emulator\resources
         // and then finally transition to the event details page (of the test event with id 0)
@@ -94,16 +98,16 @@ public class MainActivityTest {
     }
 
     @Test
-    public void testUS02_06_01NoLogin(){
+    public void testUS02_06_01NoLogin() {
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_dashboard)).perform(click());
     }
 
     @Test
-    public void testUS02_02_03ChangeInfo(){
+    public void testUS02_02_03ChangeInfo() {
         onView(isRoot()).perform(waitFor(7000));
         onView(withId(R.id.navigation_profile)).perform(click());
-        for(int i=0; i<20;i++) {
+        for (int i = 0; i < 20; i++) {
             onView(withId(R.id.fullNameInput)).perform(click()).perform(pressKey(KeyEvent.KEYCODE_DEL));
         }
         Espresso.closeSoftKeyboard();
@@ -136,18 +140,61 @@ public class MainActivityTest {
 
     public static ViewAction waitFor(long delay) {
         return new ViewAction() {
-            @Override public Matcher<View> getConstraints() {
+            @Override
+            public Matcher<View> getConstraints() {
                 return isRoot();
             }
 
-            @Override public String getDescription() {
+            @Override
+            public String getDescription() {
                 return "wait for " + delay + "milliseconds";
             }
 
-            @Override public void perform(UiController uiController, View view) {
+            @Override
+            public void perform(UiController uiController, View view) {
                 uiController.loopMainThreadForAtLeast(delay);
             }
         };
+    }
+
+
+    @Test
+    public void testUS_04_02_01AdminRemoveProfile() {
+        onView(isRoot()).perform(waitFor(7000)); // Wait to ensure the app is ready
+
+        // Navigate to the Admin Dashboard
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+
+        // Go to Manage Users
+        onView(withId(R.id.admin_button_manage_users)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
+
+        String firstItemIdentifier = "unique_text_of_first_item";
+
+        onData(anything()).inAdapterView(withId(R.id.admin_profile_dashboard_list)).atPosition(0).onChildView(withId(R.id.admin_delete_button)).perform(click());
+
+        onView(isRoot()).perform(waitFor(2000));
+
+        onView(withId(R.id.admin_profile_dashboard_list))
+                .check(matches(not(hasDescendant(withText(firstItemIdentifier)))));
+
+    }
+
+    @Test
+    public void testUS_04_06_01AdminBrowseProfile () {
+        onView(isRoot()).perform(waitFor(5000)); // Wait to ensure the app is ready
+
+        // Navigate to the Admin Dashboard
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+
+        // Go to Manage Users
+        onView(withId(R.id.admin_button_manage_users)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
+        onView(withId(R.id.admin_profile_dashboard_list)).check(matches(isDisplayed()));
     }
 
     @Test
@@ -166,17 +213,18 @@ public class MainActivityTest {
     }
 
     @Test
-    public void testUS_04_01_01AdminRemoveEvent() {
+    public void testUS_04_05_01AdminRemoveEvent() {
         onView(isRoot()).perform(waitFor(7000)); // Wait to ensure the app is ready
 
         // Navigate to the Admin Dashboard
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
 
-        // Go to Manage Users
+        // Go to Manage Events
         onView(withId(R.id.admin_button_manage_events)).perform(click());
-        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
+        onView(isRoot()).perform(waitFor(2000)); // Wait for the event list to load
 
         String firstItemIdentifier = "unique_text_of_first_item";
 
@@ -186,6 +234,7 @@ public class MainActivityTest {
 
         onView(withId(R.id.admin_event_dashboard_list))
                 .check(matches(not(hasDescendant(withText(firstItemIdentifier)))));
-
     }
+
+
 }
