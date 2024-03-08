@@ -17,7 +17,7 @@
         android:clickable="true"/>
 
     <Button
-        android:id="@+id/delete_profile_button"
+        android:id="@+id/admin_delete_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Delete" />

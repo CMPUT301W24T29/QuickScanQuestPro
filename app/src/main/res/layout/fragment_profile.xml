@@ -18,7 +18,8 @@
         android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_arrow_back"
         android:contentDescription="@string/back"
-        android:layout_alignParentTop="true"/>
+        android:layout_alignParentTop="true"
+        android:clickable="true"/>
 
     <TextView
         android:id="@+id/editProfileTitle"

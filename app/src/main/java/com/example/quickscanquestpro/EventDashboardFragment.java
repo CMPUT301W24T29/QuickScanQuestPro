@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import androidx.camera.view.PreviewView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
@@ -68,16 +69,26 @@ public class EventDashboardFragment extends Fragment {
 
         // set the event list to open the event details fragment when an event is clicked
         eventList.setOnItemClickListener((parent, view1, position, id) -> {
-            mainActivity.transitionFragment(new EventDetailsFragment(mainActivity.getTestEvent()), "EventDetailsFragment");
+            EventDetailsFragment fragment = new EventDetailsFragment();
+            // Get the FragmentManager from the activity
+            FragmentManager fragmentManager = ((FragmentActivity) getContext()).getSupportFragmentManager();
+            // Start a new FragmentTransaction
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            // Replace the current fragment with the eventDetailsFragment
+            fragmentTransaction.replace(R.id.content, fragment);
+            // Add the transaction to the back stack (optional)
+            fragmentTransaction.addToBackStack(null);
+            // Commit the transaction
+            fragmentTransaction.commit();
         });
 
-        eventList.setOnItemLongClickListener((parent, view12, position, id) -> {
-            EventAttendeeFragment fragment = new EventAttendeeFragment();
-            FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.events_list_title));
-            fragmentTransaction.commit();
-            return true;
-        });
+//        eventList.setOnItemLongClickListener((parent, view12, position, id) -> {
+//            EventAttendeeFragment fragment = new EventAttendeeFragment();
+//            FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
+//            fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.events_list_title));
+//            fragmentTransaction.commit();
+//            return true;
+//        });
     }
 
 }

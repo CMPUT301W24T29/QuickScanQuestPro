@@ -70,13 +70,20 @@ public class ProfileFragmentTest {
 
         // Wait for EventDetails to fully load
         try {
-            Thread.sleep(4000);
+            Thread.sleep(5000);
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         // Navigate to the profile section
         onView(withId(R.id.navigation_profile)).perform(click());
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        onView(withId(R.id.button_profile)).perform(click());
 
         // Prepare the result data for the gallery intent
         Intent resultData = new Intent();
@@ -84,17 +91,18 @@ public class ProfileFragmentTest {
         resultData.setData(imageUri);
         Instrumentation.ActivityResult result = new Instrumentation.ActivityResult(Activity.RESULT_OK, resultData);
 
-        Intents.intending(hasAction(Intent.ACTION_PICK)).respondWith(result);
+        Intents.intending(hasAction(Intent.ACTION_GET_CONTENT)).respondWith(result);
 
         // Click the button to upload a profile picture
         onView(withId(R.id.uploadProfilePictureButton)).perform(click());
 
         // Verify the ACTION_PICK intent was triggered
-        intended(hasAction(Intent.ACTION_PICK));
+        intended(hasAction(Intent.ACTION_GET_CONTENT));
 
         // Wait for the image to be uploaded and processed
         try {
-            Thread.sleep(4000); // Adjust based on your app's upload time
+            Thread.sleep(10000); // Adjust based on your app's upload time
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -108,27 +116,34 @@ public class ProfileFragmentTest {
     public void US020202deleteProfilePictureTest() {
 
         try {
-            Thread.sleep(2000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
 
         onView(withId(R.id.navigation_profile)).perform(click());
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        onView(withId(R.id.button_profile)).perform(click());
 
         Intent resultData = new Intent();
         Uri imageUri = Uri.parse("android.resource://com.example.quickscanquestpro/drawable/testprofilepicture");
         resultData.setData(imageUri);
         Instrumentation.ActivityResult result = new Instrumentation.ActivityResult(Activity.RESULT_OK, resultData);
 
-        Intents.intending(hasAction(Intent.ACTION_PICK)).respondWith(result);
+        Intents.intending(hasAction(Intent.ACTION_GET_CONTENT)).respondWith(result);
 
         onView(withId(R.id.uploadProfilePictureButton)).perform(click());
 
-        intended(hasAction(Intent.ACTION_PICK));
+        intended(hasAction(Intent.ACTION_GET_CONTENT));
 
         try {
-            Thread.sleep(4000);
+            Thread.sleep(7000);
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -136,11 +151,18 @@ public class ProfileFragmentTest {
         onView(withId(R.id.deleteProfilePictureButton)).perform(click());
 
         try {
-            Thread.sleep(4000);
+            Thread.sleep(5000);
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         onView(withId(R.id.deleteProfilePictureButton)).check(matches(not(isDisplayed())));
+
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
