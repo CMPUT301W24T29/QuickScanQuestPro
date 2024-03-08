@@ -5,6 +5,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A class that represents a user of the application.
+ */
 public class User {
 
     private String userId;
