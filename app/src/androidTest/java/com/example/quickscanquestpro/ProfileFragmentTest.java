@@ -90,13 +90,13 @@ public class ProfileFragmentTest {
         resultData.setData(imageUri);
         Instrumentation.ActivityResult result = new Instrumentation.ActivityResult(Activity.RESULT_OK, resultData);
 
-        Intents.intending(hasAction(Intent.ACTION_PICK)).respondWith(result);
+        Intents.intending(hasAction(Intent.ACTION_GET_CONTENT)).respondWith(result);
 
         // Click the button to upload a profile picture
         onView(withId(R.id.uploadProfilePictureButton)).perform(click());
 
         // Verify the ACTION_PICK intent was triggered
-        intended(hasAction(Intent.ACTION_PICK));
+        intended(hasAction(Intent.ACTION_GET_CONTENT));
 
         // Wait for the image to be uploaded and processed
         try {
@@ -133,11 +133,11 @@ public class ProfileFragmentTest {
         resultData.setData(imageUri);
         Instrumentation.ActivityResult result = new Instrumentation.ActivityResult(Activity.RESULT_OK, resultData);
 
-        Intents.intending(hasAction(Intent.ACTION_PICK)).respondWith(result);
+        Intents.intending(hasAction(Intent.ACTION_GET_CONTENT)).respondWith(result);
 
         onView(withId(R.id.uploadProfilePictureButton)).perform(click());
 
-        intended(hasAction(Intent.ACTION_PICK));
+        intended(hasAction(Intent.ACTION_GET_CONTENT));
 
         try {
             Thread.sleep(7000);
