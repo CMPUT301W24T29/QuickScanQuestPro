@@ -1,5 +1,6 @@
 package com.example.quickscanquestpro;
 
+import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -7,10 +8,15 @@ import static androidx.test.espresso.intent.Intents.init;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.Intents.release;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
+import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static com.example.quickscanquestpro.MainActivityTest.waitFor;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.anything;
 
 import android.Manifest;
 import android.app.Activity;
@@ -142,5 +148,44 @@ public class ProfileFragmentTest {
         }
 
         onView(withId(R.id.deleteProfilePictureButton)).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    public void testUS_04_04_01AdminBrowseEvent() {
+        onView(isRoot()).perform(waitFor(10000)); // Wait to ensure the app is ready
+
+        // Navigate to the Admin Dashboard
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(5000)); // Wait for navigation
+        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
+
+        // Go to Manage Events
+        onView(withId(R.id.admin_button_manage_events)).perform(click());
+        onView(isRoot()).perform(waitFor(5000)); // Wait for the event list to load
+        onView(withId(R.id.admin_event_dashboard_list)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void testUS_04_01_01AdminRemoveEvent() {
+        onView(isRoot()).perform(waitFor(7000)); // Wait to ensure the app is ready
+
+        // Navigate to the Admin Dashboard
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+
+        // Go to Manage Users
+        onView(withId(R.id.admin_button_manage_events)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
+
+        String firstItemIdentifier = "unique_text_of_first_item";
+
+        onData(anything()).inAdapterView(withId(R.id.admin_event_dashboard_list)).atPosition(0).onChildView(withId(R.id.admin_delete_button)).perform(click());
+
+        onView(isRoot()).perform(waitFor(2000));
+
+        onView(withId(R.id.admin_event_dashboard_list))
+                .check(matches(not(hasDescendant(withText(firstItemIdentifier)))));
+
     }
 }
