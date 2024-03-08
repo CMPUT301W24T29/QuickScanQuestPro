@@ -124,6 +124,12 @@ public class MainActivityTest {
 
     @Test
     public void testUS02_02_03ChangeInfo(){
+        onView(withId(R.id.navigation_profile)).perform(click());
+
+        onView(withId(R.id.fullNameInput)).perform(ViewActions.typeText("John Doe"));
+        onView(withId(R.id.homepageInput)).perform(ViewActions.typeText("www.johndoe.com"));
+        onView(withId(R.id.mobileNumberInput)).perform(ViewActions.typeText("123-456-7890"));
+        onView(withId(R.id.emailAddressInput)).perform(ViewActions.typeText("john@example.com"));
 
     }
 
