@@ -114,7 +114,6 @@ public class EventDetailsFragment extends Fragment {
         FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
         Button uploadImageButton = view.findViewById(R.id.edit_banner_button);
 
-
         // If there is no event passed in, create a test event
         if (this.event == null) {
             event = Event.createTestEvent(mainActivity.getNewEventID());
@@ -154,12 +153,11 @@ public class EventDetailsFragment extends Fragment {
         });
 
         // Enable these buttons if the user is the organizer of the event
-        if (event.getOrganizerId() == mainActivity.getUser().getUserId()) {
+        if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
             uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
             // For now, option to change event banner is unavailable
             // eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
             setShareButton(shareButton);
-
         }
         // Hide these buttons if user is not the organizer
         else {
