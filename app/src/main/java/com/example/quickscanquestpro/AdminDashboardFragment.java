@@ -12,6 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+/**
+ * this fragment shows the admin dashboard with all the options the admin has
+ */
 public class AdminDashboardFragment extends Fragment {
 
     public AdminDashboardFragment() {
