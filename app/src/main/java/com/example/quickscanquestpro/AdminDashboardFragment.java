@@ -17,15 +17,8 @@ import androidx.fragment.app.Fragment;
  */
 public class AdminDashboardFragment extends Fragment {
 
-    //User user;
-
-
     public AdminDashboardFragment() {
         // Required empty public constructor
-    }
-
-    public static AdminDashboardFragment newInstance() {
-        return new AdminDashboardFragment();
     }
 
     @Override

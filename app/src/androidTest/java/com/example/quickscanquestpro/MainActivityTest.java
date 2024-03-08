@@ -3,6 +3,8 @@ package com.example.quickscanquestpro;
 import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.pressKey;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
@@ -20,6 +22,7 @@ import static org.hamcrest.Matchers.anything;
 import static org.junit.Assert.assertEquals;
 
 import android.Manifest;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.ListView;
@@ -88,6 +91,35 @@ public class MainActivityTest {
         onView(withId(R.id.event_title)).check(matches(isDisplayed()));
     }
 
+    @Test
+    public void testUS02_06_01NoLogin(){
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+    }
+
+    @Test
+    public void testUS02_02_03ChangeInfo(){
+        onView(isRoot()).perform(waitFor(7000));
+        onView(withId(R.id.navigation_profile)).perform(click());
+        for(int i=0; i<20;i++) {
+            onView(withId(R.id.fullNameInput)).perform(click()).perform(pressKey(KeyEvent.KEYCODE_DEL));
+        }
+        Espresso.closeSoftKeyboard();
+        onView(withId(R.id.fullNameInput)).perform(ViewActions.typeText("John Doe"));
+        Espresso.closeSoftKeyboard();
+        onView(withId(R.id.homepageInput)).perform(ViewActions.typeText("www.johndoe.com"));
+        Espresso.closeSoftKeyboard();
+        onView(withId(R.id.mobileNumberInput)).perform(ViewActions.typeText("123-456-7890"));
+        Espresso.closeSoftKeyboard();
+        onView(withId(R.id.emailAddressInput)).perform(ViewActions.typeText("john@example.com"));
+        Espresso.closeSoftKeyboard();
+
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(withId(R.id.navigation_profile)).perform(click());
+
+        onView(withText("John Doe")).check(matches(isDisplayed()));
+    }
+
     public static void setDate(int datePickerLaunchViewId, int year, int monthOfYear, int dayOfMonth) {
         onView(withId(datePickerLaunchViewId)).perform(click());
         onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(year, monthOfYear, dayOfMonth));
@@ -117,9 +149,16 @@ public class MainActivityTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testUS_04_02_01AdminRemoveProfile() {
         final int[] numberOfProfilesBefore = new int[1];
         final int[] numberOfProfilesAfter = new int[1];
+=======
+    public void testUS_04_01_01AdminRemoveEvent(){
+        // i want to navigate to admin event dashboard and delete the first event
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.admin_button_manage_events)).perform(click());
+>>>>>>> d4cb02dd84e948272bee409134dff21de771ef95
 
         // Navigate to the Admin Dashboard
         onView(withId(R.id.bottom_navigation)).perform(click());
@@ -181,4 +220,9 @@ public class MainActivityTest {
         // Assert that the number of profiles after deletion is one less than before
         assertEquals(numberOfProfilesBefore[0] - 1, numberOfProfilesAfter[0]);
     }
+<<<<<<< HEAD
 }
+=======
+
+}
+>>>>>>> d4cb02dd84e948272bee409134dff21de771ef95

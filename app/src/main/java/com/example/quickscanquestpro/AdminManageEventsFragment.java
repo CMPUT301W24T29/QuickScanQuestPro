@@ -20,12 +20,19 @@ import java.util.List;
     this  fragment is used to show the admin the events that are currently in the database
  */
 
+/**
+    this  fragment is used to show the admin the events that are currently in the database
+ */
 public class AdminManageEventsFragment extends Fragment {
 
     private DatabaseService databaseService;
 
     public AdminManageEventsFragment() {
         // Required empty public constructor
+    }
+
+    public static AdminManageEventsFragment newInstance() {
+        return new AdminManageEventsFragment();
     }
 
     @Override
@@ -53,7 +60,7 @@ public class AdminManageEventsFragment extends Fragment {
         /**
          * Fetch events from Firestore and update the ListView
          */
-        databaseService.listenForEventUpdates(new DatabaseService.onEventsDataLoaded() {
+        databaseService.listenForEventUpdates(new DatabaseService.OnEventsDataLoaded() {
             @Override
             public void onEventsLoaded(List<Event> events) {
                 if (getActivity() == null) {
