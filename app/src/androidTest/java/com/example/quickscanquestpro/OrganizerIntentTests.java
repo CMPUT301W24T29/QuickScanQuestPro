@@ -160,6 +160,7 @@ public class OrganizerIntentTests {
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
 
         String eventTitle = UUID.randomUUID().toString();
+        onView(isRoot()).perform(waitFor(4000));
         onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText(eventTitle), ViewActions.closeSoftKeyboard());
         onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"), ViewActions.closeSoftKeyboard());
         onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"), ViewActions.closeSoftKeyboard());

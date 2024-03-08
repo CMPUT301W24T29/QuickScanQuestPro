@@ -220,7 +220,7 @@ public class MainActivityTest {
         }
 
 
-
+        onView(isRoot()).perform(waitFor(4000));
         onView(withId(R.id.event_title)).check(matches(withText(eventTitle)));
         onView(withId(R.id.event_description)).check(matches(withText("My Event Description")));
         onView(withId(R.id.event_location)).check(matches(withText("My Event Location")));
