@@ -143,7 +143,7 @@ public class ProfileFragment extends Fragment {
 
 
         uploadProfilePictureButton.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK);
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("image/*");
             pickImageLauncher.launch(intent);
         });
