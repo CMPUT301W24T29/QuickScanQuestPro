@@ -234,6 +234,8 @@ public class DatabaseService {
             user.setMobileNum(queryDocumentSnapshot.getString("phone"));
             user.setHomepage(queryDocumentSnapshot.getString("Homepage"));
             user.setAdmin(queryDocumentSnapshot.getBoolean("admin"));
+            user.setProfilePictureUrl(queryDocumentSnapshot.getString("profilePictureUrl"));
+            user.setProfilePicturePath(queryDocumentSnapshot.getString("profilePicturePath"));
 //            user.setGeolocation(queryDocumentSnapshot.getBoolean("geoLocation"));
 //            user.setCheckins(queryDocumentSnapshot.getLong("check-ins").intValue());
 
