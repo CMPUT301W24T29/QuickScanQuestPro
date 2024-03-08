@@ -81,7 +81,6 @@ public class ProfileFragment extends Fragment {
 
         setupActivityResultLaunchers();
 
-
     }
 
     /**
@@ -149,12 +148,13 @@ public class ProfileFragment extends Fragment {
         EditText emailAddressInput = view.findViewById(R.id.emailAddressInput);
         SwitchMaterial geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
 
-        if(user == null)
+        //Get User from Main activity
+
+        if(user==null)
         {
             MainActivity mainActivity = (MainActivity) getActivity();
             user = mainActivity.getUser();
         }
-        //Get User from Main activity
 
         //Update information
         fullNameInput.addTextChangedListener(new TextWatcher() {
