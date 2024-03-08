@@ -1,5 +1,6 @@
 package com.example.quickscanquestpro;
 
+import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -7,10 +8,15 @@ import static androidx.test.espresso.intent.Intents.init;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.Intents.release;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
+import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static com.example.quickscanquestpro.MainActivityTest.waitFor;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.anything;
 
 import android.Manifest;
 import android.app.Activity;
@@ -165,4 +171,5 @@ public class ProfileFragmentTest {
             e.printStackTrace();
         }
     }
+
 }

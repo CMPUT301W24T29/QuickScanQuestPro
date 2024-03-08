@@ -14,6 +14,11 @@ import androidx.fragment.app.Fragment;
 
 import java.util.List;
 
+/**
+ * A {@link Fragment} subclass that provides functionality for managing user profiles within the application.
+ * It allows administrators to view and interact with a list of user profiles, offering options such as
+ * reviewing profile details, and potentially editing or deleting profiles directly from the list.
+ */
 public class AdminManageProfileFragment extends Fragment {
     private DatabaseService databaseService;
     // Assuming MainActivity is properly handling context for Toasts if needed.
@@ -21,17 +26,36 @@ public class AdminManageProfileFragment extends Fragment {
     public AdminManageProfileFragment() {
         // Required empty public constructor
     }
-
+    /**
+     * Creates a new instance of {@link AdminManageProfileFragment}.
+     * This can be used to create instances of this fragment with any required initialization parameters.
+     *
+     * @return A new instance of fragment AdminManageProfileFragment.
+     */
     public static AdminManageProfileFragment newInstance() {
         return new AdminManageProfileFragment();
     }
-
+    /**
+     * Inflates the fragment layout and initializes fragment view components.
+     *
+     * @param inflater           The LayoutInflater object that can be used to inflate any views in the fragment.
+     * @param container          If non-null, this is the parent view that the fragment's UI should be attached to.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here.
+     * @return Returns the View for the fragment's UI.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Initialize DatabaseService here or in onViewCreated depending on when you need it.
         return inflater.inflate(R.layout.fragment_admin_profile_manage, container, false);
     }
-
+    /**
+     * Once the view is created, this method is called to set up the ListView with the adapter
+     * and fetch the list of user profiles from the database. It also initializes the DatabaseService
+     * and sets a click listener on the back button to allow navigation back to the previous screen.
+     *
+     * @param view               The View returned by onCreateView method.
+     * @param savedInstanceState If non-null, the fragment is being re-constructed from a previous saved state.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -44,7 +68,6 @@ public class AdminManageProfileFragment extends Fragment {
             }
         });
 
-        // Fetch users from Firestore and update the ListView
         databaseService.listenForUsersUpdates(new DatabaseService.OnUsersDataLoaded() {
             @Override
             public void onUsersLoaded(List<User> users) {

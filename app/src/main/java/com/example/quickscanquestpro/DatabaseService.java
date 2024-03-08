@@ -71,12 +71,19 @@ public class DatabaseService {
         void onUserLoaded(User user);
     }
 
+    /**
+     * Interfaces to handle uploading profile picture
+     */
     public interface OnProfilePictureUpload {
         void onSuccess(String imageUrl, String imagePath);
         void onFailure(Exception e);
         void onProgress(double progress);
     }
 
+
+    /**
+     * Interfaces to handle deleting profile picture
+     */
     public interface OnProfilePictureDelete {
         void onSuccess();
         void onFailure(Exception e);
@@ -256,6 +263,8 @@ public class DatabaseService {
             user.setMobileNum(queryDocumentSnapshot.getString("phone"));
             user.setHomepage(queryDocumentSnapshot.getString("Homepage"));
             user.setAdmin(queryDocumentSnapshot.getBoolean("admin"));
+            user.setProfilePictureUrl(queryDocumentSnapshot.getString("profilePictureUrl"));
+            user.setProfilePicturePath(queryDocumentSnapshot.getString("profilePicturePath"));
 //            user.setGeolocation(queryDocumentSnapshot.getBoolean("geoLocation"));
 //            user.setCheckins(queryDocumentSnapshot.getLong("check-ins").intValue());
 
