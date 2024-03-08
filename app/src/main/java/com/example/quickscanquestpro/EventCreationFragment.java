@@ -1,8 +1,11 @@
 package com.example.quickscanquestpro;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -11,6 +14,7 @@ import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
@@ -26,13 +30,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.MultiFormatWriter;
 
 import org.w3c.dom.Text;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -132,7 +141,11 @@ public class EventCreationFragment extends Fragment {
                 String organizerId = mainActivity.getUser().getUserId();
                 creatingEvent.setOrganizerId(organizerId);
                 // create a new event in the database
-                databaseService.addEvent(creatingEvent);
+                databaseService.addEvent(creatingEvent, null, null);
+                // to later upload the event image to the database
+                if (creatingEvent.getEventBanner() != null) {
+                    uploadImage(getImageToShare(creatingEvent.getEventBanner()));
+                }
                 Log.d("EventCreationFragment", "Event created: " + creatingEvent.toString() );
                 // set active fragment to the event dashboard again
                 mainActivity.transitionFragment(new EventDashboardFragment(), this.getString(R.string.title_dashboard));
@@ -255,4 +268,52 @@ public class EventCreationFragment extends Fragment {
         
         return valid;
     }
+
+    /**
+     * This method uploads an image to the database. It takes a URI of the image file and uploads the image
+     * to the database.
+     * @param file The URI of the image file to be uploaded.
+     */
+    private void uploadImage(Uri file) {
+        databaseService.uploadEventPhoto(file, creatingEvent, new DatabaseService.OnEventPhotoUpload() {
+            @Override
+            public void onSuccess(String imageUrl, String imagePath) {
+                Log.d(TAG, "onSuccess: " + imageUrl);
+            }
+            @Override
+            public void onFailure(Exception e) {
+                Log.d(TAG, "onFailure: " + e.getMessage());
+            }
+
+        });
+    }
+
+    /**
+     * Creates a new file in the cache directory and writes the image to it. Returns the URI of the file.
+     * @param imageQR The image to be saved.
+     * @return The URI of the file.
+     */
+    public Uri getImageToShare(Bitmap imageQR) {
+
+        File folder = new File(getActivity().getCacheDir(), "images");
+        Uri uri = null;
+        try {
+            folder.mkdirs();
+            File file = new File(folder, "imageQR.jpg");
+
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+
+            imageQR.compress(Bitmap.CompressFormat.JPEG, 90, fileOutputStream);
+            fileOutputStream.flush();
+            fileOutputStream.close();
+
+            uri = FileProvider.getUriForFile(Objects.requireNonNull(requireActivity().getApplicationContext()), "com.example.quickscanquestpro" + ".provider", file);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this.getActivity(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+        return uri;
+    }
+
 }

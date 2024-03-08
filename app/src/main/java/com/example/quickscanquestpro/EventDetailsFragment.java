@@ -1,5 +1,7 @@
 package com.example.quickscanquestpro;
 
+import static android.content.ContentValues.TAG;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContentResolver;
@@ -22,6 +24,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,6 +60,7 @@ import java.util.Objects;
 public class EventDetailsFragment extends Fragment {
 
     private Event event;
+    private DatabaseService databaseService = new DatabaseService();
 
     /**
      * This is the default constructor for the EventDetailsFragment class. If no event is passed in,
@@ -110,7 +114,6 @@ public class EventDetailsFragment extends Fragment {
         FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
         Button uploadImageButton = view.findViewById(R.id.edit_banner_button);
 
-
         // If there is no event passed in, create a test event
         if (this.event == null) {
             event = Event.createTestEvent(mainActivity.getNewEventID());
@@ -119,6 +122,7 @@ public class EventDetailsFragment extends Fragment {
         // Set the image of the event to the event banner if it exists, otherwise hide the imageview
         if (event.getEventBanner() != null) {
             eventImage.setImageBitmap(event.getEventBanner());
+            uploadImageButton.setVisibility(View.GONE);
         }
         else {
             eventImage.setVisibility(View.GONE);
@@ -127,7 +131,7 @@ public class EventDetailsFragment extends Fragment {
         // Set the text of the event details to the event details
         eventTitle.setText(event.getTitle());
         eventDescription.setText(event.getDescription());
-        String eventDateString = event.getStartDate() + " at " + event.getStartTime() + " until " + event.getEndDate() + " at " + event.getEndTime();
+        String eventDateString = event.getStartDate().toString() + " at " + event.getStartTime().toString() + " until " + event.getEndDate().toString() + " at " + event.getEndTime().toString();
         eventDate.setText(eventDateString);
         eventLocation.setText(event.getLocation());
         ArrayList<String >announcementList = event.getAnnouncements();
@@ -141,29 +145,38 @@ public class EventDetailsFragment extends Fragment {
 
         // Set an on click listener for the back button
         backButton.setOnClickListener(v -> {
+
             // if the user is organiser, i want to go back to admin event dashboard
             FragmentManager fragmentManager = getParentFragmentManager();
             fragmentManager.popBackStack();
+
         });
 
-        /* Enable these buttons if the user is the organizer of the event
-        if (event.getOrganizer() == mainActivity.getUser().getUserId()) {
+        // Enable these buttons if the user is the organizer of the event
+        if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
             uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
-            eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
-            setShareButton();
-
+            // For now, option to change event banner is unavailable
+            // eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
+            setShareButton(shareButton);
         }
         // Hide these buttons if user is not the organizer
         else {
             uploadImageButton.setVisibility(View.GONE);
             shareButton.setVisibility(View.GONE);
         }
-        */
 
-        // These will be removed when the organizer functionality is implemented
+        // For now, the option to change the event banner is unavailable
+        // eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
         uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
-        eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
         setShareButton(shareButton);
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (event.getEventBanner() != null) {
+            uploadImage(getImageToShare(event.getEventBanner()));
+        }
+        super.onDestroyView();
     }
 
     /**
@@ -227,7 +240,7 @@ public class EventDetailsFragment extends Fragment {
      * @param imageQR A bitmap of the QR code image to be shared
      * @return A URI of the QR code image to be shared
      */
-    private Uri getImageToShare(Bitmap imageQR) {
+    public Uri getImageToShare(Bitmap imageQR) {
 
         File folder = new File(getActivity().getCacheDir(), "images");
         Uri uri = null;
@@ -248,5 +261,25 @@ public class EventDetailsFragment extends Fragment {
             Toast.makeText(this.getActivity(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
         return uri;
+    }
+
+    /**
+     * This method uploads an image to the database. It takes a URI of the image file and uploads the image
+     * to the database.
+     * @param file A URI of the image file to be uploaded
+     */
+    private void uploadImage(Uri file) {
+        databaseService.uploadEventPhoto(file, event, new DatabaseService.OnEventPhotoUpload() {
+            @Override
+            public void onSuccess(String imageUrl, String imagePath) {
+                Log.d(TAG, "onSuccess: " + imageUrl);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.d(TAG, "onFailure: " + e.getMessage());
+            }
+
+        });
     }
 }
