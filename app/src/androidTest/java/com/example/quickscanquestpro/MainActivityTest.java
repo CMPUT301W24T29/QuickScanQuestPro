@@ -83,7 +83,12 @@ public class MainActivityTest {
 
     @Test
     public void testUS01_01_01CreateEventAndQR() {
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
         onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
 
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
 
@@ -134,7 +139,7 @@ public class MainActivityTest {
 
         // Go to Manage Users
         onView(withId(R.id.button_profile)).perform(click());
-        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
+        onView(isRoot()).perform(waitFor(4000)); // Wait for the user list to load
 
         for (int i = 0; i < 20; i++) {
             onView(withId(R.id.fullNameInput)).perform(click()).perform(pressKey(KeyEvent.KEYCODE_DEL));

@@ -148,14 +148,10 @@ public class OrganizerIntentTests {
     public void testUS01_06_01ShareEventQR() {
         onView(isRoot()).perform(waitFor(2000));
         onView(withId(R.id.navigation_dashboard)).perform(click());
-        onView(isRoot()).perform(waitFor(2000));
         onView(withId(R.id.navigation_dashboard)).perform(click());
         onView(isRoot()).perform(waitFor(2000));
         onView(withId(R.id.navigation_dashboard)).perform(click());
         onView(isRoot()).perform(waitFor(2000));
-        onView(withId(R.id.navigation_dashboard)).perform(click());
-        onView(isRoot()).perform(waitFor(2000));
-        onView(withId(R.id.navigation_dashboard)).perform(click());
 
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
 
