@@ -3,6 +3,7 @@ package com.example.quickscanquestpro;
 import static android.content.ContentValues.TAG;
 
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
 import android.net.Uri;
@@ -63,6 +64,8 @@ public class EventCreationFragment extends Fragment {
     private Button createButton;
     private ImageView posterImageView;
 
+    private ActivityResultLauncher<Intent> pickImageLauncher;
+
     public EventCreationFragment() {
         // Required empty public constructor
     }
@@ -76,6 +79,7 @@ public class EventCreationFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.creatingEvent = new Event(UUID.randomUUID().toString());
+        setupActivityResultLaunchers();
     }
 
     @Override
@@ -100,7 +104,11 @@ public class EventCreationFragment extends Fragment {
 
         Button uploadImageButton = view.findViewById(R.id.banner_upload_button);
 
-        uploadImageButton.setOnClickListener(creatingEvent.uploadPhoto(this, posterImageView));
+        uploadImageButton.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+            pickImageLauncher.launch(intent);
+        });
 
         // adds textwatchers that update the Event whenever text is changed
         titleEditText = view.findViewById(R.id.edit_text_event_title);
@@ -141,7 +149,7 @@ public class EventCreationFragment extends Fragment {
                 String organizerId = mainActivity.getUser().getUserId();
                 creatingEvent.setOrganizerId(organizerId);
                 // create a new event in the database
-                databaseService.addEvent(creatingEvent, null, null);
+                databaseService.addEvent(creatingEvent);
                 // to later upload the event image to the database
                 if (creatingEvent.getEventBanner() != null) {
                     uploadImage(getImageToShare(creatingEvent.getEventBanner()));
@@ -181,6 +189,19 @@ public class EventCreationFragment extends Fragment {
         transaction.replace(R.id.content, reuseFragment);
         transaction.addToBackStack(null);
         transaction.commit();
+    }
+
+    private void setupActivityResultLaunchers() {
+
+        pickImageLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
+                Uri selectedImageUri = result.getData().getData();
+                if (selectedImageUri != null) {
+                    Glide.with(this).load(selectedImageUri).into(posterImageView);
+                    uploadImage(selectedImageUri);
+                }
+            }
+        });
     }
 
     private TextWatcher getTextWatcher(final EditText editText) {
@@ -275,16 +296,22 @@ public class EventCreationFragment extends Fragment {
      * @param file The URI of the image file to be uploaded.
      */
     private void uploadImage(Uri file) {
+        MainActivity mainActivity = (MainActivity) getActivity();
+        User user = mainActivity.getUser();
+
+
+
         databaseService.uploadEventPhoto(file, creatingEvent, new DatabaseService.OnEventPhotoUpload() {
             @Override
             public void onSuccess(String imageUrl, String imagePath) {
-                Log.d(TAG, "onSuccess: " + imageUrl);
-            }
-            @Override
-            public void onFailure(Exception e) {
-                Log.d(TAG, "onFailure: " + e.getMessage());
+                Glide.with(EventCreationFragment.this).load(imageUrl).into(posterImageView);
+                Toast.makeText(getContext(), "Event Banner Uploaded", Toast.LENGTH_SHORT).show();
             }
 
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(getContext(), "Failed To Upload Profile Picture: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         });
     }
 

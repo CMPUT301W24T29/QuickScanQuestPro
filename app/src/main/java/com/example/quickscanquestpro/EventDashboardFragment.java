@@ -10,8 +10,11 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -19,6 +22,7 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -29,7 +33,11 @@ public class EventDashboardFragment extends Fragment {
 
     private ArrayAdapter<String> eventArrayAdapter;
 
-    private ListView eventList;
+    private RecyclerView eventList;
+
+    private List<Event> events = new ArrayList<>();
+
+    private DatabaseService databaseService = new DatabaseService();
 
     public EventDashboardFragment() {
         // Required empty public constructor
@@ -55,40 +63,30 @@ public class EventDashboardFragment extends Fragment {
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        MainActivity mainActivity = (MainActivity) this.getActivity();
-        eventDataList = new ArrayList<>();
-        eventDataList.add("Test Event ID: " + mainActivity.getTestEvent().getId().toString() + " | Title: " + mainActivity.getTestEvent().getTitle() + " | Description: " + mainActivity.getTestEvent().getDescription() + " | Location: " + mainActivity.getTestEvent().getLocation() + " | Start: " + mainActivity.getTestEvent().getStartDate().toString() + " at " + mainActivity.getTestEvent().getStartTime().toString() + " | End: " + mainActivity.getTestEvent().getEndDate().toString() + " at " + mainActivity.getTestEvent().getEndTime().toString() + " | QR Code: " + String.valueOf(mainActivity.getTestEvent().getCheckinQRCode().hashCode()));
-        eventList = view.findViewById(R.id.event_dashboard_list);
-        eventArrayAdapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_list_item_1, eventDataList);
-        eventList.setAdapter(eventArrayAdapter);
+        super.onViewCreated(view, savedInstanceState);
+
+        RecyclerView eventRecyclerView = view.findViewById(R.id.event_dashboard_list);
+        eventRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        // Initialize with an empty list; we will update the list when data is loaded
+        EventListAdapter eventAdapter = new EventListAdapter(getContext(), new ArrayList<>());
+        eventRecyclerView.setAdapter(eventAdapter);
+
+        // Use a data loading method. It could be `listenForEventUpdates` or any other method you have.
+        databaseService.getEvents(updatedEvents -> {
+            // Ensure fragment is still attached to an activity
+            if (isAdded() && getActivity() != null) {
+                eventAdapter.updateEvents(updatedEvents);
+            }
+        });
 
         Button createButton = view.findViewById(R.id.event_dashboard_create_button);
         createButton.setOnClickListener(v -> {
-            mainActivity.transitionFragment(new EventCreationFragment(), "EventCreationFragment");
+            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+            transaction.replace(R.id.content, new EventCreationFragment()); // Ensure that 'R.id.content' is your container ID in the layout.
+            transaction.addToBackStack(null);
+            transaction.commit();
         });
-
-        // set the event list to open the event details fragment when an event is clicked
-        eventList.setOnItemClickListener((parent, view1, position, id) -> {
-            EventDetailsFragment fragment = new EventDetailsFragment();
-            // Get the FragmentManager from the activity
-            FragmentManager fragmentManager = ((FragmentActivity) getContext()).getSupportFragmentManager();
-            // Start a new FragmentTransaction
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            // Replace the current fragment with the eventDetailsFragment
-            fragmentTransaction.replace(R.id.content, fragment);
-            // Add the transaction to the back stack (optional)
-            fragmentTransaction.addToBackStack(null);
-            // Commit the transaction
-            fragmentTransaction.commit();
-        });
-
-//        eventList.setOnItemLongClickListener((parent, view12, position, id) -> {
-//            EventAttendeeFragment fragment = new EventAttendeeFragment();
-//            FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
-//            fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.events_list_title));
-//            fragmentTransaction.commit();
-//            return true;
-//        });
     }
 
 }

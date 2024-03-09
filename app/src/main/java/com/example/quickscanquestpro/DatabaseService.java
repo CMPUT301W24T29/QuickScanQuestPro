@@ -81,6 +81,7 @@ public class DatabaseService {
     }
 
 
+
     /**
      * Interfaces to handle deleting profile picture
      */
@@ -142,7 +143,7 @@ public class DatabaseService {
     }
 
 
-    public void addEvent(Event event, String url, String path) {
+    public void addEvent(Event event) {
 
         // Create a Map to store the data
         Map<String, Object> eventData = new HashMap<>();
@@ -151,8 +152,8 @@ public class DatabaseService {
         eventData.put("description", event.getDescription());
         eventData.put("location", event.getLocation());
         eventData.put("organizerId", event.getOrganizerId());
-        eventData.put("eventPictureUrl", url);
-        eventData.put("eventPicturePath", path);
+        eventData.put("eventBannerUrl", event.getEventBannerUrl());
+        eventData.put("eventBannerPath", event.getEventBannerPath());
 
         // Combine all data into a single map
         Map<String, Object> combinedData = new HashMap<>();
@@ -296,6 +297,8 @@ public class DatabaseService {
                 event.setEndDate(LocalDate.parse(queryDocumentSnapshot.getString("End-date")));
                 event.setStartTime(LocalTime.parse(queryDocumentSnapshot.getString("Start-time")));
                 event.setEndTime(LocalTime.parse(queryDocumentSnapshot.getString("End-time")));
+                event.setEventBannerUrl(queryDocumentSnapshot.getString("eventBannerUpload"));
+                event.setEventBannerPath(queryDocumentSnapshot.getString("eventBannerPath"));
 
                 // This is supposed to load event picture, but unsure if it works properly
                 // To be implemented later
@@ -465,11 +468,19 @@ public class DatabaseService {
                 .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(uri -> {
                     String imageUrl = uri.toString();
                     // Update Firestore document for this user
-                    addEvent(event, imageUrl, refPath);
+                    if (event != null) {
+                        event.setEventBannerUrl(imageUrl);
+                    } else {
+                        // Handle the case where the event is null, maybe log an error or show a user-friendly message
+                        Log.e("DatabaseService", "Cannot set event banner URL because the event is null");
+                    }
+
                     callback.onSuccess(imageUrl, refPath);
+
                 }))
                 .addOnFailureListener(callback::onFailure);
     }
+
 }
 
 

@@ -117,6 +117,7 @@ public class ProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         initializeViews(view);
 
+
         // when user clicks the back button
         view.findViewById(R.id.backButton).setOnClickListener(v -> {
             FragmentManager fragmentManager = getParentFragmentManager();
@@ -311,8 +312,7 @@ public class ProfileFragment extends Fragment {
      * @param user The {@link User} object representing the current user. It should contain the user's unique ID.
      */
     private void fetchAndPopulateUserData(User user) {
-        // Assuming you have a way to get the current user's ID
-        String userId = user.getUserId()/* Retrieve the user ID, possibly from SharedPreferences or passed through arguments */;
+        String userId = user.getUserId();
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("users").document(userId).get().addOnCompleteListener(task -> {

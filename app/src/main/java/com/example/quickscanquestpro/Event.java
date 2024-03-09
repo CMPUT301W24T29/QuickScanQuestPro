@@ -57,6 +57,12 @@ public class Event {
     private LocalTime endTime;
     private String location;
     private String organizerId;
+
+    boolean isCheckedIn = false;
+
+    private String eventBannerUrl;
+
+    private String eventBannerPath;
     private static ArrayList<String> announcements = new ArrayList<String>();
 
     // josh
@@ -85,7 +91,7 @@ public class Event {
      * @param organizer id of the organizer
      * @param announcements ArrayList of announcement strings
      */
-    public Event(String id, String title, String description, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, String location, String organizer, ArrayList<String> announcements) {
+    public Event(String id, String title, String description, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, String location, String organizer, ArrayList<String> announcements, String eventBannerUrl) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -96,6 +102,7 @@ public class Event {
         this.location = location;
         this.organizerId = organizer;
         this.announcements = announcements;
+        this.eventBannerUrl = eventBannerUrl;
         generateQR("both", id);
     }
 
@@ -126,6 +133,16 @@ public class Event {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void checkIn()
+    {
+        this.isCheckedIn = true;
+    }
+
+    public boolean isCheckedIn()
+    {
+        return isCheckedIn;
     }
 
     public String getId() {
@@ -247,6 +264,24 @@ public class Event {
         this.organizerId = organizerId;
     }
 
+    public String getEventBannerUrl(){
+        return eventBannerUrl;
+    }
+
+    public String getEventBannerPath()
+    {
+        return eventBannerPath;
+    }
+
+    public void setEventBannerUrl(String eventBannerUrl)
+    {
+        this.eventBannerUrl = eventBannerUrl;
+    }
+
+    public void setEventBannerPath(String eventBannerPath){
+        this.eventBannerPath = eventBannerPath;
+    }
+
     public void setAnnouncements(ArrayList<String> announcements) {
         this.announcements = announcements;
     }
@@ -256,31 +291,31 @@ public class Event {
      * @param eventID the ID to use during event creation
      * @return returns an Event with pre-filled attributes
      */
-    public static Event createTestEvent(String eventID) {
-        String testTitle = "Old Strathcona Summer Rib Fest";
-        String testDescription = "Come join us for the 2021 Old Strathcona Summer Rib Fest! Enjoy a variety of delicious ribs, live music, and more!";
-
-        LocalTime testStartTime = LocalTime.of(11, 0, 0);
-        LocalTime testEndTime = LocalTime.of(21, 0, 0);
-        LocalDate testStartDate = LocalDate.of(2021, 7, 16);
-        LocalDate testEndDate = LocalDate.of(2021, 7, 18);
-        String testLocation = "Edmonton, AB - 10310 83 Ave NW, Edmonton, AB T6E 2C6";
-        announcements.add("• The Old Strathcona Summer Rib Fest is now open! Come join us for a day of fun and delicious ribs!");
-        announcements.add("• We are excited to announce that we will be having a live band at the event!");
-        announcements.add("• We are running out of ribs! Come get them while they last!");
-        announcements.add("• Restocking ribs! We will be back in 30 minutes!");
-        announcements.add("• Buy 1 rack of ribs, get the second rack 50% off!");
-        announcements.add("• We are now closed for the day. Thank you to everyone who came out to the event!");
-
-        Event event = new Event(eventID, testTitle, testDescription, testStartDate, testEndDate, testStartTime, testEndTime, testLocation, "alastair", announcements);
-
-        Bitmap bmp = Bitmap.createBitmap(500, 500, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bmp);
-        canvas.drawColor(Color.rgb(255,0,0));
-        event.setEventBanner(bmp);
-
-        return event;
-    }
+//    public static Event createTestEvent(String eventID) {
+//        String testTitle = "Old Strathcona Summer Rib Fest";
+//        String testDescription = "Come join us for the 2021 Old Strathcona Summer Rib Fest! Enjoy a variety of delicious ribs, live music, and more!";
+//
+//        LocalTime testStartTime = LocalTime.of(11, 0, 0);
+//        LocalTime testEndTime = LocalTime.of(21, 0, 0);
+//        LocalDate testStartDate = LocalDate.of(2021, 7, 16);
+//        LocalDate testEndDate = LocalDate.of(2021, 7, 18);
+//        String testLocation = "Edmonton, AB - 10310 83 Ave NW, Edmonton, AB T6E 2C6";
+//        announcements.add("• The Old Strathcona Summer Rib Fest is now open! Come join us for a day of fun and delicious ribs!");
+//        announcements.add("• We are excited to announce that we will be having a live band at the event!");
+//        announcements.add("• We are running out of ribs! Come get them while they last!");
+//        announcements.add("• Restocking ribs! We will be back in 30 minutes!");
+//        announcements.add("• Buy 1 rack of ribs, get the second rack 50% off!");
+//        announcements.add("• We are now closed for the day. Thank you to everyone who came out to the event!");
+//
+//        //Event event = new Event(eventID, testTitle, testDescription, testStartDate, testEndDate, testStartTime, testEndTime, testLocation, "alastair", announcements);
+//
+//        Bitmap bmp = Bitmap.createBitmap(500, 500, Bitmap.Config.ARGB_8888);
+//        Canvas canvas = new Canvas(bmp);
+//        canvas.drawColor(Color.rgb(255,0,0));
+//        event.setEventBanner(bmp);
+//
+//        return event;
+//    }
 
     /**
      * creates an onclick listener to upload an image to the event and set its result to an imageview for displaying the uploaded image.
