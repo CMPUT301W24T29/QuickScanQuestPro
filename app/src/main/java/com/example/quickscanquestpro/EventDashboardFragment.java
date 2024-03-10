@@ -64,7 +64,12 @@ public class EventDashboardFragment extends Fragment {
 
         Button createButton = view.findViewById(R.id.event_dashboard_create_button);
         createButton.setOnClickListener(v -> {
-            mainActivity.transitionFragment(new EventCreationFragment(), "EventCreationFragment");
+            EventCreationFragment fragment = new EventCreationFragment();
+            FragmentManager fragmentManager = ((FragmentActivity) getContext()).getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.content, fragment);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
         });
 
         // set the event list to open the event details fragment when an event is clicked
