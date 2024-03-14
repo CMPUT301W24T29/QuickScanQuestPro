@@ -79,7 +79,7 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+  
         setupActivityResultLaunchers();
 
     }
@@ -322,7 +322,7 @@ public class ProfileFragment extends Fragment {
                     // Now, you directly access fields
 
                     String name = document.getString("name");
-                    String homepage = document.getString("homepage");
+                    String homepage = document.getString("Homepage");
                     String mobileNum = document.getString("phone");
                     String email = document.getString("email");
                     String profilePictureUrl = document.getString("profilePictureUrl");

@@ -127,7 +127,15 @@ public class EventDetailsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         eventPosterPlaceHolder = view.findViewById(R.id.event_banner); // Correct initialization
 
-        setupActivityResultLaunchers();
+        FloatingActionButton backButton = view.findViewById(R.id.back_button);
+
+        backButton.setOnClickListener(v -> {
+
+            // if the user is organiser, i want to go back to admin event dashboard
+            FragmentManager fragmentManager = getParentFragmentManager();
+            fragmentManager.popBackStack();
+
+        });
 
         if(event == null) {
             MainActivity mainActivity = (MainActivity) getActivity();

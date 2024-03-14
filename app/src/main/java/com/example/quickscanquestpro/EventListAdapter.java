@@ -26,14 +26,16 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.Even
 
     public static class EventViewHolder extends RecyclerView.ViewHolder {
         ImageView eventImage;
-        TextView eventTitle, eventStartTime,  eventLocation;
+        TextView eventTitle, eventStartTime, eventLocation, eventStartDate, eventEndTime;
 
         public EventViewHolder(View itemView) {
             super(itemView);
             eventImage = itemView.findViewById(R.id.event_image);
             eventTitle = itemView.findViewById(R.id.event_title);
-            eventStartTime = itemView.findViewById(R.id.event_start_time);
+            eventStartTime = itemView.findViewById(R.id.event_start_time); // Correctly initialized
             eventLocation = itemView.findViewById(R.id.event_location);
+            eventStartDate = itemView.findViewById(R.id.event_start_date);
+            eventEndTime = itemView.findViewById(R.id.event_end_time);
         }
     }
 
@@ -49,9 +51,10 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.Even
         Event event = eventDataList.get(position);
         holder.eventTitle.setText(event.getTitle());
         holder.eventLocation.setText(event.getLocation());
-        // Set more event details as required, like start time, end time, etc.
+        holder.eventStartDate.setText(event.getStartDate().toString());
+        holder.eventStartTime.setText(event.getStartTime().toString());
+        holder.eventEndTime.setText(event.getEndTime().toString());
 
-        // Here you could use Glide or another image loading library to set the event image
         // Glide.with(context).load(event.getImageUrl()).into(holder.eventImage);
 
         holder.itemView.setOnClickListener(v -> {
