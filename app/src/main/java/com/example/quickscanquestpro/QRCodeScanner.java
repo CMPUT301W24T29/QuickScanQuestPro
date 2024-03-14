@@ -1,6 +1,8 @@
 package com.example.quickscanquestpro;
 import static android.app.PendingIntent.getActivity;
 
+import static java.security.AccessController.getContext;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -17,6 +19,9 @@ import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.google.android.material.navigation.NavigationBarView;
@@ -205,7 +210,14 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
             }
 
             // navigates to the details for the event
-            mainActivity.transitionFragment(new EventDetailsFragment(event), "EventDetailsFragment");
+//            mainActivity.transitionFragment(new EventDetailsFragment(event), "EventDetailsFragment");
+            EventDetailsFragment fragment = new EventDetailsFragment();
+            FragmentManager fragmentManager = ((FragmentActivity) context).getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.content, fragment);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
+
             NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
             // sets navbar selection to the event dashboard
             MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
