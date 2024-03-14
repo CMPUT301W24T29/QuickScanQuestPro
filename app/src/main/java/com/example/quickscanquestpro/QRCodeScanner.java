@@ -17,6 +17,9 @@ import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.google.android.material.navigation.NavigationBarView;
@@ -213,8 +216,14 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
                 Toast.makeText(mainActivity.getApplicationContext(), "Promotion code scanned!", Toast.LENGTH_SHORT).show();
             }
 
+            EventDetailsFragment fragment = new EventDetailsFragment();
+            FragmentManager fragmentManager = ((FragmentActivity) context).getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.content, fragment);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
+
             // Navigates to the details for the event
-            mainActivity.transitionFragment(new EventDetailsFragment(event), "EventDetailsFragment");
             NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
             // Sets navbar selection to the event dashboard
             MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
