@@ -152,8 +152,8 @@ public class DatabaseService {
         eventData.put("description", event.getDescription());
         eventData.put("location", event.getLocation());
         eventData.put("organizerId", event.getOrganizerId());
-        eventData.put("eventBannerUrl", event.getEventBannerUrl());
-        eventData.put("eventBannerPath", event.getEventBannerPath());
+        eventData.put("eventPictureUrl", event.getEventBannerUrl());
+        eventData.put("eventPicturePath", event.getEventBannerPath());
 
         // Combine all data into a single map
         Map<String, Object> combinedData = new HashMap<>();
@@ -210,6 +210,8 @@ public class DatabaseService {
                 event.setEndDate(LocalDate.parse(document.getString("End-date")));
                 event.setStartTime(LocalTime.parse(document.getString("Start-time")));
                 event.setEndTime(LocalTime.parse(document.getString("End-time")));
+                event.setEventBannerUrl(document.getString("eventPictureUrl"));
+                event.setEventBannerPath(document.getString("eventPicturePath"));
                 events.add(event);
             }
             callback.onEventsLoaded(events);
@@ -297,8 +299,8 @@ public class DatabaseService {
                 event.setEndDate(LocalDate.parse(queryDocumentSnapshot.getString("End-date")));
                 event.setStartTime(LocalTime.parse(queryDocumentSnapshot.getString("Start-time")));
                 event.setEndTime(LocalTime.parse(queryDocumentSnapshot.getString("End-time")));
-                event.setEventBannerUrl(queryDocumentSnapshot.getString("eventBannerUpload"));
-                event.setEventBannerPath(queryDocumentSnapshot.getString("eventBannerPath"));
+                event.setEventBannerUrl(queryDocumentSnapshot.getString("eventPictureUrl"));
+                event.setEventBannerPath(queryDocumentSnapshot.getString("eventPicturePath"));
 
                 // This is supposed to load event picture, but unsure if it works properly
                 // To be implemented later
@@ -428,8 +430,7 @@ public class DatabaseService {
                 for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                     String eventId = doc.getId();
                     Event event = new Event(eventId);
-                    // Assuming you have a method in User class to set the name directly from Firestore document
-                    event.setTitle(doc.getString("title")); // Ensure field name matches your Firestore structure
+                    event.setTitle(doc.getString("title"));
                     eventList.add(event);
                 }
                 callback.onEventsLoaded(eventList);
@@ -467,9 +468,9 @@ public class DatabaseService {
         ref.putFile(fileUri)
                 .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(uri -> {
                     String imageUrl = uri.toString();
-                    // Update Firestore document for this user
                     if (event != null) {
                         event.setEventBannerUrl(imageUrl);
+                        event.setEventBannerPath(refPath);
                     } else {
                         // Handle the case where the event is null, maybe log an error or show a user-friendly message
                         Log.e("DatabaseService", "Cannot set event banner URL because the event is null");

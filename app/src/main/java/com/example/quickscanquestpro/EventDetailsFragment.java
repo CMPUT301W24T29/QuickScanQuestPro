@@ -195,7 +195,7 @@ public class EventDetailsFragment extends Fragment {
                     String eventDate = document.getString("Start-date");
                     String eventDescription= document.getString("description");
                     String eventTitle = document.getString("title");
-                    String eventBannerUrl = document.getString("eventBannerUrl");
+                    String eventBannerUrl = document.getString("eventPictureUrl");
                     String eventLocation = document.getString("location");
 
 

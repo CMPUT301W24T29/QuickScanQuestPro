@@ -2,6 +2,7 @@ package com.example.quickscanquestpro;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,13 +12,18 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 import java.util.List;
 public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.EventViewHolder> {
     private Context context;
     private List<Event> eventDataList;
+    private DatabaseService databaseService = new DatabaseService();
 
     public EventListAdapter(Context context, List<Event> eventDataList) {
         this.context = context;
@@ -55,21 +61,45 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.Even
         holder.eventStartTime.setText(event.getStartTime().toString());
         holder.eventEndTime.setText(event.getEndTime().toString());
 
-        // Glide.with(context).load(event.getImageUrl()).into(holder.eventImage);
+
+        String imageUrl = event.getEventBannerUrl(); // Ensure you have a method in your Event class to get the image URL
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(context)
+                    .load(imageUrl)
+                    .placeholder(R.color.white) // Placeholder color or drawable
+                    .fitCenter()
+                    .into(holder.eventImage);
+        } else {
+            holder.eventImage.setImageResource(R.drawable.ic_launcher_background);
+        }
+
+
 
         holder.itemView.setOnClickListener(v -> {
-            // Use Context to navigate to EventDetailsFragment with event ID
+            // Check if context is an instance of FragmentActivity to ensure proper casting
             if (context instanceof FragmentActivity) {
-                EventDetailsFragment eventDetailsFragment = new EventDetailsFragment();
-                Bundle args = new Bundle();
-                args.putString("eventId", event.getId()); // Make sure your Event object has a getId() method.
-                eventDetailsFragment.setArguments(args);
+                databaseService.getEvent(event.getId(), event1 -> {
+                    if (event1 != null) {
+                        EventDetailsFragment eventDetailsFragment = new EventDetailsFragment(event1);
 
-                FragmentActivity activity = (FragmentActivity) context;
-                activity.getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.content, eventDetailsFragment) // Make sure R.id.content is the correct ID of your container.
-                        .addToBackStack(null)
-                        .commit();
+                        // Get the FragmentManager from the activity
+                        FragmentManager fragmentManager = ((FragmentActivity) context).getSupportFragmentManager();
+
+                        // Start a new FragmentTransaction
+                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+                        // Replace the current fragment with the eventDetailsFragment
+                        fragmentTransaction.replace(R.id.content, eventDetailsFragment);
+
+                        // Add the transaction to the back stack (optional)
+                        fragmentTransaction.addToBackStack(null);
+
+                        // Commit the transaction
+                        fragmentTransaction.commit();
+                    } else {
+                        Log.e("EventListAdapter", "Event is null. Cannot display details.");
+                    }
+                });
             }
         });
     }

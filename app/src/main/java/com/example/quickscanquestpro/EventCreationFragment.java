@@ -297,9 +297,6 @@ public class EventCreationFragment extends Fragment {
      */
     private void uploadImage(Uri file) {
         MainActivity mainActivity = (MainActivity) getActivity();
-        User user = mainActivity.getUser();
-
-
 
         databaseService.uploadEventPhoto(file, creatingEvent, new DatabaseService.OnEventPhotoUpload() {
             @Override

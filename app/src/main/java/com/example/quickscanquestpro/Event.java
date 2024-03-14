@@ -91,7 +91,7 @@ public class Event {
      * @param organizer id of the organizer
      * @param announcements ArrayList of announcement strings
      */
-    public Event(String id, String title, String description, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, String location, String organizer, ArrayList<String> announcements, String eventBannerUrl) {
+    public Event(String id, String title, String description, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, String location, String organizer, ArrayList<String> announcements, String eventBannerUrl, String eventBannerPath) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -103,6 +103,7 @@ public class Event {
         this.organizerId = organizer;
         this.announcements = announcements;
         this.eventBannerUrl = eventBannerUrl;
+        this.eventBannerPath = eventBannerPath;
         generateQR("both", id);
     }
 
