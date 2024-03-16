@@ -3,6 +3,7 @@ package com.example.quickscanquestpro;
 import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.pressKey;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.init;
 import static androidx.test.espresso.intent.Intents.intended;
@@ -11,6 +12,7 @@ import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
@@ -23,10 +25,13 @@ import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
 import android.net.Uri;
+import android.view.KeyEvent;
 import android.view.View;
 
+import androidx.test.espresso.Espresso;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
+import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -132,6 +137,43 @@ public class ProfileFragmentTest {
         onView(isRoot()).perform(waitFor(5000));
 
         onView(withId(R.id.deleteProfilePictureButton)).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    public void US020501displayInitialsWhenNoProfilePictureTest() {
+
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
+
+        // Go to Manage Users
+        onView(withId(R.id.button_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(4000)); // Wait for the user list to load
+
+        for (int i = 0; i < 20; i++) {
+            onView(withId(R.id.fullNameInput)).perform(click()).perform(pressKey(KeyEvent.KEYCODE_DEL));
+        }
+        Espresso.closeSoftKeyboard();
+        onView(withId(R.id.fullNameInput)).perform(ViewActions.typeText("John Doe"));
+        Espresso.closeSoftKeyboard();
+        Intent resultData = new Intent();
+        Uri imageUri = Uri.parse("android.resource://com.example.quickscanquestpro/drawable/testprofilepicture");
+        resultData.setData(imageUri);
+        Instrumentation.ActivityResult result = new Instrumentation.ActivityResult(Activity.RESULT_OK, resultData);
+
+        Intents.intending(hasAction(Intent.ACTION_GET_CONTENT)).respondWith(result);
+        onView(isRoot()).perform(waitFor(4000));
+
+        onView(withId(R.id.uploadProfilePictureButton)).perform(click());
+
+        intended(hasAction(Intent.ACTION_GET_CONTENT));
+
+        onView(isRoot()).perform(waitFor(7000));
+
+        onView(withId(R.id.deleteProfilePictureButton)).perform(click());
+        onView(withId(R.id.profilePicturePlaceholder)).check(matches(withContentDescription("InitialsDisplayed")));
+        onView(isRoot()).perform(waitFor(4000));
     }
 
     public static ViewAction waitFor(long delay) {
