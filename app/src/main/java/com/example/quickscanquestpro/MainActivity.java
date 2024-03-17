@@ -36,7 +36,9 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     private static final String PREFS_NAME = "AppPrefs";
     private static final String USER_ID_KEY = "userId";
 
-    private static User user;
+    private User user;
+
+    private Event event;
     private String userId;
     private List<User> usersList;
 
@@ -77,6 +79,8 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
             databaseService.getSpecificUserDetails(userId, this);
             return true;
         });
+
+
     }
 
     // TODO: remove test event stuff before finishing project
@@ -91,12 +95,12 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     }
 
     // TODO: remove test event stuff before finishing project
-    public Event getTestEvent() {
-        if (this.testEvent == null) {
-            setTestEvent(Event.createTestEvent(getNewEventID()));
-        }
-        return this.testEvent;
-    }
+//    public Event getTestEvent() {
+//        if (this.testEvent == null) {
+//            setTestEvent(Event.createTestEvent(getNewEventID()));
+//        }
+//        return this.testEvent;
+//    }
 
     /**
      * This method called to create a new user if it doesn't already exist in the database
@@ -139,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
      * Getter for the User object
      * @return User Object
      */
-    public static User getUser() {
+    public User getUser() {
         return user;
     }
 
@@ -151,9 +155,11 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         this.user = user;
     }
 
-    public String getUserID() {
-        return userId;
+    public Event getEvent() {
+        return event;
     }
+
+    public void setEvent(Event event) {this.event = event;}
 
     /**
      * transitions the main fragment display (content) to the specified fragment with the given tag

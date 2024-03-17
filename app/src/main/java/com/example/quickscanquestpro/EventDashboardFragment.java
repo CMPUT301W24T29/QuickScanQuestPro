@@ -8,9 +8,12 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -31,7 +34,6 @@ public class EventDashboardFragment extends Fragment {
     private ArrayAdapter<String> eventArrayAdapter;
 
     private ListView eventList;
-
     private DatabaseService databaseService;
 
     public EventDashboardFragment() {
@@ -59,34 +61,20 @@ public class EventDashboardFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         databaseService = new DatabaseService();
-        eventList = view.findViewById(R.id.event_dashboard_list);
-        databaseService.listenForEventUpdates(new DatabaseService.OnEventsDataLoaded() {
-            @Override
-            public void onEventsLoaded(List<Event> events) {
-                if (getActivity() == null) {
-                    Log.e("EventDashboardFragment", "Activity is null. Skipping setup.");
-                    return;
-                }
+        super.onViewCreated(view, savedInstanceState);
 
-                if (events.isEmpty()) {
-                    Toast.makeText(getActivity(), "No event found!", Toast.LENGTH_SHORT).show();
-                } else {
+        RecyclerView eventRecyclerView = view.findViewById(R.id.event_dashboard_list);
+        eventRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-                    EventDashboardAdapter adapter = new EventDashboardAdapter(getContext(), R.layout.list_event_organiser_user_view, events);
-                    // Set the adapter for the eventListView
-                    eventList.setOnItemClickListener((parent, view, position, id) -> {
-                        Log.d("ItemClick", "Item clicked at position: " + position);
-                        Event event = events.get(position);
-                        EventDetailsFragment eventDetails = new EventDetailsFragment(event);
-                        FragmentManager fragmentManager = ((FragmentActivity) getContext()).getSupportFragmentManager();
-                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                        fragmentTransaction.replace(R.id.content, eventDetails);
-                        fragmentTransaction.addToBackStack(null);
-                        fragmentTransaction.commit();
-                    });
-                    eventList.setAdapter(adapter);
-                    Log.d("Check", "Its gotten till here");
-                }
+        // Initialize with an empty list; we will update the list when data is loaded
+        EventListAdapter eventAdapter = new EventListAdapter(getContext(), new ArrayList<>());
+        eventRecyclerView.setAdapter(eventAdapter);
+
+        // Use a data loading method. It could be `listenForEventUpdates` or any other method you have.
+        databaseService.getEvents(updatedEvents -> {
+            // Ensure fragment is still attached to an activity
+            if (isAdded() && getActivity() != null) {
+                eventAdapter.updateEvents(updatedEvents);
             }
         });
 
@@ -99,8 +87,6 @@ public class EventDashboardFragment extends Fragment {
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
         });
-
-
 
     }
 
