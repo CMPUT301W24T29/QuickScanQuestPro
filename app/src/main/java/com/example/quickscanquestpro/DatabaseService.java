@@ -1,6 +1,7 @@
 package com.example.quickscanquestpro;
 
 
+import static android.content.ContentValues.TAG;
 import static androidx.camera.core.impl.utils.ContextUtil.getApplicationContext;
 
 import android.graphics.Bitmap;
@@ -475,11 +476,25 @@ public class DatabaseService {
                         // Handle the case where the event is null, maybe log an error or show a user-friendly message
                         Log.e("DatabaseService", "Cannot set event banner URL because the event is null");
                     }
-
+                    if (event != null) {
+                        updateEventInDatabase(event);
+                    } else {
+                        Log.e(TAG, "Event object is null.");
+                        // Handle the null case appropriately, maybe notify the user or log the error.
+                    }
                     callback.onSuccess(imageUrl, refPath);
 
                 }))
                 .addOnFailureListener(callback::onFailure);
+    }
+
+    public void updateEventInDatabase(Event event) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("eventPictureUrl", event.getEventBannerUrl());
+        updates.put("eventPicturePath", event.getEventBannerPath());
+        Map<String, Object> combinedData = new HashMap<>();
+        combinedData.putAll(updates);
+        eventsRef.document(String.valueOf(event.getId())).set(combinedData, SetOptions.merge());
     }
 
 }

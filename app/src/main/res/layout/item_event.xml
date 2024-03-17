@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp">
+    android:padding="5dp">
 
     <ImageView
         android:id="@+id/event_image"
@@ -21,12 +21,14 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:textSize="18sp"
+        android:ellipsize="end"
+        android:maxLines="1"
         app:layout_constraintStart_toEndOf="@+id/event_image"
         app:layout_constraintTop_toTopOf="@+id/event_image"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
-        android:id="@+id/event_start_date"
+        android:id="@+id/event_dates"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -35,30 +37,24 @@
         app:layout_constraintTop_toBottomOf="@+id/event_title" />
 
     <TextView
-        android:id="@+id/event_start_time"
+        android:id="@+id/event_times"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:textSize="14sp"
         app:layout_constraintStart_toEndOf="@+id/event_image"
-        app:layout_constraintTop_toBottomOf="@+id/event_start_date" />
+        app:layout_constraintTop_toBottomOf="@+id/event_dates" />
 
-    <TextView
-        android:id="@+id/event_end_time"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:textSize="14sp"
-        app:layout_constraintStart_toEndOf="@+id/event_image"
-        app:layout_constraintTop_toBottomOf="@+id/event_start_time" />
 
     <TextView
         android:id="@+id/event_location"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
+        android:ellipsize="end"
+        android:maxLines="1"
         android:textSize="14sp"
         app:layout_constraintStart_toEndOf="@+id/event_image"
-        app:layout_constraintTop_toBottomOf="@+id/event_end_time" />
+        app:layout_constraintTop_toBottomOf="@+id/event_times" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

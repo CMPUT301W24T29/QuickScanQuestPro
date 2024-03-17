@@ -82,6 +82,19 @@ public class EventCreationFragment extends Fragment {
         setupActivityResultLaunchers();
     }
 
+    private void setupActivityResultLaunchers() {
+        pickImageLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
+                Uri selectedImageUri = result.getData().getData();
+                if (selectedImageUri != null) {
+                    Glide.with(this).load(selectedImageUri).into(posterImageView);
+                    uploadImage(selectedImageUri);
+                }
+            }
+        });
+    }
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -114,7 +127,7 @@ public class EventCreationFragment extends Fragment {
         titleEditText = view.findViewById(R.id.edit_text_event_title);
         descriptionEditText = view.findViewById(R.id.edit_text_event_description);
         locationEditText = view.findViewById(R.id.edit_text_event_address);
-        
+
         titleEditText.addTextChangedListener(getTextWatcher(titleEditText));
         descriptionEditText.addTextChangedListener(getTextWatcher(descriptionEditText));
         locationEditText.addTextChangedListener(getTextWatcher(locationEditText));
@@ -159,7 +172,7 @@ public class EventCreationFragment extends Fragment {
                 mainActivity.transitionFragment(new EventDashboardFragment(), this.getString(R.string.title_dashboard));
             }
         });
-        
+
         view.findViewById(R.id.reuse_checkin_button).setOnClickListener(v -> showReuseFragment("checkin"));
         // Reuse speaker button
         view.findViewById(R.id.reuse_promo_button).setOnClickListener(v -> showReuseFragment("promo"));
@@ -189,19 +202,6 @@ public class EventCreationFragment extends Fragment {
         transaction.replace(R.id.content, reuseFragment);
         transaction.addToBackStack(null);
         transaction.commit();
-    }
-
-    private void setupActivityResultLaunchers() {
-
-        pickImageLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
-                Uri selectedImageUri = result.getData().getData();
-                if (selectedImageUri != null) {
-                    Glide.with(this).load(selectedImageUri).into(posterImageView);
-                    uploadImage(selectedImageUri);
-                }
-            }
-        });
     }
 
     private TextWatcher getTextWatcher(final EditText editText) {
@@ -280,13 +280,13 @@ public class EventCreationFragment extends Fragment {
         } else {
             endTimeText.setError(null);
         }
-        
+
         if (!valid) {
             createButton.setEnabled(false);
         } else {
             createButton.setEnabled(true);
         }
-        
+
         return valid;
     }
 
@@ -296,11 +296,11 @@ public class EventCreationFragment extends Fragment {
      * @param file The URI of the image file to be uploaded.
      */
     private void uploadImage(Uri file) {
-        MainActivity mainActivity = (MainActivity) getActivity();
-
+        // Implementation of uploadImage method, similar to the provided new code
         databaseService.uploadEventPhoto(file, creatingEvent, new DatabaseService.OnEventPhotoUpload() {
             @Override
             public void onSuccess(String imageUrl, String imagePath) {
+                posterImageView.setVisibility(View.VISIBLE);
                 Glide.with(EventCreationFragment.this).load(imageUrl).into(posterImageView);
                 Toast.makeText(getContext(), "Event Banner Uploaded", Toast.LENGTH_SHORT).show();
             }

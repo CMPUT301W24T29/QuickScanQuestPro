@@ -32,16 +32,15 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.Even
 
     public static class EventViewHolder extends RecyclerView.ViewHolder {
         ImageView eventImage;
-        TextView eventTitle, eventStartTime, eventLocation, eventStartDate, eventEndTime;
+        TextView eventTitle, eventLocation, eventDates, eventTimes;
 
         public EventViewHolder(View itemView) {
             super(itemView);
             eventImage = itemView.findViewById(R.id.event_image);
             eventTitle = itemView.findViewById(R.id.event_title);
-            eventStartTime = itemView.findViewById(R.id.event_start_time); // Correctly initialized
             eventLocation = itemView.findViewById(R.id.event_location);
-            eventStartDate = itemView.findViewById(R.id.event_start_date);
-            eventEndTime = itemView.findViewById(R.id.event_end_time);
+            eventDates = itemView.findViewById(R.id.event_dates);
+            eventTimes = itemView.findViewById(R.id.event_times);
         }
     }
 
@@ -55,11 +54,19 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.Even
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = eventDataList.get(position);
-        holder.eventTitle.setText(event.getTitle());
-        holder.eventLocation.setText(event.getLocation());
-        holder.eventStartDate.setText(event.getStartDate().toString());
-        holder.eventStartTime.setText(event.getStartTime().toString());
-        holder.eventEndTime.setText(event.getEndTime().toString());
+
+        // Truncate title and location if longer than 30 characters
+        String title = event.getTitle().length() > 30 ? event.getTitle().substring(0, 27) + "..." : event.getTitle();
+        String location = event.getLocation().length() > 30 ? event.getLocation().substring(0, 27) + "..." : event.getLocation();
+
+        // Format the dates and times
+        String dates = event.getStartDate().toString() + " - " + event.getEndDate().toString();
+        String times = event.getStartTime().toString() + " - " + event.getEndTime().toString();
+
+        holder.eventTitle.setText(title);
+        holder.eventLocation.setText(location);
+        holder.eventDates.setText(dates);
+        holder.eventTimes.setText(times);
 
 
         String imageUrl = event.getEventBannerUrl(); // Ensure you have a method in your Event class to get the image URL

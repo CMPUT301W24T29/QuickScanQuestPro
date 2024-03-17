@@ -33,9 +33,7 @@ public class EventDashboardFragment extends Fragment {
 
     private ArrayAdapter<String> eventArrayAdapter;
 
-    private RecyclerView eventList;
-
-    private List<Event> events = new ArrayList<>();
+    private ListView eventList;
 
     private DatabaseService databaseService = new DatabaseService();
 
