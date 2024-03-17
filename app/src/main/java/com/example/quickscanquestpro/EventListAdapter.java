@@ -69,11 +69,11 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.Even
         holder.eventTimes.setText(times);
 
 
-        String imageUrl = event.getEventBannerUrl(); // Ensure you have a method in your Event class to get the image URL
+        String imageUrl = event.getEventBannerUrl();
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(context)
                     .load(imageUrl)
-                    .placeholder(R.color.white) // Placeholder color or drawable
+                    .placeholder(R.color.white)
                     .fitCenter()
                     .into(holder.eventImage);
         } else {
@@ -83,25 +83,19 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.Even
 
 
         holder.itemView.setOnClickListener(v -> {
-            // Check if context is an instance of FragmentActivity to ensure proper casting
             if (context instanceof FragmentActivity) {
                 databaseService.getEvent(event.getId(), event1 -> {
                     if (event1 != null) {
                         EventDetailsFragment eventDetailsFragment = new EventDetailsFragment(event1);
 
-                        // Get the FragmentManager from the activity
                         FragmentManager fragmentManager = ((FragmentActivity) context).getSupportFragmentManager();
 
-                        // Start a new FragmentTransaction
                         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-                        // Replace the current fragment with the eventDetailsFragment
                         fragmentTransaction.replace(R.id.content, eventDetailsFragment);
 
-                        // Add the transaction to the back stack (optional)
                         fragmentTransaction.addToBackStack(null);
 
-                        // Commit the transaction
                         fragmentTransaction.commit();
                     } else {
                         Log.e("EventListAdapter", "Event is null. Cannot display details.");
