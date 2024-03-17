@@ -1,15 +1,35 @@
 package com.example.quickscanquestpro;
 
+
+import static android.content.ContentValues.TAG;
+import static androidx.camera.core.impl.utils.ContextUtil.getApplicationContext;
+
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+
 import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+
+
+import androidx.annotation.NonNull;
+
+import androidx.annotation.NonNull;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.OnProgressListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -62,6 +82,7 @@ public class DatabaseService {
     }
 
 
+
     /**
      * Interfaces to handle deleting profile picture
      */
@@ -81,8 +102,18 @@ public class DatabaseService {
     }
 
     /**
+<<<<<<< HEAD
+     * Callback interface for uploading event photos to Firebase Storage.
+     * This interface is used to notify the caller of the progress, success, or failure of the upload operation.
+     */
+    public interface OnEventPhotoUpload {
+        void onSuccess(String imageUrl, String imagePath);
+        void onFailure(Exception e);
+    }
+    /**
      * Constructor to initialize the Firestore database
      */
+
     public DatabaseService() {
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
@@ -112,11 +143,9 @@ public class DatabaseService {
                 .addOnFailureListener(e -> Log.e("DatabaseService", "Error adding new check-in.", e));
     }
 
-    /**
-     * Method to add an event to the Firestore database
-     * @param event The event to be added
-     */
+
     public void addEvent(Event event) {
+
         // Create a Map to store the data
         Map<String, Object> eventData = new HashMap<>();
         // Assuming your Event class has getters for its properties
@@ -124,6 +153,8 @@ public class DatabaseService {
         eventData.put("description", event.getDescription());
         eventData.put("location", event.getLocation());
         eventData.put("organizerId", event.getOrganizerId());
+        eventData.put("eventPictureUrl", event.getEventBannerUrl());
+        eventData.put("eventPicturePath", event.getEventBannerPath());
 
         // Combine all data into a single map
         Map<String, Object> combinedData = new HashMap<>();
@@ -180,6 +211,8 @@ public class DatabaseService {
                 event.setEndDate(LocalDate.parse(document.getString("End-date")));
                 event.setStartTime(LocalTime.parse(document.getString("Start-time")));
                 event.setEndTime(LocalTime.parse(document.getString("End-time")));
+                event.setEventBannerUrl(document.getString("eventPictureUrl"));
+                event.setEventBannerPath(document.getString("eventPicturePath"));
                 events.add(event);
             }
             callback.onEventsLoaded(events);
@@ -267,6 +300,26 @@ public class DatabaseService {
                 event.setEndDate(LocalDate.parse(queryDocumentSnapshot.getString("End-date")));
                 event.setStartTime(LocalTime.parse(queryDocumentSnapshot.getString("Start-time")));
                 event.setEndTime(LocalTime.parse(queryDocumentSnapshot.getString("End-time")));
+                event.setEventBannerUrl(queryDocumentSnapshot.getString("eventPictureUrl"));
+                event.setEventBannerPath(queryDocumentSnapshot.getString("eventPicturePath"));
+
+                // This is supposed to load event picture, but unsure if it works properly
+                // To be implemented later
+                /*String eventPictureUrl = queryDocumentSnapshot.getString("eventPictureUrl");
+                if (eventPictureUrl != null) {
+                    Glide.with(mainActivity)
+                            .asBitmap()
+                            .load(eventPictureUrl)
+                            .into(new CustomTarget<Bitmap>() {
+                                @Override
+                                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                                    event.setEventBanner(resource);
+                                }
+                                @Override
+                                public void onLoadCleared(@Nullable Drawable placeholder) {
+                                }
+                            });
+                }*/
 
                 callback.onEventLoaded(event);
         }).addOnFailureListener(e -> callback.onEventLoaded(null));
@@ -305,7 +358,6 @@ public class DatabaseService {
                 }))
                 .addOnFailureListener(callback::onFailure);
     }
-
 
     /**
      * Deletes the user's profile picture from Firebase Storage and updates the user's profile in Firestore.
@@ -379,8 +431,7 @@ public class DatabaseService {
                 for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                     String eventId = doc.getId();
                     Event event = new Event(eventId);
-                    // Assuming you have a method in User class to set the name directly from Firestore document
-                    event.setTitle(doc.getString("title")); // Ensure field name matches your Firestore structure
+                    event.setTitle(doc.getString("title"));
                     eventList.add(event);
                 }
                 callback.onEventsLoaded(eventList);
@@ -405,4 +456,47 @@ public class DatabaseService {
         eventsRef.document(event.getId()).delete();
     }
 
+    /**
+     * Uploads an event photo to Firebase Storage and updates the event's document in Firestore.
+     * @param fileUri The URI of the file to upload. Must not be null.
+     * @param event The event to which the photo belongs. This object is updated with the new photo URL and path upon successful upload.
+     * @param callback An instance of {@link OnEventPhotoUpload}, which will be called with the success, or failure of the upload operation.
+     */
+    public void uploadEventPhoto(Uri fileUri, Event event, OnEventPhotoUpload callback) {
+        String refPath = "eventPictures/" + UUID.randomUUID().toString();
+        StorageReference ref = storage.getReference().child(refPath);
+
+        ref.putFile(fileUri)
+                .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(uri -> {
+                    String imageUrl = uri.toString();
+                    if (event != null) {
+                        event.setEventBannerUrl(imageUrl);
+                        event.setEventBannerPath(refPath);
+                    } else {
+                        // Handle the case where the event is null, maybe log an error or show a user-friendly message
+                        Log.e("DatabaseService", "Cannot set event banner URL because the event is null");
+                    }
+                    if (event != null) {
+                        updateEventInDatabase(event);
+                    } else {
+                        Log.e(TAG, "Event object is null.");
+                        // Handle the null case appropriately, maybe notify the user or log the error.
+                    }
+                    callback.onSuccess(imageUrl, refPath);
+
+                }))
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public void updateEventInDatabase(Event event) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("eventPictureUrl", event.getEventBannerUrl());
+        updates.put("eventPicturePath", event.getEventBannerPath());
+        Map<String, Object> combinedData = new HashMap<>();
+        combinedData.putAll(updates);
+        eventsRef.document(String.valueOf(event.getId())).set(combinedData, SetOptions.merge());
+    }
+
 }
+
+

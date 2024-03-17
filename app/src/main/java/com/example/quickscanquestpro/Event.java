@@ -2,6 +2,7 @@ package com.example.quickscanquestpro;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -16,13 +17,13 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
-import com.google.firebase.firestore.auth.User;
 import com.google.type.DateTime;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
@@ -56,6 +57,12 @@ public class Event {
     private LocalTime endTime;
     private String location;
     private String organizerId;
+
+    boolean isCheckedIn = false;
+
+    private String eventBannerUrl;
+
+    private String eventBannerPath;
     private static ArrayList<String> announcements = new ArrayList<String>();
 
     // josh
@@ -84,7 +91,7 @@ public class Event {
      * @param organizer id of the organizer
      * @param announcements ArrayList of announcement strings
      */
-    public Event(String id, String title, String description, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, String location, String organizer, ArrayList<String> announcements) {
+    public Event(String id, String title, String description, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, String location, String organizer, ArrayList<String> announcements, String eventBannerUrl, String eventBannerPath) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -95,6 +102,8 @@ public class Event {
         this.location = location;
         this.organizerId = organizer;
         this.announcements = announcements;
+        this.eventBannerUrl = eventBannerUrl;
+        this.eventBannerPath = eventBannerPath;
         generateQR("both", id);
     }
 
@@ -125,6 +134,16 @@ public class Event {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void checkIn()
+    {
+        this.isCheckedIn = true;
+    }
+
+    public boolean isCheckedIn()
+    {
+        return isCheckedIn;
     }
 
     public String getId() {
@@ -246,6 +265,24 @@ public class Event {
         this.organizerId = organizerId;
     }
 
+    public String getEventBannerUrl(){
+        return eventBannerUrl;
+    }
+
+    public String getEventBannerPath()
+    {
+        return eventBannerPath;
+    }
+
+    public void setEventBannerUrl(String eventBannerUrl)
+    {
+        this.eventBannerUrl = eventBannerUrl;
+    }
+
+    public void setEventBannerPath(String eventBannerPath){
+        this.eventBannerPath = eventBannerPath;
+    }
+
     public void setAnnouncements(ArrayList<String> announcements) {
         this.announcements = announcements;
     }
@@ -271,7 +308,7 @@ public class Event {
         announcements.add("• Buy 1 rack of ribs, get the second rack 50% off!");
         announcements.add("• We are now closed for the day. Thank you to everyone who came out to the event!");
 
-        Event event = new Event(eventID, testTitle, testDescription, testStartDate, testEndDate, testStartTime, testEndTime, testLocation, "alastair", announcements);
+        Event event = new Event(eventID, testTitle, testDescription, testStartDate, testEndDate, testStartTime, testEndTime, testLocation, "alastair", announcements, null, null);
 
         Bitmap bmp = Bitmap.createBitmap(500, 500, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bmp);

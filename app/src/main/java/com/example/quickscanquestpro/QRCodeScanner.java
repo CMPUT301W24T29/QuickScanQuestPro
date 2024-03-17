@@ -17,6 +17,9 @@ import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.google.android.material.navigation.NavigationBarView;
@@ -192,27 +195,43 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
     @Override
     public void onEventLoaded(Event event) {
         if (event == null) {
-            // the database didnt find a match
             Toast.makeText(mainActivity.getApplicationContext(), "Invalid QR", Toast.LENGTH_SHORT).show();
             processingQr = false;
         } else {
+            // Check if user is null before attempting to use getUserId()
+            User currentUser = mainActivity.getUser();
+            if (currentUser == null || processingQrType == null) {
+                Toast.makeText(mainActivity.getApplicationContext(), "User not logged in or invalid processing type", Toast.LENGTH_SHORT).show();
+                Log.e("QRCodeScanner", "User not logged in or invalid processing type");
+                processingQr = false;
+                return;
+            }
+
             if (processingQrType.equals("c")){
-                databaseService.recordCheckIn(event.getId(), mainActivity.getUser().getUserId(), "The location where QR is scanned");
+                databaseService.recordCheckIn(event.getId(), currentUser.getUserId(), "The location where QR is scanned");
 
                 Toast.makeText(mainActivity.getApplicationContext(), "Checked in!", Toast.LENGTH_SHORT).show();
+                event.checkIn();
             } else {
                 Toast.makeText(mainActivity.getApplicationContext(), "Promotion code scanned!", Toast.LENGTH_SHORT).show();
             }
 
-            // navigates to the details for the event
-            mainActivity.transitionFragment(new EventDetailsFragment(event), "EventDetailsFragment");
+            EventDetailsFragment fragment = new EventDetailsFragment();
+            FragmentManager fragmentManager = ((FragmentActivity) context).getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.content, fragment);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
+
+            // Navigates to the details for the event
             NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
-            // sets navbar selection to the event dashboard
+            // Sets navbar selection to the event dashboard
             MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
             item.setChecked(true);
 
             shutdown();
         }
     }
+
 }
 

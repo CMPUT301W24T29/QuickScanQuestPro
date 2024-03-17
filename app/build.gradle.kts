@@ -83,5 +83,6 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1"){
         exclude(module = "protobuf-lite")
     }
+    implementation("androidx.recyclerview:recyclerview:1.2.1");
 
 }

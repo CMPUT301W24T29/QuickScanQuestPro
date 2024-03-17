@@ -1,4 +1,7 @@
+
 package com.example.quickscanquestpro;
+
+import static android.content.ContentValues.TAG;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -22,6 +25,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +37,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
@@ -48,6 +53,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * This fragment displays the details of an event, including the title, description, date, location,
@@ -57,6 +63,9 @@ import java.util.Objects;
 public class EventDetailsFragment extends Fragment {
 
     private Event event;
+    private DatabaseService databaseService = new DatabaseService();
+    private ActivityResultLauncher<Intent> pickImageLauncher;
+    private ImageView eventImage;
 
     /**
      * This is the default constructor for the EventDetailsFragment class. If no event is passed in,
@@ -76,6 +85,23 @@ public class EventDetailsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setupActivityResultLaunchers();
+    }
+
+    private void setupActivityResultLaunchers() {
+        pickImageLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
+                Uri selectedImageUri = result.getData().getData();
+                if (selectedImageUri != null) {
+                    Glide.with(this).load(selectedImageUri).into(eventImage);
+                    uploadImage(selectedImageUri);
+                }
+                else
+                {
+
+                }
+            }
+        });
     }
 
     @Override
@@ -99,71 +125,91 @@ public class EventDetailsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         MainActivity mainActivity = (MainActivity) this.getActivity();
+        if(mainActivity != null && mainActivity.getUser() != null) {
+            // Initialize the views that will display the event details
+            TextView eventTitle = view.findViewById(R.id.event_title);
+            TextView eventDescription = view.findViewById(R.id.event_description);
+            TextView eventDate = view.findViewById(R.id.event_date);
+            TextView eventLocation = view.findViewById(R.id.event_location);
+            eventImage = view.findViewById(R.id.event_banner);
+            FloatingActionButton backButton = view.findViewById(R.id.back_button);
+            FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
+            Button uploadImageButton = view.findViewById(R.id.edit_banner_button);
 
-        // Initialize the views that will display the event details
-        TextView eventTitle = view.findViewById(R.id.event_title);
-        TextView eventDescription = view.findViewById(R.id.event_description);
-        TextView eventDate = view.findViewById(R.id.event_date);
-        TextView eventLocation = view.findViewById(R.id.event_location);
-        ImageView eventImage = view.findViewById(R.id.event_banner);
-        FloatingActionButton backButton = view.findViewById(R.id.back_button);
-        FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
-        Button uploadImageButton = view.findViewById(R.id.edit_banner_button);
+            uploadImageButton.setVisibility(View.VISIBLE);
 
 
-        // If there is no event passed in, create a test event
-        if (this.event == null) {
-            event = Event.createTestEvent(mainActivity.getNewEventID());
-        }
+            // If there is no event passed in, create a test event
+            if (this.event == null) {
+                event = Event.createTestEvent(mainActivity.getNewEventID());
+            }
 
-        // Set the image of the event to the event banner if it exists, otherwise hide the imageview
-        if (event.getEventBanner() != null) {
-            eventImage.setImageBitmap(event.getEventBanner());
+            // Set the image of the event to the event banner if it exists, otherwise hide the imageview
+            if (event.getEventBannerUrl() != null) {
+                Glide.with(this).load(event.getEventBannerUrl()).into(eventImage);
+            } else {
+                eventImage.setVisibility(View.GONE);
+            }
+
+            // Set the text of the event details to the event details
+            eventTitle.setText(event.getTitle());
+            eventDescription.setText(event.getDescription());
+            String eventDateString = event.getStartDate().toString() + " at " + event.getStartTime().toString() + " until " + event.getEndDate().toString() + " at " + event.getEndTime().toString();
+            eventDate.setText(eventDateString);
+            eventLocation.setText(event.getLocation());
+            ArrayList<String> announcementList = event.getAnnouncements();
+
+            // Set the listview of announcements to the announcements of the event and set the height of the listview
+            ArrayAdapter<String> announcementAdapter =
+                    new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, announcementList);
+            ListView announcementListView = view.findViewById(R.id.event_announcements_list);
+            announcementListView.setAdapter(announcementAdapter);
+            ListViewHelper.getListViewSize(announcementListView);
+
+            // Set an on click listener for the back button
+            backButton.setOnClickListener(v -> {
+
+                // if the user is organiser, i want to go back to admin event dashboard
+                FragmentManager fragmentManager = getParentFragmentManager();
+                fragmentManager.popBackStack();
+
+            });
+
+            // Enable these buttons if the user is the organizer of the event
+            if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
+                uploadImageButton.setOnClickListener(v -> {
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("image/*");
+                    pickImageLauncher.launch(intent);
+                });
+                // For now, option to change event banner is unavailable
+                // eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
+                setShareButton(shareButton);
+            }
+            // Hide these buttons if user is not the organizer
+            else {
+                uploadImageButton.setVisibility(View.GONE);
+                shareButton.setVisibility(View.GONE);
+            }
+
+            // For now, the option to change the event banner is unavailable
+            // eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
+            //uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
+            setShareButton(shareButton);
         }
         else {
-            eventImage.setVisibility(View.GONE);
-        }
-
-        // Set the text of the event details to the event details
-        eventTitle.setText(event.getTitle());
-        eventDescription.setText(event.getDescription());
-        String eventDateString = event.getStartDate() + " at " + event.getStartTime() + " until " + event.getEndDate() + " at " + event.getEndTime();
-        eventDate.setText(eventDateString);
-        eventLocation.setText(event.getLocation());
-        ArrayList<String >announcementList = event.getAnnouncements();
-
-        // Set the listview of announcements to the announcements of the event and set the height of the listview
-        ArrayAdapter<String> announcementAdapter =
-                new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, announcementList);
-        ListView announcementListView = view.findViewById(R.id.event_announcements_list);
-        announcementListView.setAdapter(announcementAdapter);
-        ListViewHelper.getListViewSize(announcementListView);
-
-        // Set an on click listener for the back button
-        backButton.setOnClickListener(v -> {
-            // if the user is organiser, i want to go back to admin event dashboard
-            FragmentManager fragmentManager = getParentFragmentManager();
-            fragmentManager.popBackStack();
-        });
-
-        /* Enable these buttons if the user is the organizer of the event
-        if (event.getOrganizer() == mainActivity.getUser().getUserId()) {
-            uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
-            eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
-            setShareButton();
+            Log.e(TAG, "User or MainActivity is null");
 
         }
-        // Hide these buttons if user is not the organizer
-        else {
-            uploadImageButton.setVisibility(View.GONE);
-            shareButton.setVisibility(View.GONE);
-        }
-        */
+    }
 
-        // These will be removed when the organizer functionality is implemented
-        uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
-        eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
-        setShareButton(shareButton);
+    @Override
+    public void onDestroyView() {
+        // Check if event is not null before attempting to access its methods
+        if (event != null && event.getEventBanner() != null) {
+            uploadImage(getImageToShare(event.getEventBanner()));
+        }
+        super.onDestroyView();
     }
 
     /**
@@ -221,13 +267,13 @@ public class EventDetailsFragment extends Fragment {
         startActivity(Intent.createChooser(shareIntent, "Share QR Code via"));
 
     }
-   /**
+    /**
      * This method creates a URI from a QR code bitmap. It creates a file in the cache directory of the app
      * and writes the bitmap to the file. It then creates a URI from the file and returns the URI.
      * @param imageQR A bitmap of the QR code image to be shared
      * @return A URI of the QR code image to be shared
      */
-    private Uri getImageToShare(Bitmap imageQR) {
+    public Uri getImageToShare(Bitmap imageQR) {
 
         File folder = new File(getActivity().getCacheDir(), "images");
         Uri uri = null;
@@ -248,5 +294,40 @@ public class EventDetailsFragment extends Fragment {
             Toast.makeText(this.getActivity(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
         return uri;
+    }
+
+    /**
+     * This method uploads an image to the database. It takes a URI of the image file and uploads the image
+     * to the database.
+     * @param file A URI of the image file to be uploaded
+     */
+    private void uploadImage(Uri file) {
+        MainActivity mainActivity = (MainActivity) getActivity();
+        event = mainActivity.getEvent();
+        databaseService.uploadEventPhoto(file, event, new DatabaseService.OnEventPhotoUpload() {
+            @Override
+            public void onSuccess(String imageUrl, String imagePath) {
+                if (isAdded()) {
+                    getActivity().runOnUiThread(() -> {
+                        Glide.with(EventDetailsFragment.this)
+                                .load(imageUrl)
+                                .into(eventImage);
+
+                        eventImage.setVisibility(View.VISIBLE);
+                        Toast.makeText(getContext(), "Event Banner Uploaded", Toast.LENGTH_SHORT).show();
+                    });
+                } else {
+                    Log.d(TAG, "Fragment is not attached to an activity.");
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                if (isAdded()) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Upload Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                }
+                Log.d(TAG, "onFailure: " + e.getMessage());
+            }
+        });
     }
 }

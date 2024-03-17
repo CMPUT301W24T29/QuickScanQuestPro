@@ -50,14 +50,12 @@ public class AdminDashboardFragment extends Fragment {
         manageEventsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Create an instance of EventDashboardFragment
                 AdminManageEventsFragment adminManageEventsFragment = new AdminManageEventsFragment();
 
-                // Use FragmentManager to replace the AdminDashboardFragment with EventDashboardFragment
                 if (isAdded() && getActivity() != null) {
                     getActivity().getSupportFragmentManager().beginTransaction()
                             .replace(R.id.content, adminManageEventsFragment)
-                            .addToBackStack(null)  // Optional, if you want to navigate back to the admin dashboard
+                            .addToBackStack(null)
                             .commit();
                 }
             }
@@ -72,7 +70,7 @@ public class AdminDashboardFragment extends Fragment {
                 if (isAdded() && getActivity() != null) {
                     getActivity().getSupportFragmentManager().beginTransaction()
                             .replace(R.id.content, adminManageProfileFragment)
-                            .addToBackStack(null)  // Optional, if you want to navigate back to the admin dashboard
+                            .addToBackStack(null)
                             .commit();
                 }
             }
@@ -87,8 +85,8 @@ public class AdminDashboardFragment extends Fragment {
 
                 if (isAdded() && getActivity() != null) {
                     getActivity().getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.content, profileFragment) // Make sure R.id.content is the ID of your fragment container
-                            .addToBackStack(null) // Add transaction to the back stack for proper navigation back
+                            .replace(R.id.content, profileFragment)
+                            .addToBackStack(null)
                             .commit();
                 }
             }

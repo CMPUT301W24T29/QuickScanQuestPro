@@ -36,6 +36,8 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     private static final String USER_ID_KEY = "userId";
 
     private User user;
+
+    private Event event;
     private String userId;
     private List<User> usersList;
 
@@ -77,6 +79,8 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
             databaseService.getSpecificUserDetails(userId, this);
             return true;
         });
+
+
     }
 
     // TODO: remove test event stuff before finishing project
@@ -91,12 +95,12 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     }
 
     // TODO: remove test event stuff before finishing project
-    public Event getTestEvent() {
-        if (this.testEvent == null) {
-            setTestEvent(Event.createTestEvent(getNewEventID()));
-        }
-        return this.testEvent;
-    }
+//    public Event getTestEvent() {
+//        if (this.testEvent == null) {
+//            setTestEvent(Event.createTestEvent(getNewEventID()));
+//        }
+//        return this.testEvent;
+//    }
 
     /**
      * This method called to create a new user if it doesn't already exist in the database
@@ -108,7 +112,10 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
         // Create a new user with a Map or a custom object
         Map<String, Object> user = new HashMap<>();
+<<<<<<< HEAD
         user.put("exists", "Yes"); // Just a simple flag, you can add more user details here
+=======
+>>>>>>> 2454ea8c4cc422b9ead7d7abe2fbaa5956bfddd6
         user.put("admin", true);
         user.put("check-ins", 0);
         user.put("name", "");
@@ -151,6 +158,12 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     public void setUser(User user) {
         this.user = user;
     }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public void setEvent(Event event) {this.event = event;}
 
     /**
      * transitions the main fragment display (content) to the specified fragment with the given tag

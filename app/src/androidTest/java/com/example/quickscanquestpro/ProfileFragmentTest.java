@@ -3,6 +3,7 @@ package com.example.quickscanquestpro;
 import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.pressKey;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.init;
 import static androidx.test.espresso.intent.Intents.intended;
@@ -11,6 +12,7 @@ import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
@@ -23,7 +25,13 @@ import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
 import android.net.Uri;
+import android.view.KeyEvent;
+import android.view.View;
 
+import androidx.test.espresso.Espresso;
+import androidx.test.espresso.UiController;
+import androidx.test.espresso.ViewAction;
+import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -32,6 +40,7 @@ import androidx.test.rule.GrantPermissionRule;
 
 import com.google.firebase.auth.FirebaseAuth;
 
+import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -57,11 +66,7 @@ public class ProfileFragmentTest {
         init();
         FirebaseAuth.getInstance().signInAnonymously();
         // Wait at least 6 seconds for the app to initialize or load data
-        try {
-            Thread.sleep(6000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onView(isRoot()).perform(waitFor(6000));
     }
 
     @After
@@ -75,20 +80,11 @@ public class ProfileFragmentTest {
 
 
         // Wait for EventDetails to fully load
-        try {
-            Thread.sleep(5000);
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onView(isRoot()).perform(waitFor(5000));
 
         // Navigate to the profile section
         onView(withId(R.id.navigation_profile)).perform(click());
-        try {
-            Thread.sleep(4000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onView(isRoot()).perform(waitFor(4000));
         onView(withId(R.id.button_profile)).perform(click());
 
         // Prepare the result data for the gallery intent
@@ -106,12 +102,7 @@ public class ProfileFragmentTest {
         intended(hasAction(Intent.ACTION_GET_CONTENT));
 
         // Wait for the image to be uploaded and processed
-        try {
-            Thread.sleep(10000); // Adjust based on your app's upload time
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onView(isRoot()).perform(waitFor(10000));
 
         // Check if the delete button is now displayed
         onView(withId(R.id.deleteProfilePictureButton)).check(matches(isDisplayed()));
@@ -121,19 +112,11 @@ public class ProfileFragmentTest {
     @Test
     public void US020202deleteProfilePictureTest() {
 
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onView(isRoot()).perform(waitFor(5000));
 
 
         onView(withId(R.id.navigation_profile)).perform(click());
-        try {
-            Thread.sleep(4000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onView(isRoot()).perform(waitFor(4000));
         onView(withId(R.id.button_profile)).perform(click());
 
         Intent resultData = new Intent();
@@ -147,29 +130,70 @@ public class ProfileFragmentTest {
 
         intended(hasAction(Intent.ACTION_GET_CONTENT));
 
-        try {
-            Thread.sleep(7000);
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onView(isRoot()).perform(waitFor(7000));
 
         onView(withId(R.id.deleteProfilePictureButton)).perform(click());
 
-        try {
-            Thread.sleep(5000);
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onView(isRoot()).perform(waitFor(5000));
 
         onView(withId(R.id.deleteProfilePictureButton)).check(matches(not(isDisplayed())));
+    }
 
-        try {
-            Thread.sleep(4000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+    @Test
+    public void US020501displayInitialsWhenNoProfilePictureTest() {
+
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
+
+        // Go to Manage Users
+        onView(withId(R.id.button_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(4000)); // Wait for the user list to load
+
+        for (int i = 0; i < 20; i++) {
+            onView(withId(R.id.fullNameInput)).perform(click()).perform(pressKey(KeyEvent.KEYCODE_DEL));
         }
+        Espresso.closeSoftKeyboard();
+        onView(withId(R.id.fullNameInput)).perform(ViewActions.typeText("John Doe"));
+        Espresso.closeSoftKeyboard();
+        Intent resultData = new Intent();
+        Uri imageUri = Uri.parse("android.resource://com.example.quickscanquestpro/drawable/testprofilepicture");
+        resultData.setData(imageUri);
+        Instrumentation.ActivityResult result = new Instrumentation.ActivityResult(Activity.RESULT_OK, resultData);
+
+        Intents.intending(hasAction(Intent.ACTION_GET_CONTENT)).respondWith(result);
+        onView(isRoot()).perform(waitFor(4000));
+
+        onView(withId(R.id.uploadProfilePictureButton)).perform(click());
+
+        intended(hasAction(Intent.ACTION_GET_CONTENT));
+
+        onView(isRoot()).perform(waitFor(7000));
+
+        onView(withId(R.id.deleteProfilePictureButton)).perform(click());
+        onView(withId(R.id.profilePicturePlaceholder)).check(matches(withContentDescription("InitialsDisplayed")));
+        onView(isRoot()).perform(waitFor(4000));
+    }
+
+    public static ViewAction waitFor(long delay) {
+        return new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return isRoot();
+            }
+
+            @Override
+            public String getDescription() {
+                return "wait for " + delay + "milliseconds";
+            }
+
+            @Override
+            public void perform(UiController uiController, View view) {
+                uiController.loopMainThreadForAtLeast(delay);
+            }
+        };
     }
 
 }
+
