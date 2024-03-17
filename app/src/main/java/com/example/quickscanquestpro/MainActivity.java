@@ -1,6 +1,7 @@
 package com.example.quickscanquestpro;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.arch.core.executor.ArchTaskExecutor;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     private static final String PREFS_NAME = "AppPrefs";
     private static final String USER_ID_KEY = "userId";
 
-    private User user;
+    private static User user;
     private String userId;
     private List<User> usersList;
 
@@ -50,7 +51,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     private NavigationBarView navBarView;
 
     private MenuItem item;
-
 
 
     @Override
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
      * Getter for the User object
      * @return User Object
      */
-    public User getUser() {
+    public static User getUser() {
         return user;
     }
 
@@ -149,6 +149,10 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
      */
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public String getUserID() {
+        return userId;
     }
 
     /**

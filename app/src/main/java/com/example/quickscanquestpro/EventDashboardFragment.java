@@ -1,24 +1,25 @@
 package com.example.quickscanquestpro;
 
-import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.camera.view.PreviewView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -30,6 +31,8 @@ public class EventDashboardFragment extends Fragment {
     private ArrayAdapter<String> eventArrayAdapter;
 
     private ListView eventList;
+
+    private DatabaseService databaseService;
 
     public EventDashboardFragment() {
         // Required empty public constructor
@@ -55,12 +58,37 @@ public class EventDashboardFragment extends Fragment {
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        MainActivity mainActivity = (MainActivity) this.getActivity();
-        eventDataList = new ArrayList<>();
-        eventDataList.add("Test Event ID: " + mainActivity.getTestEvent().getId().toString() + " | Title: " + mainActivity.getTestEvent().getTitle() + " | Description: " + mainActivity.getTestEvent().getDescription() + " | Location: " + mainActivity.getTestEvent().getLocation() + " | Start: " + mainActivity.getTestEvent().getStartDate().toString() + " at " + mainActivity.getTestEvent().getStartTime().toString() + " | End: " + mainActivity.getTestEvent().getEndDate().toString() + " at " + mainActivity.getTestEvent().getEndTime().toString() + " | QR Code: " + String.valueOf(mainActivity.getTestEvent().getCheckinQRCode().hashCode()));
+        databaseService = new DatabaseService();
         eventList = view.findViewById(R.id.event_dashboard_list);
-        eventArrayAdapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_list_item_1, eventDataList);
-        eventList.setAdapter(eventArrayAdapter);
+        databaseService.listenForEventUpdates(new DatabaseService.OnEventsDataLoaded() {
+            @Override
+            public void onEventsLoaded(List<Event> events) {
+                if (getActivity() == null) {
+                    Log.e("EventDashboardFragment", "Activity is null. Skipping setup.");
+                    return;
+                }
+
+                if (events.isEmpty()) {
+                    Toast.makeText(getActivity(), "No event found!", Toast.LENGTH_SHORT).show();
+                } else {
+
+                    EventDashboardAdapter adapter = new EventDashboardAdapter(getContext(), R.layout.list_event_organiser_user_view, events);
+                    // Set the adapter for the eventListView
+                    eventList.setOnItemClickListener((parent, view, position, id) -> {
+                        Log.d("ItemClick", "Item clicked at position: " + position);
+                        Event event = events.get(position);
+                        EventDetailsFragment eventDetails = new EventDetailsFragment(event);
+                        FragmentManager fragmentManager = ((FragmentActivity) getContext()).getSupportFragmentManager();
+                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                        fragmentTransaction.replace(R.id.content, eventDetails);
+                        fragmentTransaction.addToBackStack(null);
+                        fragmentTransaction.commit();
+                    });
+                    eventList.setAdapter(adapter);
+                    Log.d("Check", "Its gotten till here");
+                }
+            }
+        });
 
         Button createButton = view.findViewById(R.id.event_dashboard_create_button);
         createButton.setOnClickListener(v -> {
@@ -72,28 +100,8 @@ public class EventDashboardFragment extends Fragment {
             fragmentTransaction.commit();
         });
 
-        // set the event list to open the event details fragment when an event is clicked
-        eventList.setOnItemClickListener((parent, view1, position, id) -> {
-            EventDetailsFragment fragment = new EventDetailsFragment();
-            // Get the FragmentManager from the activity
-            FragmentManager fragmentManager = ((FragmentActivity) getContext()).getSupportFragmentManager();
-            // Start a new FragmentTransaction
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            // Replace the current fragment with the eventDetailsFragment
-            fragmentTransaction.replace(R.id.content, fragment);
-            // Add the transaction to the back stack (optional)
-            fragmentTransaction.addToBackStack(null);
-            // Commit the transaction
-            fragmentTransaction.commit();
-        });
 
-//        eventList.setOnItemLongClickListener((parent, view12, position, id) -> {
-//            EventAttendeeFragment fragment = new EventAttendeeFragment();
-//            FragmentTransaction fragmentTransaction = mainActivity.getSupportFragmentManager().beginTransaction();
-//            fragmentTransaction.replace(R.id.content, fragment, this.getString(R.string.events_list_title));
-//            fragmentTransaction.commit();
-//            return true;
-//        });
+
     }
 
 }

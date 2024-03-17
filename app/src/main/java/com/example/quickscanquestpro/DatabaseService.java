@@ -126,12 +126,13 @@ public class DatabaseService {
      * @param userId The ID of the user checking in.
      * @param location The location associated with the check-in.
      */
-    public void recordCheckIn(String eventId, String userId, String location) {
+    public void recordCheckIn(String eventId, String userId, String userName, String location) {
         DocumentReference eventRef = db.collection("events").document(eventId);
 
         // Create a new check-in map to append to the 'checkins' array
         Map<String, Object> checkInMap = new HashMap<>();
         checkInMap.put("userId", userId);
+        checkInMap.put("name", userName);
         checkInMap.put("location", location);
         checkInMap.put("timestamp", new Date());
 
@@ -209,6 +210,7 @@ public class DatabaseService {
                 event.setEndDate(LocalDate.parse(document.getString("End-date")));
                 event.setStartTime(LocalTime.parse(document.getString("Start-time")));
                 event.setEndTime(LocalTime.parse(document.getString("End-time")));
+                event.setAttendees((ArrayList<User>) document.get("checkins"));
                 events.add(event);
             }
             callback.onEventsLoaded(events);
@@ -296,7 +298,6 @@ public class DatabaseService {
                 event.setEndDate(LocalDate.parse(queryDocumentSnapshot.getString("End-date")));
                 event.setStartTime(LocalTime.parse(queryDocumentSnapshot.getString("Start-time")));
                 event.setEndTime(LocalTime.parse(queryDocumentSnapshot.getString("End-time")));
-
                 // This is supposed to load event picture, but unsure if it works properly
                 // To be implemented later
                 /*String eventPictureUrl = queryDocumentSnapshot.getString("eventPictureUrl");
@@ -319,6 +320,49 @@ public class DatabaseService {
         }).addOnFailureListener(e -> callback.onEventLoaded(null));
 
     }
+
+    public void getEventAttendees(String eventId, OnEventDataLoaded callback) {
+        eventsRef.document(eventId).get().addOnSuccessListener(queryDocumentSnapshot -> {
+            if (!queryDocumentSnapshot.exists()) {
+                callback.onEventLoaded(null);
+                return;
+            }
+
+            // creating an event using its id will also create a QR code from the id it was given, which will always be the same
+            Event event = new Event(eventId);
+
+            // Set other fields as before
+            List<Map<String, Object>> checkInsList = (List<Map<String, Object>>) queryDocumentSnapshot.get("checkins");
+            if (checkInsList != null) {
+                ArrayList<User> attendees = new ArrayList<User>();
+                for (Map<String, Object> checkInMap : checkInsList) {
+                    // Extract data from the check-in map
+                    String userId = (String) checkInMap.get("userId");
+                    String name = (String) checkInMap.get("name");
+//                        String location = (String) checkInMap.get("location");
+//                        // Assuming the timestamp is stored as a Date object, adjust accordingly if it's stored differently
+//                        Date timestamp = (Date) checkInMap.get("timestamp");
+
+                    // Create a User object
+                    User user = new User(userId);
+                    user.setName(name);
+                    // Add more fields as needed
+
+                    // Add the user object to the list of attendees
+                    attendees.add(user);
+                }
+                // Set the list of attendees to the event object
+                event.setAttendees(attendees);
+            } else {
+                // Handle the case where "checkins" is null or not a list
+                callback.onEventLoaded(null); // Or handle it according to your logic
+            }
+
+            callback.onEventLoaded(event);
+        }).addOnFailureListener(e -> callback.onEventLoaded(null));
+
+    }
+
 
     /**
      * Uploads a profile picture to Firebase Storage and updates the user's profile in Firestore.
