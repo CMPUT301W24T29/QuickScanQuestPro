@@ -125,78 +125,82 @@ public class EventDetailsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         MainActivity mainActivity = (MainActivity) this.getActivity();
+        if(mainActivity != null && mainActivity.getUser() != null) {
+            // Initialize the views that will display the event details
+            TextView eventTitle = view.findViewById(R.id.event_title);
+            TextView eventDescription = view.findViewById(R.id.event_description);
+            TextView eventDate = view.findViewById(R.id.event_date);
+            TextView eventLocation = view.findViewById(R.id.event_location);
+            eventImage = view.findViewById(R.id.event_banner);
+            FloatingActionButton backButton = view.findViewById(R.id.back_button);
+            FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
+            Button uploadImageButton = view.findViewById(R.id.edit_banner_button);
 
-        // Initialize the views that will display the event details
-        TextView eventTitle = view.findViewById(R.id.event_title);
-        TextView eventDescription = view.findViewById(R.id.event_description);
-        TextView eventDate = view.findViewById(R.id.event_date);
-        TextView eventLocation = view.findViewById(R.id.event_location);
-        eventImage = view.findViewById(R.id.event_banner);
-        FloatingActionButton backButton = view.findViewById(R.id.back_button);
-        FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
-        Button uploadImageButton = view.findViewById(R.id.edit_banner_button);
-
-        uploadImageButton.setVisibility(View.VISIBLE);
+            uploadImageButton.setVisibility(View.VISIBLE);
 
 
-        // If there is no event passed in, create a test event
-        if (this.event == null) {
-            event = Event.createTestEvent(mainActivity.getNewEventID());
-        }
+            // If there is no event passed in, create a test event
+            if (this.event == null) {
+                event = Event.createTestEvent(mainActivity.getNewEventID());
+            }
 
-        // Set the image of the event to the event banner if it exists, otherwise hide the imageview
-        if (event.getEventBannerUrl() != null) {
-            Glide.with(this).load(event.getEventBannerUrl()).into(eventImage);
-        }
-        else {
-            eventImage.setVisibility(View.GONE);
-        }
+            // Set the image of the event to the event banner if it exists, otherwise hide the imageview
+            if (event.getEventBannerUrl() != null) {
+                Glide.with(this).load(event.getEventBannerUrl()).into(eventImage);
+            } else {
+                eventImage.setVisibility(View.GONE);
+            }
 
-        // Set the text of the event details to the event details
-        eventTitle.setText(event.getTitle());
-        eventDescription.setText(event.getDescription());
-        String eventDateString = event.getStartDate().toString() + " at " + event.getStartTime().toString() + " until " + event.getEndDate().toString() + " at " + event.getEndTime().toString();
-        eventDate.setText(eventDateString);
-        eventLocation.setText(event.getLocation());
-        ArrayList<String >announcementList = event.getAnnouncements();
+            // Set the text of the event details to the event details
+            eventTitle.setText(event.getTitle());
+            eventDescription.setText(event.getDescription());
+            String eventDateString = event.getStartDate().toString() + " at " + event.getStartTime().toString() + " until " + event.getEndDate().toString() + " at " + event.getEndTime().toString();
+            eventDate.setText(eventDateString);
+            eventLocation.setText(event.getLocation());
+            ArrayList<String> announcementList = event.getAnnouncements();
 
-        // Set the listview of announcements to the announcements of the event and set the height of the listview
-        ArrayAdapter<String> announcementAdapter =
-                new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, announcementList);
-        ListView announcementListView = view.findViewById(R.id.event_announcements_list);
-        announcementListView.setAdapter(announcementAdapter);
-        ListViewHelper.getListViewSize(announcementListView);
+            // Set the listview of announcements to the announcements of the event and set the height of the listview
+            ArrayAdapter<String> announcementAdapter =
+                    new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, announcementList);
+            ListView announcementListView = view.findViewById(R.id.event_announcements_list);
+            announcementListView.setAdapter(announcementAdapter);
+            ListViewHelper.getListViewSize(announcementListView);
 
-        // Set an on click listener for the back button
-        backButton.setOnClickListener(v -> {
+            // Set an on click listener for the back button
+            backButton.setOnClickListener(v -> {
 
-            // if the user is organiser, i want to go back to admin event dashboard
-            FragmentManager fragmentManager = getParentFragmentManager();
-            fragmentManager.popBackStack();
+                // if the user is organiser, i want to go back to admin event dashboard
+                FragmentManager fragmentManager = getParentFragmentManager();
+                fragmentManager.popBackStack();
 
-        });
-
-        // Enable these buttons if the user is the organizer of the event
-        if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
-            uploadImageButton.setOnClickListener(v -> {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("image/*");
-                pickImageLauncher.launch(intent);
             });
-            // For now, option to change event banner is unavailable
+
+            // Enable these buttons if the user is the organizer of the event
+            if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
+                uploadImageButton.setOnClickListener(v -> {
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("image/*");
+                    pickImageLauncher.launch(intent);
+                });
+                // For now, option to change event banner is unavailable
+                // eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
+                setShareButton(shareButton);
+            }
+            // Hide these buttons if user is not the organizer
+            else {
+                uploadImageButton.setVisibility(View.GONE);
+                shareButton.setVisibility(View.GONE);
+            }
+
+            // For now, the option to change the event banner is unavailable
             // eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
+            //uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
             setShareButton(shareButton);
         }
-        // Hide these buttons if user is not the organizer
         else {
-            uploadImageButton.setVisibility(View.GONE);
-            shareButton.setVisibility(View.GONE);
-        }
+            Log.e(TAG, "User or MainActivity is null");
 
-        // For now, the option to change the event banner is unavailable
-        // eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
-        //uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
-        setShareButton(shareButton);
+        }
     }
 
     @Override
