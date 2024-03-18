@@ -30,6 +30,7 @@ public class User {
 
     private String profilePicturePath;
 
+
     /*
      * user preference
      * text file storing ID

@@ -6,13 +6,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import org.checkerframework.common.value.qual.StringVal;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +28,12 @@ public class EventAttendeeFragment extends Fragment {
     private DatabaseService databaseService;
 
     private Event event;
+
+    ArrayList<String> attendeeIDs;
+    ArrayList<Integer> checkInCounts;
+
+    // Initialize a counter to track the number of completed async calls
+    int completedCalls = 0;
 
     public EventAttendeeFragment(Event event) {
         this.event = event;
@@ -46,7 +58,7 @@ public class EventAttendeeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         databaseService = new DatabaseService(); // Initialize your DatabaseService
-        ListView eventListView = view.findViewById(R.id.event_attendee_list);
+        ListView attendeeListView = view.findViewById(R.id.event_attendee_list);
 
         view.findViewById(R.id.back_button).setOnClickListener(v -> {
             // i want to go back to the prev fragment
@@ -59,48 +71,66 @@ public class EventAttendeeFragment extends Fragment {
          * and then set the adapter to the list view
          */
 
-        // Initialize HashMap to store unique attendees and their check-in counts
-        Map<User, Integer> attendeeMap = new HashMap<>();
-        Map<String, Integer> userOccurrenceMap = new HashMap<>();
-
         databaseService.getEventAttendees(event.getId(), new DatabaseService.OnEventDataLoaded() {
-
             @Override
             public void onEventLoaded(Event event) {
-                attendeeMap.clear();
-                // Get the attendees from the event
-                List<User> attendees = event.getAttendees();
-
-                // check if the attendees list is empty
-                if (attendees == null) {
-                    // Show a toast message if the attendees list is empty
-                    Toast.makeText(getActivity(), "No attendees found", Toast.LENGTH_SHORT).show();
+                if(event == null)
+                {
+                    Toast.makeText(getContext(), "this event has no attendees", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                // Get the attendees of the event
+                ArrayList<User> attendees = event.getAttendees();
+                if(attendees == null || attendees.isEmpty())
+                {
+                    Toast.makeText(getContext(), "No attendees found", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 else{
+                    // Create a map to store the number of times each user has checked in
+                    Map<String, Integer> occurrences = new HashMap<>();
                     for (User attendee : attendees) {
-                        userOccurrenceMap.put(attendee.getUserId(), userOccurrenceMap.getOrDefault(attendee, 0) + 1);
+                        String userId = attendee.getUserId();
+                        occurrences.put(userId, occurrences.getOrDefault(userId, 0) + 1);
                     }
-                    // Iterate through attendees and update the HashMap
+
+                    // Create a list to store unique attendees with their check-in counts
+                    ArrayList<User> uniqueAttendees = new ArrayList<>();
                     for (User attendee : attendees) {
-                        if (attendeeMap.containsKey(attendee)) {
-                            attendeeMap.put(attendee, attendeeMap.get(attendee) + 1);
-                        } else {
-                            attendeeMap.put(attendee, 1);
+                        String userId = attendee.getUserId();
+                        // Check if the attendee is not already in the unique list
+                        boolean isUnique = true;
+                        for (User uniqueAttendee : uniqueAttendees) {
+                            if (uniqueAttendee.getUserId().equals(userId)) {
+                                isUnique = false;
+                                break;
+                            }
+                        }
+                        if (isUnique) {
+                            // Set the check-in count for the attendee
+                            Log.d("Checkins", String.valueOf(occurrences.get(userId)));
+                            attendee.setCheckins(occurrences.get(userId));
+                            uniqueAttendees.add(attendee);
                         }
                     }
-                }
-                // Convert HashMap to array for adapter
-                User[] uniqueAttendees = attendeeMap.keySet().toArray(new User[0]);
-                Log.d("Attendees", "onEventLoaded: " + uniqueAttendees);
-                Integer[] checkInCounts = attendeeMap.values().toArray(new Integer[0]);
 
-                // Create and set custom adapter
-                EventAttendeeAdapter adapter = new EventAttendeeAdapter(getActivity(), uniqueAttendees, checkInCounts);
-                eventListView.setAdapter(adapter);
+                    Log.d("UniqueAttendees", uniqueAttendees.toString());
+                    Log.d("Checkins", String.valueOf(uniqueAttendees.get(0).getCheckins()));
+
+                    EventAttendeeAdapter adapter = new EventAttendeeAdapter(getActivity(), R.layout.list_attendee_view, uniqueAttendees);
+                    // Set the adapter for the attendeeListView
+                    attendeeListView.setAdapter(adapter);
+
+                    TextView liveAttendeeCount = view.findViewById(R.id.live_count_number);
+                    liveAttendeeCount.setText(String.valueOf(uniqueAttendees.size()));
+
+                }
             }
         });
+
+
     }
 }
+
 
 

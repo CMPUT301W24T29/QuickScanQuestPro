@@ -182,7 +182,7 @@ public class DatabaseService {
         userData.put("email", user.getEmail());
         userData.put("phone", user.getMobileNum());
         userData.put("geoLocation", user.isGeolocation());
-        userData.put("check-ins", user.getCheckins());
+//        userData.put("check-ins", user.getCheckins());
         userData.put("Homepage", user.getHomepage());
         userData.put("profilePictureUrl", user.getProfilePictureUrl());
         userData.put("profilePicturePath", user.getProfilePicturePath());
@@ -344,16 +344,8 @@ public class DatabaseService {
                 for (Map<String, Object> checkInMap : checkInsList) {
                     // Extract data from the check-in map
                     String userId = (String) checkInMap.get("userId");
-                    String name = (String) checkInMap.get("name");
-//                        String location = (String) checkInMap.get("location");
-//                        // Assuming the timestamp is stored as a Date object, adjust accordingly if it's stored differently
-//                        Date timestamp = (Date) checkInMap.get("timestamp");
-
                     // Create a User object
                     User user = new User(userId);
-                    user.setName(name);
-                    // Add more fields as needed
-
                     // Add the user object to the list of attendees
                     attendees.add(user);
                 }

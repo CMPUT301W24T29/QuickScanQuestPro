@@ -24,6 +24,7 @@
             android:layout_width="358dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:layout_marginStart="10dp"
             android:text="@string/attendee_list"
             android:textSize="24sp"
             android:textStyle="bold"
@@ -33,49 +34,41 @@
 
     </LinearLayout>
 
-
-
     <ListView
         android:id="@+id/event_attendee_list"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="32dp"
-        android:background="#D6D6D6"
-        app:layout_constraintBottom_toTopOf="@+id/live_count_layout"
+        app:layout_constraintBottom_toTopOf="@+id/live_count"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/event_attendee_dashboard_title" />
 
-    <LinearLayout
-        android:id="@+id/live_count_layout"
-        app:layout_constraintTop_toBottomOf="@+id/event_attendee_list"
-        app:layout_constraintBottom_toBottomOf="parent"
+
+    <TextView
+        android:id="@+id/live_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_marginStart="88dp"
+        android:text="Live Count: "
+        android:textSize="30dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"></TextView>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/live_count"
-            android:text="Live Count: "
-            android:textSize="30dp">
-        </TextView>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/live_count_number"
-            android:text="0"
-            android:textSize="30dp">
-        </TextView>
-
-    </LinearLayout>
-
-
+    <TextView
+        android:id="@+id/live_count_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:text="0"
+        android:textSize="30dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.137"
+        app:layout_constraintStart_toEndOf="@+id/live_count"></TextView>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
