@@ -25,6 +25,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
@@ -327,40 +328,42 @@ public class DatabaseService {
 
     }
 
+
     public void getEventAttendees(String eventId, OnEventDataLoaded callback) {
-        eventsRef.document(eventId).get().addOnSuccessListener(queryDocumentSnapshot -> {
-            if (!queryDocumentSnapshot.exists()) {
-                callback.onEventLoaded(null);
-                return;
-            }
+            // Assuming eventsRef is a reference to the collection containing event documents
+            DocumentReference eventDocRef = eventsRef.document(eventId);
+            eventDocRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                    if (e != null) {
+                        Log.w("DatabaseService", "Listen failed.", e);
+                        callback.onEventLoaded(null);
+                        return;
+                    }
 
-            // creating an event using its id will also create a QR code from the id it was given, which will always be the same
-            Event event = new Event(eventId);
-
-            // Set other fields as before
-            List<Map<String, Object>> checkInsList = (List<Map<String, Object>>) queryDocumentSnapshot.get("checkins");
-            if (checkInsList != null) {
-                ArrayList<User> attendees = new ArrayList<User>();
-                for (Map<String, Object> checkInMap : checkInsList) {
-                    // Extract data from the check-in map
-                    String userId = (String) checkInMap.get("userId");
-                    // Create a User object
-                    User user = new User(userId);
-                    // Add the user object to the list of attendees
-                    attendees.add(user);
+                    if (documentSnapshot != null && documentSnapshot.exists()) {
+                        Event event = new Event(eventId);
+                        List<Map<String, Object>> checkInsList = (List<Map<String, Object>>) documentSnapshot.get("checkins");
+                        if (checkInsList != null) {
+                            ArrayList<User> attendees = new ArrayList<>();
+                            for (Map<String, Object> checkInMap : checkInsList) {
+                                // Extract data from the check-in map
+                                String userId = (String) checkInMap.get("userId");
+                                // Create a User object
+                                User user = new User(userId);
+                                // Add the user object to the list of attendees
+                                attendees.add(user);
+                            }
+                            // Set the list of attendees to the event object
+                            event.setAttendees(attendees);
+                        }
+                        callback.onEventLoaded(event);
+                    } else {
+                        callback.onEventLoaded(null);
+                    }
                 }
-                // Set the list of attendees to the event object
-                event.setAttendees(attendees);
-            } else {
-                // Handle the case where "checkins" is null or not a list
-                callback.onEventLoaded(null); // Or handle it according to your logic
-            }
-
-            callback.onEventLoaded(event);
-        }).addOnFailureListener(e -> callback.onEventLoaded(null));
-
-    }
-
+            });
+        }
 
     /**
      * Uploads a profile picture to Firebase Storage and updates the user's profile in Firestore.
