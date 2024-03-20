@@ -255,6 +255,7 @@ public class DatabaseService {
      * @param callback The callback to be called when the data is loaded
      */
 
+
     public void getSpecificUserDetails(String userId, OnUserDataLoaded callback) {
         usersRef.document(userId).get().addOnSuccessListener(queryDocumentSnapshot -> {
             if (!queryDocumentSnapshot.exists()) {

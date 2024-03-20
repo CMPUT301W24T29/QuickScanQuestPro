@@ -61,7 +61,6 @@ public class EventAttendeeAdapter extends ArrayAdapter<User>{
             checkinCountTextView.setText(String.valueOf(currentUser.getCheckins()));
         });
 
-
         return convertView;
     }
 
