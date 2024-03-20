@@ -136,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
      */
     private void existingUser(String userId) {
         user = new User(userId);
+        // get the firebase messaging token
         Toast.makeText(getApplicationContext(), "Welcome Back!", Toast.LENGTH_SHORT).show();
     }
 
