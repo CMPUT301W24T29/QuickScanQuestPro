@@ -173,35 +173,19 @@ public class EventCreationFragment extends Fragment {
             }
         });
 
-        view.findViewById(R.id.reuse_checkin_button).setOnClickListener(v -> showReuseFragment("checkin"));
-        // Reuse speaker button
+        view.findViewById(R.id.reuse_checkin_button).setOnClickListener(v -> {
+            // launch qr scanner, in some special way, so that when it processes the qr it returns the value to me/this fragment instead
+            // callback type beat???
+            // verify the qr code is not already in use in the database
+            // if it is, send them back to the page with an x next to the button
+            // if its not, then replace the id of the event with this one and generate+store a new qr code WITHOUT a leading c or p (qrtype = "checkinReused")
+            // send them back to the page with a check
+        });
+
         view.findViewById(R.id.reuse_promo_button).setOnClickListener(v -> showReuseFragment("promo"));
 
         // must do this at the end, last thing before showing user the fields
         validateEntryFields();
-    }
-
-    /**
-     * Initiates the display of the ReuseQRFragment with specified content.
-     * This method creates a bundle to carry the type of content (reuseType) to be displayed in the ReuseQRFragment.
-     * It sets this bundle as arguments for the fragment, effectively informing the fragment about the content it needs to handle (e.g., check-in or promo).
-     * After preparing the fragment with the necessary information, it performs a fragment transaction to replace the current view in the 'content' container with this fragment.
-     * Optionally, the transaction is added to the back stack, allowing users to return to the previous state by pressing the back button.
-     *
-     * @param reuseType The specific content type the ReuseQRFragment should display or operate with, such as "CHECK_IN" or "PROMO".
-     */
-    private void showReuseFragment(String reuseType) {
-        // Pass the reuse type to the ReuseFragment using arguments
-        Bundle args = new Bundle();
-        args.putString("REUSE_TYPE", reuseType);
-        ReuseQRFragment reuseFragment = new ReuseQRFragment();
-        reuseFragment.setArguments(args);
-
-        // Perform the fragment transaction to display the ReuseFragment
-        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-        transaction.replace(R.id.content, reuseFragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
     }
 
     private TextWatcher getTextWatcher(final EditText editText) {
