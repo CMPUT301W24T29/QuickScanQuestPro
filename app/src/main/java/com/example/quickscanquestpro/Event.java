@@ -69,6 +69,9 @@ public class Event {
     private ArrayList<User> attendees = new ArrayList<User>();
     private Bitmap eventBanner = null;
 
+    private ArrayList<User> signUps = new ArrayList<>();
+
+
     /**
      * Constructor for the event that just takes an id, used when constructing the object during event creation.
      * @param id the id (unique) of the event, from database preferably
@@ -354,5 +357,13 @@ public class Event {
                 mGetContent.launch("image/*");
             }
         };
+    }
+
+    public ArrayList<User> getSignUps() {
+        return signUps;
+    }
+
+    public void setSignUps(ArrayList<User> signUps) {
+        this.signUps = signUps;
     }
 }

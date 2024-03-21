@@ -338,7 +338,7 @@ public class ProfileFragment extends Fragment {
                     String profilePictureUrl = document.getString("profilePictureUrl");
                     Boolean geolocation = document.getBoolean("geolocation");
 
-                    updateUIWithUserData(name, homepage, mobileNum, email, geolocation);
+                    updateUIWithUserData(name, homepage, mobileNum, email, geolocation, profilePictureUrl);
                 } else {
                     Log.d("ProfileFragment", "No such document");
                 }
