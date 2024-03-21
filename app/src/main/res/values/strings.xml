@@ -7,7 +7,8 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="create_event_button_string">Create Event</string>
-    <string name="events_list_title">Events List</string>
+    <string name="browse_events_button_string">Browse Events</string>
+    <string name="events_list_title">My Events</string>
     <string name="profile_list_title">Profile List</string>
     <string name="attendee_list">Event Attendee List</string>
 

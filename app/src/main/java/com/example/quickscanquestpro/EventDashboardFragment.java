@@ -1,26 +1,26 @@
 package com.example.quickscanquestpro;
 
-import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.camera.view.PreviewView;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +36,7 @@ public class EventDashboardFragment extends Fragment {
     private ListView eventList;
 
     private DatabaseService databaseService = new DatabaseService();
+    private static final String TAG = "EventDashboardFragment";
 
     public EventDashboardFragment() {
         // Required empty public constructor
@@ -67,14 +68,26 @@ public class EventDashboardFragment extends Fragment {
         eventRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         // Initialize with an empty list; we will update the list when data is loaded
-        EventListAdapter eventAdapter = new EventListAdapter(getContext(), new ArrayList<>());
+        BrowseEventListAdapter eventAdapter = new BrowseEventListAdapter(getContext(), new ArrayList<>());
         eventRecyclerView.setAdapter(eventAdapter);
 
         // Use a data loading method. It could be `listenForEventUpdates` or any other method you have.
         databaseService.getEvents(updatedEvents -> {
             // Ensure fragment is still attached to an activity
             if (isAdded() && getActivity() != null) {
-                eventAdapter.updateEvents(updatedEvents);
+                LocalDateTime currentDateTime = LocalDateTime.now();
+                Toast.makeText(getContext(), currentDateTime.toString(), Toast.LENGTH_SHORT).show();
+                Log.d("Dashboard", currentDateTime.toString());
+                List<Event> filteredEvents = new ArrayList<>();
+                for (Event event : updatedEvents) {
+                    LocalDate endDate = event.getEndDate();
+                    LocalTime endTime = event.getEndTime();
+                    LocalDateTime endDateTime = endDate.atTime(endTime);
+                    if (endDateTime.compareTo(currentDateTime)>=0) {
+                        filteredEvents.add(event);
+                    }
+                }
+                eventAdapter.updateEvents(filteredEvents);
             }
         });
 
@@ -85,6 +98,20 @@ public class EventDashboardFragment extends Fragment {
             transaction.addToBackStack(null);
             transaction.commit();
         });
+
+        Button browseButton = view.findViewById(R.id.event_dashboard_browse_button);
+        browseButton.setOnClickListener(v -> {
+
+        });
+    }
+
+    public List<String> setEventHeaders() {
+        List <String> eventHeaders = new ArrayList<>();
+        eventHeaders.add("Checked-In Events");
+        //eventHeaders.add("Signed-Up Events");
+        //eventHeaders.add("Organized Events");
+
+        return eventHeaders;
     }
 
 }
