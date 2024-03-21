@@ -52,6 +52,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -66,6 +67,7 @@ public class EventDetailsFragment extends Fragment {
     private DatabaseService databaseService = new DatabaseService();
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private ImageView eventImage;
+    private ArrayList<ArrayList<Object>> checkInList;
 
     /**
      * This is the default constructor for the EventDetailsFragment class. If no event is passed in,
@@ -135,9 +137,11 @@ public class EventDetailsFragment extends Fragment {
             FloatingActionButton backButton = view.findViewById(R.id.back_button);
             FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
             Button uploadImageButton = view.findViewById(R.id.edit_banner_button);
+            Button attendeesButton = view.findViewById(R.id.view_attendees_button);
 
             uploadImageButton.setVisibility(View.VISIBLE);
 
+            event.getCheckIns().forEach(checkIn -> Log.d(TAG, "onViewCreated: " + checkIn.getUserId()));
 
             // If there is no event passed in, create a test event
             if (this.event == null) {
@@ -175,6 +179,15 @@ public class EventDetailsFragment extends Fragment {
 
             });
 
+            attendeesButton.setOnClickListener(v -> {
+                AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.checkInList);
+                FragmentManager fragmentManager = getParentFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.content, attendeesListFragment);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
+            });
+
             // Enable these buttons if the user is the organizer of the event
             if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
                 uploadImageButton.setOnClickListener(v -> {
@@ -190,6 +203,7 @@ public class EventDetailsFragment extends Fragment {
             else {
                 uploadImageButton.setVisibility(View.GONE);
                 shareButton.setVisibility(View.GONE);
+                //attendeesButton.setVisibility(View.GONE);
             }
 
             // For now, the option to change the event banner is unavailable
@@ -330,4 +344,29 @@ public class EventDetailsFragment extends Fragment {
             }
         });
     }
+
+    private ArrayList<ArrayList<Object>> countAttendees(Event event) {
+        ArrayList<CheckIn> checkIns = event.getCheckIns();
+        ArrayList<ArrayList<Object>> outputList = new ArrayList<>();
+
+        for (CheckIn checkIn : checkIns) {
+            boolean found = false;
+            for (ArrayList<Object> outputs : outputList) {
+                if (outputs.get(0).equals(checkIn.getUserId())) {
+                    outputs.set(1, (int) outputs.get(1) + 1);
+                    found = true;
+                    break; // Break the loop once the user ID is found
+                }
+            }
+            if (!found) {
+                ArrayList<Object> innerList = new ArrayList<>();
+                innerList.add(checkIn.getUserId());
+                innerList.add(1);
+                outputList.add(innerList);
+            }
+        }
+        Log.d(TAG, "countAttendees: " + outputList);
+        return outputList;
+    }
+
 }

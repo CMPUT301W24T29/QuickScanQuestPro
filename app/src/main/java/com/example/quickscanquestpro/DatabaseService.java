@@ -213,11 +213,33 @@ public class DatabaseService {
                 event.setEndTime(LocalTime.parse(document.getString("End-time")));
                 event.setEventBannerUrl(document.getString("eventPictureUrl"));
                 event.setEventBannerPath(document.getString("eventPicturePath"));
+
+                // Retrieve check-ins for this event
+                ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) document.get("checkins");
+                Log.d(TAG, "Retrieved " + (checkInsArray != null ? checkInsArray.size() : 0) + " check-ins for event " + eventId);
+
+                if (checkInsArray != null) {
+                    // Process the check-ins array
+                    ArrayList<CheckIn> checkIns = new ArrayList<>();
+                    for (Map<String, Object> checkInMap : checkInsArray) {
+                        String userId = (String) checkInMap.get("userId");
+                        String location = (String) checkInMap.get("location");
+                        checkIns.add(new CheckIn(userId, location));
+                    }
+
+                    Log.d(TAG, "Created " + checkIns.size() + " check-ins for event " + eventId);
+                    event.setCheckIns(checkIns);
+                }
+
+                // Add the event to the list
                 events.add(event);
             }
+
+            // Call the callback with the list of events
             callback.onEventsLoaded(events);
         }).addOnFailureListener(e -> callback.onEventsLoaded(null));
     }
+
 
     /**
      * Method to get all users from the Firestore database
@@ -495,6 +517,10 @@ public class DatabaseService {
         Map<String, Object> combinedData = new HashMap<>();
         combinedData.putAll(updates);
         eventsRef.document(String.valueOf(event.getId())).set(combinedData, SetOptions.merge());
+    }
+
+    public void getCheckIns(Event event, OnSuccessListener<QuerySnapshot> onSuccessListener) {
+        eventsRef.document(event.getId()).collection("checkins").get().addOnSuccessListener(onSuccessListener);
     }
 
 }

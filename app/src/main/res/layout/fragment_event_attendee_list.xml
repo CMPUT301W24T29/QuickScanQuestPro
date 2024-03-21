@@ -47,7 +47,8 @@
         app:layout_constraintBottom_toTopOf="@+id/live_count_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/event_attendee_dashboard_title" />
+        app:layout_constraintTop_toBottomOf="@+id/event_attendee_dashboard_title"
+        tools:listitem="@layout/list_attendees_view"/>
 
     <LinearLayout
         android:id="@+id/live_count_layout"

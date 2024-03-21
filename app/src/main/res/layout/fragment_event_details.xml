@@ -51,7 +51,16 @@
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="16dp"
             android:layout_marginStart="130dp"
-            android:text="Upload Image"/>
+            android:text=" Upload Image "/>
+
+        <Button
+            android:id="@+id/view_attendees_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/edit_banner_button"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="130dp"
+            android:text="View Atendees"/>
 
         <TextView
             android:id="@+id/event_title"
@@ -63,7 +72,7 @@
             android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/edit_banner_button" />
+            app:layout_constraintTop_toBottomOf="@id/view_attendees_button" />
 
         <TextView
             android:id="@+id/event_description"

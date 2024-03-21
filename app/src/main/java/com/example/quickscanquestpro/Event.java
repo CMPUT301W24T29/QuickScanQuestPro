@@ -68,6 +68,8 @@ public class Event {
     // josh
     private ArrayList<User> attendees = new ArrayList<User>();
     private Bitmap eventBanner = null;
+    private ArrayList<CheckIn> checkIns;
+
 
     /**
      * Constructor for the event that just takes an id, used when constructing the object during event creation.
@@ -354,5 +356,12 @@ public class Event {
                 mGetContent.launch("image/*");
             }
         };
+    }
+
+    public void setCheckIns(ArrayList<CheckIn> checkIns) {
+        this.checkIns = checkIns;
+    }
+    public ArrayList<CheckIn> getCheckIns() {
+        return checkIns;
     }
 }
