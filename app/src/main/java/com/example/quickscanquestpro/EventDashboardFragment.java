@@ -1,9 +1,15 @@
 package com.example.quickscanquestpro;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -36,6 +42,15 @@ public class EventDashboardFragment extends Fragment {
     private ListView eventList;
     private DatabaseService databaseService;
 
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
+        @Override
+        public void onActivityResult(Boolean o) {
+            if (o) {
+                Toast.makeText(getContext(), "Notifications Permission granted", Toast.LENGTH_LONG).show();
+            }
+        }
+    });
+
     public EventDashboardFragment() {
         // Required empty public constructor
     }
@@ -62,6 +77,10 @@ public class EventDashboardFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         databaseService = new DatabaseService();
         super.onViewCreated(view, savedInstanceState);
+
+        if(ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
 
         RecyclerView eventRecyclerView = view.findViewById(R.id.event_dashboard_list);
         eventRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

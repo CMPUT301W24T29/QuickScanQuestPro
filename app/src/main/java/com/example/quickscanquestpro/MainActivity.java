@@ -42,16 +42,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     private String newEventID = UUID.randomUUID().toString();
     private Event testEvent;
 
-    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
-        @Override
-        public void onActivityResult(Boolean o) {
-            if (o) {
-//                Log.d("Permission", "Notifications Permission granted");
-                Toast.makeText(getApplicationContext(), "Notifications Permission granted", Toast.LENGTH_SHORT).show();
-            }
-        }
-    });
-
     private static final String PREFS_NAME = "AppPrefs";
     private static final String USER_ID_KEY = "userId";
 
@@ -83,9 +73,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         setContentView(R.layout.activity_main);
 
         FirebaseApp.initializeApp(this);
-        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-        }
         // Initiate user
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         userId = prefs.getString(USER_ID_KEY, null);

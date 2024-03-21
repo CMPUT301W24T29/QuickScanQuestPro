@@ -2,10 +2,6 @@ package com.example.quickscanquestpro;
 
 
 import static android.content.ContentValues.TAG;
-import static androidx.camera.core.impl.utils.ContextUtil.getApplicationContext;
-
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 
 import android.net.Uri;
 import android.util.Log;
@@ -13,24 +9,12 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 
-import androidx.annotation.NonNull;
-
-import androidx.annotation.NonNull;
-
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.transition.Transition;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.OnSuccessListener;
-
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.OnProgressListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -330,7 +314,7 @@ public class DatabaseService {
     }
 
 
-    public void getEventAttendees(String eventId, OnEventDataLoaded callback) {
+    public void ListenForLiveEventAttendees(String eventId, OnEventDataLoaded callback) {
             // Assuming eventsRef is a reference to the collection containing event documents
             DocumentReference eventDocRef = eventsRef.document(eventId);
             eventDocRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {

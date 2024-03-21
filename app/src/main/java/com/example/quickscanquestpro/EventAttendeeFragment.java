@@ -13,14 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import org.checkerframework.common.value.qual.StringVal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class EventAttendeeFragment extends Fragment {
@@ -71,7 +66,7 @@ public class EventAttendeeFragment extends Fragment {
          * and then set the adapter to the list view
          */
 
-        databaseService.getEventAttendees(event.getId(), new DatabaseService.OnEventDataLoaded() {
+        databaseService.ListenForLiveEventAttendees(event.getId(), new DatabaseService.OnEventDataLoaded() {
             @Override
             public void onEventLoaded(Event event) {
                 if(event == null)
@@ -119,10 +114,11 @@ public class EventAttendeeFragment extends Fragment {
 
                     EventAttendeeAdapter adapter = new EventAttendeeAdapter(getActivity(), R.layout.list_attendee_view, uniqueAttendees);
                     // Set the adapter for the attendeeListView
-                    attendeeListView.setAdapter(adapter);
-
                     TextView liveAttendeeCount = view.findViewById(R.id.live_count_number);
                     liveAttendeeCount.setText(String.valueOf(uniqueAttendees.size()));
+                    attendeeListView.setAdapter(adapter);
+
+
 
                 }
             }
