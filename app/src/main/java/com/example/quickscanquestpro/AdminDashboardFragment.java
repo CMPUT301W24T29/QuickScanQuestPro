@@ -12,6 +12,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+/**
+ * A {@link Fragment} subclass that represents the admin dashboard within the application.
+ * It provides the admin user with various management options including managing events,
+ * managing user profiles, and viewing profiles. This serves as a central hub for
+ * administrative tasks.
+ */
+
 public class AdminDashboardFragment extends Fragment {
 
     public AdminDashboardFragment() {
@@ -25,6 +32,15 @@ public class AdminDashboardFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_admin_dashboard, container, false);
     }
 
+    /**
+     * Sets up the interaction for all buttons within the fragment after the view is created.
+     * This includes setting click listeners for managing events, managing user profiles, and
+     * viewing profiles, providing navigation to the respective fragments for each action.
+     *
+     * @param view The View returned by onCreateView(LayoutInflater, ViewGroup, Bundle).
+     * @param savedInstanceState If non-null, the fragment is being re-constructed from a previous saved state.
+     */
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -34,14 +50,12 @@ public class AdminDashboardFragment extends Fragment {
         manageEventsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Create an instance of EventDashboardFragment
                 AdminManageEventsFragment adminManageEventsFragment = new AdminManageEventsFragment();
 
-                // Use FragmentManager to replace the AdminDashboardFragment with EventDashboardFragment
                 if (isAdded() && getActivity() != null) {
                     getActivity().getSupportFragmentManager().beginTransaction()
                             .replace(R.id.content, adminManageEventsFragment)
-                            .addToBackStack(null)  // Optional, if you want to navigate back to the admin dashboard
+                            .addToBackStack(null)
                             .commit();
                 }
             }
@@ -56,7 +70,7 @@ public class AdminDashboardFragment extends Fragment {
                 if (isAdded() && getActivity() != null) {
                     getActivity().getSupportFragmentManager().beginTransaction()
                             .replace(R.id.content, adminManageProfileFragment)
-                            .addToBackStack(null)  // Optional, if you want to navigate back to the admin dashboard
+                            .addToBackStack(null)
                             .commit();
                 }
             }
@@ -71,13 +85,12 @@ public class AdminDashboardFragment extends Fragment {
 
                 if (isAdded() && getActivity() != null) {
                     getActivity().getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.content, profileFragment) // Make sure R.id.content is the ID of your fragment container
-                            .addToBackStack(null) // Add transaction to the back stack for proper navigation back
+                            .replace(R.id.content, profileFragment)
+                            .addToBackStack(null)
                             .commit();
                 }
             }
         });
-
 
 
     }

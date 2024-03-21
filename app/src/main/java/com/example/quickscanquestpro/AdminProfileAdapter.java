@@ -19,18 +19,43 @@ import androidx.fragment.app.FragmentTransaction;
 
 import java.util.List;
 
+
+/**
+ * An ArrayAdapter designed for rendering a list of {@link User} objects within an admin interface.
+ * This adapter is responsible for converting each {@link User} object into a View that can be inserted into
+ * a ListView. It provides functionality for deleting a user and navigating to the user's profile
+ * details.
+ */
+
 public class AdminProfileAdapter extends ArrayAdapter<User> {
     private int resourceLayout;
     private Context mContext;
 
     private DatabaseService databaseService = new DatabaseService();
 
+    /**
+     * Constructs a new {@link AdminProfileAdapter}.
+     *
+     * @param context   The current context.
+     * @param resource  The resource ID for a layout file containing a TextView to use when
+     *                  instantiating views.
+     * @param items     The list of {@link User} objects to represent in the ListView.
+     */
     public AdminProfileAdapter(@NonNull Context context, int resource, List<User> items) {
         super(context, resource, items);
         this.resourceLayout = resource;
         this.mContext = context;
     }
 
+
+    /**
+     *
+     * @param position     The position of the item within the adapter's data set of the item whose view
+     *                     we want.
+     * @param convertView  The old view to reuse
+     * @param parent       The parent that this view will eventually be attached to.
+     * @return A View corresponding to the data at the specified position.
+     */
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {

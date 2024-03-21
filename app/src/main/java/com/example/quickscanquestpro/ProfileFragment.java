@@ -5,6 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,6 +29,7 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -78,7 +83,7 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+  
         setupActivityResultLaunchers();
 
     }
@@ -116,6 +121,14 @@ public class ProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         initializeViews(view);
 
+
+        // when user clicks the back button
+        view.findViewById(R.id.backButton).setOnClickListener(v -> {
+            FragmentManager fragmentManager = getParentFragmentManager();
+            fragmentManager.popBackStack();
+        });
+
+
     }
 
 
@@ -124,7 +137,6 @@ public class ProfileFragment extends Fragment {
      * This method is responsible for binding UI components to their respective views in the layout,
      * setting click listeners for buttons, adding text change listeners for EditText fields,
      * and initializing switch interactions. It also prepopulates user data into the UI components.
-     *
      * @param view The parent view of the fragment in which the UI components are located.
      */
     private void initializeViews(View view) {
@@ -135,7 +147,7 @@ public class ProfileFragment extends Fragment {
 
 
         uploadProfilePictureButton.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK);
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("image/*");
             pickImageLauncher.launch(intent);
         });
@@ -168,6 +180,12 @@ public class ProfileFragment extends Fragment {
             public void afterTextChanged(Editable s) {
                 user.setName(s.toString());
                 databaseService.addUser(user);
+                if (user != null) {
+                    if (user.getProfilePictureUrl() == null || user.getProfilePictureUrl().isEmpty()) {
+                        displayInitials();
+                    }
+                }
+
             }
         });
 
@@ -280,6 +298,7 @@ public class ProfileFragment extends Fragment {
                 profilePicturePlaceholder.setImageResource(R.drawable.ic_profile_picture_placeholder);
                 deleteProfilePictureButton.setVisibility(View.GONE);
                 Toast.makeText(getContext(), "Profile Picture Deleted", Toast.LENGTH_SHORT).show();
+                displayInitials();
             }
 
             @Override
@@ -313,7 +332,7 @@ public class ProfileFragment extends Fragment {
                     // Now, you directly access fields
 
                     String name = document.getString("name");
-                    String homepage = document.getString("homepage");
+                    String homepage = document.getString("Homepage");
                     String mobileNum = document.getString("phone");
                     String email = document.getString("email");
                     String profilePictureUrl = document.getString("profilePictureUrl");
@@ -364,13 +383,67 @@ public class ProfileFragment extends Fragment {
         if (profilePictureUrl != null && !profilePictureUrl.isEmpty()) {
             Glide.with(this).load(profilePictureUrl).into(profilePicturePlaceholder);
             deleteProfilePictureButton.setVisibility(View.VISIBLE);
-        }
-        else
-        {
+        } else {
+            // Use the centralized method to display initials
+            displayInitials();
             deleteProfilePictureButton.setVisibility(View.GONE);
         }
         if (geolocation != null) {
             geolocationSwitch.setChecked(geolocation);
+        }
+    }
+
+    /**
+     * Generates a bitmap image containing the user's initials. This method creates a bitmap of specified width and height,
+     * fills it with a background color, and then draws the user's initials in the center. The text and background colors,
+     * as well as the text size, can be adjusted within the method.
+     *
+     * @param initials The initials to be drawn on the bitmap. This should be a string containing the first letters of the user's name.
+     * @param width The desired width of the resulting bitmap in pixels.
+     * @param height The desired height of the resulting bitmap in pixels.
+     * @return A Bitmap object containing the user's initials. This bitmap can be used directly to set an ImageView or saved as an image file.
+     */
+    private Bitmap generateInitialsBitmap(String initials, int width, int height) {
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        // Background
+        Paint backgroundPaint = new Paint();
+        backgroundPaint.setColor(Color.LTGRAY);
+        backgroundPaint.setStyle(Paint.Style.FILL);
+        canvas.drawRect(0, 0, width, height, backgroundPaint);
+
+        // Text
+        Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        textPaint.setColor(Color.WHITE);
+        textPaint.setTextSize(100); // Adjust as needed
+        textPaint.setTextAlign(Paint.Align.CENTER);
+
+        // Adjust text size and position as needed
+        float xPos = width / 2;
+        float yPos = (height / 2) - ((textPaint.descent() + textPaint.ascent()) / 2);
+
+        canvas.drawText(initials, xPos, yPos, textPaint);
+
+        return bitmap;
+    }
+
+    /**
+     * Displays the user's initials in the profile picture placeholder. If the user's name is available,
+     * this method generates a bitmap with the user's initials and sets it as the image for the profile picture placeholder.
+     * If the user's name is not available, it sets the placeholder image to a default resource.
+     * This method ensures that there is always an appropriate image displayed in the profile picture placeholder,
+     * whether it be the user's initials or a default image when no name is available.
+     */
+    private void displayInitials() {
+        if (user != null && user.getName() != null && !user.getName().isEmpty()) {
+            Bitmap initialsBitmap = generateInitialsBitmap(user.getInitials(), 300, 300);
+            profilePicturePlaceholder.setImageBitmap(initialsBitmap);
+            // Setting a tag or content description for testing purposes
+            profilePicturePlaceholder.setContentDescription("InitialsDisplayed");
+        } else {
+            profilePicturePlaceholder.setImageResource(R.drawable.ic_profile_picture_placeholder);
+            profilePicturePlaceholder.setContentDescription("DefaultPlaceholder");
         }
     }
 

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This class represents the User object
+ * A class that represents a user of the application.
  */
 public class User {
 
@@ -35,11 +35,7 @@ public class User {
      * text file storing ID
      * */
 
-    /**
-     * User Constructor
-     * @param userId The string passed to initialize userId
-     */
-    public User(String userId){
+    public User(String userId) {
         this.userId = userId;
     }
 
@@ -136,6 +132,23 @@ public class User {
         this.admin = admin;
     }
 
+    /**
+     * Gets the initials of the user's name.
+     * @return A string containing the initials of the user.
+     */
+    public String getInitials() {
+        if (this.name == null || this.name.isEmpty()) {
+            return ""; // Return an empty string if name is not set
+        }
+
+        StringBuilder initials = new StringBuilder();
+        for (String part : this.name.split(" ")) {
+            if (!part.isEmpty()) {
+                initials.append(part.charAt(0));
+            }
+        }
+        return initials.toString().toUpperCase();
+    }
 
 }
 

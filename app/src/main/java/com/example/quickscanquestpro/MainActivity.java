@@ -36,6 +36,8 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     private static final String USER_ID_KEY = "userId";
 
     private User user;
+
+    private Event event;
     private String userId;
     private List<User> usersList;
 
@@ -77,6 +79,8 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
             databaseService.getSpecificUserDetails(userId, this);
             return true;
         });
+
+
     }
 
     // TODO: remove test event stuff before finishing project
@@ -91,12 +95,12 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     }
 
     // TODO: remove test event stuff before finishing project
-    public Event getTestEvent() {
-        if (this.testEvent == null) {
-            setTestEvent(Event.createTestEvent(getNewEventID()));
-        }
-        return this.testEvent;
-    }
+//    public Event getTestEvent() {
+//        if (this.testEvent == null) {
+//            setTestEvent(Event.createTestEvent(getNewEventID()));
+//        }
+//        return this.testEvent;
+//    }
 
     /**
      * This method called to create a new user if it doesn't already exist in the database
@@ -108,13 +112,12 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
         // Create a new user with a Map or a custom object
         Map<String, Object> user = new HashMap<>();
-        user.put("exists", "LMFAO"); // Just a simple flag, you can add more user details here
-        user.put("admin", false);
+        user.put("admin", true);
         user.put("check-ins", 0);
-        user.put("name", "Joseph Du");
-        user.put("homepage", "https://disney.com");
+        user.put("name", "");
+        user.put("homepage", "");
         user.put("email", "");
-        user.put("geolocation", true);
+        user.put("geolocation", false);
 
         // Add a new document with the generated userId
         db.collection("users").document(userId).set(user)
@@ -151,6 +154,12 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     public void setUser(User user) {
         this.user = user;
     }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public void setEvent(Event event) {this.event = event;}
 
     /**
      * transitions the main fragment display (content) to the specified fragment with the given tag

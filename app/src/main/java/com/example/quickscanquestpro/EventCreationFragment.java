@@ -1,8 +1,12 @@
 package com.example.quickscanquestpro;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -11,6 +15,7 @@ import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
@@ -26,13 +31,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.MultiFormatWriter;
 
 import org.w3c.dom.Text;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -54,6 +64,8 @@ public class EventCreationFragment extends Fragment {
     private Button createButton;
     private ImageView posterImageView;
 
+    private ActivityResultLauncher<Intent> pickImageLauncher;
+
     public EventCreationFragment() {
         // Required empty public constructor
     }
@@ -67,7 +79,21 @@ public class EventCreationFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.creatingEvent = new Event(UUID.randomUUID().toString());
+        setupActivityResultLaunchers();
     }
+
+    private void setupActivityResultLaunchers() {
+        pickImageLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
+                Uri selectedImageUri = result.getData().getData();
+                if (selectedImageUri != null) {
+                    Glide.with(this).load(selectedImageUri).into(posterImageView);
+                    uploadImage(selectedImageUri);
+                }
+            }
+        });
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -91,13 +117,17 @@ public class EventCreationFragment extends Fragment {
 
         Button uploadImageButton = view.findViewById(R.id.banner_upload_button);
 
-        uploadImageButton.setOnClickListener(creatingEvent.uploadPhoto(this, posterImageView));
+        uploadImageButton.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+            pickImageLauncher.launch(intent);
+        });
 
         // adds textwatchers that update the Event whenever text is changed
         titleEditText = view.findViewById(R.id.edit_text_event_title);
         descriptionEditText = view.findViewById(R.id.edit_text_event_description);
         locationEditText = view.findViewById(R.id.edit_text_event_address);
-        
+
         titleEditText.addTextChangedListener(getTextWatcher(titleEditText));
         descriptionEditText.addTextChangedListener(getTextWatcher(descriptionEditText));
         locationEditText.addTextChangedListener(getTextWatcher(locationEditText));
@@ -133,12 +163,16 @@ public class EventCreationFragment extends Fragment {
                 creatingEvent.setOrganizerId(organizerId);
                 // create a new event in the database
                 databaseService.addEvent(creatingEvent);
+                // to later upload the event image to the database
+                if (creatingEvent.getEventBanner() != null) {
+                    uploadImage(getImageToShare(creatingEvent.getEventBanner()));
+                }
                 Log.d("EventCreationFragment", "Event created: " + creatingEvent.toString() );
                 // set active fragment to the event dashboard again
                 mainActivity.transitionFragment(new EventDashboardFragment(), this.getString(R.string.title_dashboard));
             }
         });
-        
+
         view.findViewById(R.id.reuse_checkin_button).setOnClickListener(v -> showReuseFragment("checkin"));
         // Reuse speaker button
         view.findViewById(R.id.reuse_promo_button).setOnClickListener(v -> showReuseFragment("promo"));
@@ -246,13 +280,64 @@ public class EventCreationFragment extends Fragment {
         } else {
             endTimeText.setError(null);
         }
-        
+
         if (!valid) {
             createButton.setEnabled(false);
         } else {
             createButton.setEnabled(true);
         }
-        
+
         return valid;
     }
+
+    /**
+     * This method uploads an image to the database. It takes a URI of the image file and uploads the image
+     * to the database.
+     * @param file The URI of the image file to be uploaded.
+     */
+    private void uploadImage(Uri file) {
+        // Implementation of uploadImage method, similar to the provided new code
+        databaseService.uploadEventPhoto(file, creatingEvent, new DatabaseService.OnEventPhotoUpload() {
+            @Override
+            public void onSuccess(String imageUrl, String imagePath) {
+                posterImageView.setVisibility(View.VISIBLE);
+                Glide.with(EventCreationFragment.this).load(imageUrl).into(posterImageView);
+                Toast.makeText(getContext(), "Event Banner Uploaded", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(getContext(), "Failed To Upload Profile Picture: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    /**
+     * Creates a new file in the cache directory and writes the image to it. Returns the URI of the file.
+     * @param imageQR The image to be saved.
+     * @return The URI of the file.
+     */
+    public Uri getImageToShare(Bitmap imageQR) {
+
+        File folder = new File(getActivity().getCacheDir(), "images");
+        Uri uri = null;
+        try {
+            folder.mkdirs();
+            File file = new File(folder, "imageQR.jpg");
+
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+
+            imageQR.compress(Bitmap.CompressFormat.JPEG, 90, fileOutputStream);
+            fileOutputStream.flush();
+            fileOutputStream.close();
+
+            uri = FileProvider.getUriForFile(Objects.requireNonNull(requireActivity().getApplicationContext()), "com.example.quickscanquestpro" + ".provider", file);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this.getActivity(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+        return uri;
+    }
+
 }
