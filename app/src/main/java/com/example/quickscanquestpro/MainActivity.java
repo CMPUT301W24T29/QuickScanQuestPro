@@ -1,20 +1,29 @@
 package com.example.quickscanquestpro;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.arch.core.executor.ArchTaskExecutor;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.Manifest;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.FirebaseApp;
 
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.iid.internal.FirebaseInstanceIdInternal;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +42,16 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     private String newEventID = UUID.randomUUID().toString();
     private Event testEvent;
 
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
+        @Override
+        public void onActivityResult(Boolean o) {
+            if (o) {
+//                Log.d("Permission", "Notifications Permission granted");
+                Toast.makeText(getApplicationContext(), "Notifications Permission granted", Toast.LENGTH_SHORT).show();
+            }
+        }
+    });
+
     private static final String PREFS_NAME = "AppPrefs";
     private static final String USER_ID_KEY = "userId";
 
@@ -44,6 +63,9 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
     private DatabaseService databaseService = new DatabaseService();
 
+//    private FirebaseMessageReceiver firebaseMessageReceiver = new FirebaseMessageReceiver();
+
+    private String notificationToken;
     private Boolean foundUser = false;
 
     private Boolean foundUserList = false;
@@ -61,6 +83,9 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         setContentView(R.layout.activity_main);
 
         FirebaseApp.initializeApp(this);
+        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
         // Initiate user
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         userId = prefs.getString(USER_ID_KEY, null);
@@ -199,6 +224,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
                 userId = UUID.randomUUID().toString();
                 prefs.edit().putString(USER_ID_KEY, userId).apply();
                 user = new User(userId);
+                Log.d("Token", "Refreshed token: " + notificationToken);
                 newUser(userId);
             }
         }
