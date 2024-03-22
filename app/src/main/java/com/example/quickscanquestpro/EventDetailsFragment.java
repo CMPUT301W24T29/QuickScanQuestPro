@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -169,8 +170,6 @@ public class EventDetailsFragment extends Fragment {
 
             // Set an on click listener for the back button
             backButton.setOnClickListener(v -> {
-
-                // if the user is organiser, i want to go back to admin event dashboard
                 FragmentManager fragmentManager = getParentFragmentManager();
                 fragmentManager.popBackStack();
             });
@@ -186,8 +185,7 @@ public class EventDetailsFragment extends Fragment {
                 attendeesButton.setOnClickListener(v -> {
                     FragmentManager fragmentManager = getParentFragmentManager();
                     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                    EventAttendeeFragment eventAttendeeFragment = new EventAttendeeFragment(event);
-                    fragmentTransaction.replace(R.id.content, eventAttendeeFragment);
+                    fragmentTransaction.replace(R.id.content, new EventAttendeeFragment(event));
                     fragmentTransaction.addToBackStack(null);
                     fragmentTransaction.commit();
                 });

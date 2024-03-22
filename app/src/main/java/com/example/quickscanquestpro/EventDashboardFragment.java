@@ -76,6 +76,7 @@ public class EventDashboardFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         databaseService = new DatabaseService();
+        MainActivity mainActivity = (MainActivity) getActivity();
         super.onViewCreated(view, savedInstanceState);
 
         if(ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){

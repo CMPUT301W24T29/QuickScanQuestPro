@@ -180,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
      * @param tag internal tag that the app uses to know which fragment is open
      */
     public void transitionFragment(Fragment fragment, String tag) {
+        // gets the fragment currently loaded into the content view
         FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content, fragment, tag);
         fragmentTransaction.addToBackStack(null);
@@ -187,6 +188,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     }
 
     public void addFragment(Fragment fragment, String tag) {
+        // gets the fragment currently loaded into the content view
         FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
         fragmentTransaction.add(R.id.content, fragment, tag);
         fragmentTransaction.addToBackStack(null);

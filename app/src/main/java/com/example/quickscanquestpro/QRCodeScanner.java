@@ -259,7 +259,15 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
             }
 
             // transition to the new event
-            mainActivity.transitionFragment(new EventDetailsFragment(event), "EventDetailsFragment");
+//            mainActivity.transitionFragment(new EventDetailsFragment(event), "EventDetailsFragment");
+            // Get the FragmentManager from the activity
+            FragmentManager fragmentManager = ((FragmentActivity) context).getSupportFragmentManager();
+            EventDetailsFragment eventDetailsFragment = new EventDetailsFragment(event);
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.content, eventDetailsFragment);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
+
 
             NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
             // Sets navbar selection to the event dashboard

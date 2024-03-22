@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,6 +53,7 @@ public class EventAttendeeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        MainActivity mainActivity = (MainActivity) getActivity();
         databaseService = new DatabaseService(); // Initialize your DatabaseService
         ListView attendeeListView = view.findViewById(R.id.event_attendee_list);
 
@@ -66,7 +68,7 @@ public class EventAttendeeFragment extends Fragment {
          * and then set the adapter to the list view
          */
 
-        databaseService.ListenForLiveEventAttendees(event.getId(), new DatabaseService.OnEventDataLoaded() {
+        databaseService.ListenForEventAttendeeUpdates(event.getId(), new DatabaseService.OnEventDataLoaded() {
             @Override
             public void onEventLoaded(Event event) {
                 if(event == null)
@@ -112,14 +114,13 @@ public class EventAttendeeFragment extends Fragment {
                     Log.d("UniqueAttendees", uniqueAttendees.toString());
                     Log.d("Checkins", String.valueOf(uniqueAttendees.get(0).getCheckins()));
 
-                    EventAttendeeAdapter adapter = new EventAttendeeAdapter(getContext(), R.layout.list_attendee_view, uniqueAttendees);
+                    // Create an adapter for the attendee list
+                    EventAttendeeAdapter adapter = new EventAttendeeAdapter(mainActivity, R.layout.list_attendee_view, uniqueAttendees);
+
                     // Set the adapter for the attendeeListView
                     TextView liveAttendeeCount = view.findViewById(R.id.live_count_number);
                     liveAttendeeCount.setText(String.valueOf(uniqueAttendees.size()));
                     attendeeListView.setAdapter(adapter);
-
-
-
                 }
             }
         });

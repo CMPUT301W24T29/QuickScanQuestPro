@@ -367,7 +367,7 @@ public class DatabaseService {
     }
 
 
-    public void ListenForLiveEventAttendees(String eventId, OnEventDataLoaded callback) {
+    public void ListenForEventAttendeeUpdates(String eventId, OnEventDataLoaded callback) {
             // Assuming eventsRef is a reference to the collection containing event documents
             DocumentReference eventDocRef = eventsRef.document(eventId);
             eventDocRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
@@ -402,6 +402,37 @@ public class DatabaseService {
                 }
             });
         }
+
+    public void listenForSpecificUserDetails(String userId, OnUserDataLoaded callback) {
+        DocumentReference userRef = db.collection("users").document(userId);
+
+        userRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w("DatabaseService", "Listen failed.", e);
+                    callback.onUserLoaded(null);
+                    return;
+                }
+
+                if (documentSnapshot != null && documentSnapshot.exists()) {
+                    User user = new User(userId);
+                    user.setName(documentSnapshot.getString("name"));
+//                    user.setEmail(documentSnapshot.getString("email"));
+//                    user.setMobileNum(documentSnapshot.getString("phone"));
+//                    user.setHomepage(documentSnapshot.getString("Homepage"));
+//                    user.setAdmin(documentSnapshot.getBoolean("admin"));
+//                    user.setProfilePictureUrl(documentSnapshot.getString("profilePictureUrl"));
+//                    user.setProfilePicturePath(documentSnapshot.getString("profilePicturePath"));
+//                    user.setGeolocation(documentSnapshot.getBoolean("geoLocation"));
+//                    user.setCheckins(documentSnapshot.getLong("check-ins").intValue());
+                    callback.onUserLoaded(user);
+                } else {
+                    callback.onUserLoaded(null);
+                }
+            }
+        });
+    }
 
     /**
      * Uploads a profile picture to Firebase Storage and updates the user's profile in Firestore.
@@ -489,6 +520,7 @@ public class DatabaseService {
             }
         });
     }
+
 
     /**
      * Method to listen for updates to the events collection in the Firestore database

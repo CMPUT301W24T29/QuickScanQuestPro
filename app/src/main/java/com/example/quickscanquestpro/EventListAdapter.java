@@ -80,8 +80,6 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.Even
             holder.eventImage.setImageResource(R.drawable.ic_launcher_background);
         }
 
-
-
         holder.itemView.setOnClickListener(v -> {
             if (context instanceof FragmentActivity) {
                 databaseService.getEvent(event.getId(), event1 -> {
