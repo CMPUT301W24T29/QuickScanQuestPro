@@ -23,61 +23,31 @@ import android.widget.Toast;
  * This class starts the home view of the app, initializes the camera to start scanning QR code
  */
 public class HomeViewFragment extends Fragment {
-
     private QRCodeScanner qrCodeScanner;
+    private QRCodeScanner.OnQRScanned callback;
 
     // Invokes the user to allow runtime permission for Camera Access
     private ActivityResultLauncher<String> requestCameraPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted ->{
-                if (isGranted)
-                {
+                if (isGranted) {
                     setupCamera();
-                }
-                else
-                {
+                } else {
                     Toast.makeText(getContext(), "Camera permission denied, QR Scanner cannot be used", Toast.LENGTH_LONG).show();
                 }
             });
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     public HomeViewFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment HomeView.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static HomeViewFragment newInstance(String param1, String param2) {
-        HomeViewFragment fragment = new HomeViewFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+    public HomeViewFragment(QRCodeScanner.OnQRScanned callback) {
+        super();
+        this.callback = callback;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-
     }
 
     @Override
@@ -89,6 +59,7 @@ public class HomeViewFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        view.findViewById(R.id.homeViewLayout).setBackgroundColor(getActivity().getColor(R.color.white));
 
         // If the app already has run time permission for camera it will start setupCamera otherwise invoke requestCameraPermissionLauncher
         if(ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
@@ -108,7 +79,11 @@ public class HomeViewFragment extends Fragment {
         View view = getView();
         if (view != null) {
             PreviewView previewView = view.findViewById(R.id.cameraFeed);
-            qrCodeScanner = new QRCodeScanner(getContext(), previewView, this, (MainActivity) this.getActivity());
+            if (callback != null) {
+                qrCodeScanner = new QRCodeScanner(getContext(), previewView, this, (MainActivity) this.getActivity(), callback);
+            } else {
+                qrCodeScanner = new QRCodeScanner(getContext(), previewView, this, (MainActivity) this.getActivity());
+            }
             qrCodeScanner.startCamera();
         }
     }

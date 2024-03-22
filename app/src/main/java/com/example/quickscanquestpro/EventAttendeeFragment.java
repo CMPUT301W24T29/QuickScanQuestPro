@@ -112,7 +112,7 @@ public class EventAttendeeFragment extends Fragment {
                     Log.d("UniqueAttendees", uniqueAttendees.toString());
                     Log.d("Checkins", String.valueOf(uniqueAttendees.get(0).getCheckins()));
 
-                    EventAttendeeAdapter adapter = new EventAttendeeAdapter(getActivity(), R.layout.list_attendee_view, uniqueAttendees);
+                    EventAttendeeAdapter adapter = new EventAttendeeAdapter(getContext(), R.layout.list_attendee_view, uniqueAttendees);
                     // Set the adapter for the attendeeListView
                     TextView liveAttendeeCount = view.findViewById(R.id.live_count_number);
                     liveAttendeeCount.setText(String.valueOf(uniqueAttendees.size()));
