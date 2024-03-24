@@ -12,19 +12,33 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
 
+/**
+ * A Fragment subclass for displaying an enlarged photo with an option to delete it.
+ * This class is responsible for handling the presentation of a single photo in an enlarged view
+ * and allows the user to delete the photo from the database.
+ */
+
 public class EnlargedPhotoFragment extends Fragment {
 
     private static final String ARG_PHOTO_ID = "photoId";
     private static final String ARG_PHOTO_URL = "photoUrl";
-    private static final String ARG_PHOTO_TYPE = "photoType"; // New argument to specify if it's a user or event photo
+    private static final String ARG_PHOTO_TYPE = "photoType";
 
     private String photoId;
     private String photoUrl;
     private String photoType;
 
     public EnlargedPhotoFragment() {
-        // Required empty public constructor
     }
+
+    /**
+     * Creates a new instance of EnlargedPhotoFragment with necessary arguments.
+     *
+     * @param photoId Unique identifier for the photo to be displayed.
+     * @param photoUrl URL of the photo to be displayed.
+     * @param photoType The type of photo (user or event) to determine specific logic for deletion.
+     * @return A new instance of fragment EnlargedPhotoFragment.
+     */
 
     public static EnlargedPhotoFragment newInstance(String photoId, String photoUrl, String photoType) {
         EnlargedPhotoFragment fragment = new EnlargedPhotoFragment();
@@ -51,6 +65,13 @@ public class EnlargedPhotoFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_enlarged_photo, container, false);
     }
 
+    /**
+     * Sets up the enlarged photo view and delete button logic after the view is created.
+     *
+     * @param view The View returned by {@link #onCreateView}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here.
+     */
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         ImageView enlargedPhoto = view.findViewById(R.id.enlarged_photo);
@@ -67,6 +88,11 @@ public class EnlargedPhotoFragment extends Fragment {
                     public void onSuccess() {
                         Toast.makeText(getContext(), "User photo deleted successfully", Toast.LENGTH_SHORT).show();
                         if (getFragmentManager() != null) {
+                            Bundle result = new Bundle();
+                            result.putString("photoId", photoId);
+                            result.putString("photoType", photoType);
+                            result.putBoolean("isDeleted", true);
+                            getParentFragmentManager().setFragmentResult("updatePhotoResult", result);
                             getFragmentManager().popBackStack();
                         }
                     }
@@ -82,6 +108,11 @@ public class EnlargedPhotoFragment extends Fragment {
                     public void onSuccess() {
                         Toast.makeText(getContext(), "Event photo deleted successfully", Toast.LENGTH_SHORT).show();
                         if (getFragmentManager() != null) {
+                            Bundle result = new Bundle();
+                            result.putString("photoId", photoId);
+                            result.putString("photoType", photoType);
+                            result.putBoolean("isDeleted", true);
+                            getParentFragmentManager().setFragmentResult("updatePhotoResult", result);
                             getFragmentManager().popBackStack();
                         }
                     }

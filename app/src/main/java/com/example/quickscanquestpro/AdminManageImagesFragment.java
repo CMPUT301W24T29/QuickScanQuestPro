@@ -17,6 +17,12 @@ import com.example.quickscanquestpro.DatabaseService;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A Fragment subclass for managing images within the admin panel.
+ * This class facilitates the display and management of user and event images,
+ * including the functionality to view and delete images.
+ */
+
 public class AdminManageImagesFragment extends Fragment {
 
     private RecyclerView usersRecyclerView, eventsRecyclerView;
@@ -30,21 +36,28 @@ public class AdminManageImagesFragment extends Fragment {
     private List<Event> eventsList = new ArrayList<>();
 
     public AdminManageImagesFragment() {
-        // Required empty public constructor
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_admin_image_manage, container, false);
     }
+
+    /**
+     * Setup for RecyclerViews and data fetching after the view has been created.
+     * Initializes RecyclerViews for users and events, sets their layout managers and adapters,
+     * and triggers the data fetching process.
+     *
+     * @param view The View returned by {@link #onCreateView}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here.
+     */
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        databaseService = new DatabaseService(); // Initialize your DatabaseService
+        databaseService = new DatabaseService();
 
         usersRecyclerView = view.findViewById(R.id.profiles_recycler_view);
         eventsRecyclerView = view.findViewById(R.id.events_recycler_view);
@@ -59,8 +72,42 @@ public class AdminManageImagesFragment extends Fragment {
             }
         });
 
+        getParentFragmentManager().setFragmentResultListener("updatePhotoResult", getViewLifecycleOwner(), (requestKey, result) -> {
+            String photoId = result.getString("photoId");
+            String photoType = result.getString("photoType");
+            boolean isDeleted = result.getBoolean("isDeleted", false);
 
+            // Check if the photo deletion was successful and update the UI accordingly
+            if (isDeleted) {
+                if ("user".equals(photoType)) {
+                    // Update user photo to null and refresh adapter
+                    for (User user : usersList) {
+                        if (user.getUserId().equals(photoId)) {
+                                user.setProfilePictureUrl(null);
+                            break;
+                        }
+                    }
+                    userAdapter.notifyDataSetChanged();
+                } else if ("event".equals(photoType)) {
+                    for (Event event : eventsList) {
+                        if (event.getId().equals(photoId)) {
+                            event.setEventBannerUrl(null);
+                            break;
+                        }
+                    }
+                    eventAdapter.notifyDataSetChanged();
+                }
+            }
+        });
     }
+
+    /**
+     * Configures RecyclerViews for displaying users and events.
+     * Sets the layout manager and attaches the adapter for each RecyclerView.
+     *
+     * @param usersRecyclerView RecyclerView for displaying user images.
+     * @param eventsRecyclerView RecyclerView for displaying event images.
+     */
 
     private void setupRecyclerView(RecyclerView usersRecyclerView, RecyclerView eventsRecyclerView) {
         usersRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -78,7 +125,7 @@ public class AdminManageImagesFragment extends Fragment {
             EnlargedPhotoFragment eventFragment = EnlargedPhotoFragment.newInstance(eventId, photoUrl, "event");
             if (getFragmentManager() != null) {
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.main_layout, eventFragment) // Ensure you use the correct container ID
+                        .replace(R.id.main_layout, eventFragment)
                         .addToBackStack(null)
                         .commit();
             }
@@ -88,6 +135,12 @@ public class AdminManageImagesFragment extends Fragment {
         eventsRecyclerView.setAdapter(eventAdapter);
     }
 
+    /**
+     * Fetches user and event data from the database and updates the UI.
+     * Initiates asynchronous calls to fetch user and event lists, then updates the respective adapters
+     * upon successful data retrieval.
+     */
+
     private void fetchData() {
         // Fetch users
         databaseService.getUsers(new DatabaseService.OnUsersDataLoaded() {
@@ -96,7 +149,7 @@ public class AdminManageImagesFragment extends Fragment {
                 if (users != null) {
                     usersList.clear();
                     usersList.addAll(users);
-                    userAdapter.notifyDataSetChanged(); // This refreshes the user RecyclerView
+                    userAdapter.notifyDataSetChanged();
                 }
             }
         });
@@ -107,7 +160,7 @@ public class AdminManageImagesFragment extends Fragment {
                 if (events != null) {
                     eventsList.clear();
                     eventsList.addAll(events);
-                    eventAdapter.notifyDataSetChanged(); // This refreshes the event RecyclerView
+                    eventAdapter.notifyDataSetChanged();
                 }
             }
         });
