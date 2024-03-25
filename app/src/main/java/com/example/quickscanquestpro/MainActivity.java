@@ -29,6 +29,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,8 +109,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
             databaseService.getSpecificUserDetails(userId, this);
             return true;
         });
-
-
     }
 
     // TODO: remove test event stuff before finishing project
@@ -310,17 +309,28 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
     }
 
-//    void callApi(JSONObject jsonObject)
+//    private void callApi(JSONObject jsonObject)
 //    {
 //        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 //        OkHttpClient client = new OkHttpClient();
-//        String url = "https//fcm.googleapis.com/fcm/send";
+//        String url = "https://fcm.googleapis.com/fcm/send";
 //        RequestBody body = RequestBody.create(jsonObject.toString(), JSON);
 //        Request request = new Request.Builder()
 //                .url(url)
 //                .post(body)
+//                // add the api key after bearer with a space
 //                .header("Authorization", "Bearer AAAA-z98YP0:APA91bEoBWfmJI7JHaV87puPVmZhDNv-4m0cxhjYXjsD5mAiPoTuhGbC6xfV0rVBt9qXj59n3TPCRe2QnwlZFXb96DvtoxYvyT5tCNqgaR0m8PapWiWHFVWbNpChm37VzNImEXL5T_iu")
 //                .build();
-//        client.newCall(request);
+//        client.newCall(request).enqueue(new okhttp3.Callback() {
+//            @Override
+//            public void onFailure(okhttp3.Call call, IOException e) {
+//                Log.d("Notification", "Failed to send notification");
+//            }
+//
+//            @Override
+//            public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
+//                Log.d("Notification", "Notification sent successfully");
+//            }
+//        });
 //    }
 }
