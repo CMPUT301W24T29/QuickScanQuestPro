@@ -30,6 +30,8 @@ public class User {
 
     private String profilePicturePath;
 
+    private String notificationToken;
+
 
     /*
      * user preference
@@ -131,6 +133,14 @@ public class User {
 
     public void setAdmin(boolean admin){
         this.admin = admin;
+    }
+
+     public void setNotificationToken(String notificationToken) {
+        this.notificationToken = notificationToken;
+    }
+
+    public String getNotificationToken() {
+        return notificationToken;
     }
 
     /**

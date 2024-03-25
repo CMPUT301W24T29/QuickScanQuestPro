@@ -3,6 +3,7 @@ package com.example.quickscanquestpro;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.arch.core.executor.ArchTaskExecutor;
 import androidx.core.app.ActivityCompat;
@@ -17,6 +18,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.FirebaseApp;
@@ -25,11 +27,18 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.iid.internal.FirebaseInstanceIdInternal;
 import com.google.firebase.messaging.FirebaseMessaging;
 
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 
 /**
  * Main activity for the app, initializes DatabaseService on startup,
@@ -52,9 +61,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     private List<User> usersList;
 
     private DatabaseService databaseService = new DatabaseService();
-
-//    private FirebaseMessageReceiver firebaseMessageReceiver = new FirebaseMessageReceiver();
-
     private String notificationToken;
     private Boolean foundUser = false;
 
@@ -76,6 +82,18 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         // Initiate user
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         userId = prefs.getString(USER_ID_KEY, null);
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w("FCM", "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
+                        // Get new FCM registration token
+                        notificationToken = task.getResult();
+                    }
+                });
         databaseService.getUsers(this);
 
         this.transitionFragment(new HomeViewFragment(), this.getString(R.string.title_qr_scanner));
@@ -84,7 +102,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         // sets the default selected item for the main activity to the qrscanner button
         navBarView.setSelectedItemId(R.id.navigation_qr_scanner);
         // adds functions to the navbar button
-
 
         navBarView.setOnItemSelectedListener(item -> {
             this.item = item;
@@ -130,6 +147,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         user.put("homepage", "");
         user.put("email", "");
         user.put("geolocation", false);
+        user.put("NotificationToken", notificationToken);
 
         // Add a new document with the generated userId
         db.collection("users").document(userId).set(user)
@@ -233,7 +251,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
                 userId = UUID.randomUUID().toString();
                 prefs.edit().putString(USER_ID_KEY, userId).apply();
                 user = new User(userId);
-                Log.d("Token", "Refreshed token: " + notificationToken);
                 newUser(userId);
             }
         }
@@ -292,4 +309,18 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         }
 
     }
+
+//    void callApi(JSONObject jsonObject)
+//    {
+//        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+//        OkHttpClient client = new OkHttpClient();
+//        String url = "https//fcm.googleapis.com/fcm/send";
+//        RequestBody body = RequestBody.create(jsonObject.toString(), JSON);
+//        Request request = new Request.Builder()
+//                .url(url)
+//                .post(body)
+//                .header("Authorization", "Bearer AAAA-z98YP0:APA91bEoBWfmJI7JHaV87puPVmZhDNv-4m0cxhjYXjsD5mAiPoTuhGbC6xfV0rVBt9qXj59n3TPCRe2QnwlZFXb96DvtoxYvyT5tCNqgaR0m8PapWiWHFVWbNpChm37VzNImEXL5T_iu")
+//                .build();
+//        client.newCall(request);
+//    }
 }

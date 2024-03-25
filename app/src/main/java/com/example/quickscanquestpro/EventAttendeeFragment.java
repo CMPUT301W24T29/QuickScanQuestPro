@@ -13,11 +13,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 
 public class EventAttendeeFragment extends Fragment {
 
@@ -25,8 +32,7 @@ public class EventAttendeeFragment extends Fragment {
 
     private Event event;
 
-    ArrayList<String> attendeeIDs;
-    ArrayList<Integer> checkInCounts;
+    private ArrayList<User> uniqueAttendees;
 
     // Initialize a counter to track the number of completed async calls
     int completedCalls = 0;
@@ -63,6 +69,11 @@ public class EventAttendeeFragment extends Fragment {
             fragmentManager.popBackStack();
         });
 
+        view.findViewById(R.id.alert_button).setOnClickListener(v -> {
+            Log.d("Alert", "Alert button clicked");
+            sendNotification();
+        });
+
         /**
          * This is where you should call your databaseService to get the event data and get the attendees
          * and then set the adapter to the list view
@@ -92,7 +103,7 @@ public class EventAttendeeFragment extends Fragment {
                     }
 
                     // Create a list to store unique attendees with their check-in counts
-                    ArrayList<User> uniqueAttendees = new ArrayList<>();
+                    uniqueAttendees = new ArrayList<>();
                     for (User attendee : attendees) {
                         String userId = attendee.getUserId();
                         // Check if the attendee is not already in the unique list
@@ -124,8 +135,68 @@ public class EventAttendeeFragment extends Fragment {
                 }
             }
         });
+    }
 
+     void sendNotification() {
+        try {
+            // send to all users in uniqueAttendees
+            for (User user : uniqueAttendees) {
+                // get specific user details form databaseService and use onUserLoaded to send notification
+                databaseService.getSpecificUserDetails(user.getUserId(), new DatabaseService.OnUserDataLoaded() {
+                    @Override
+                    public void onUserLoaded(User user) {
+                        JSONObject jsonObject = new JSONObject();
+                        try {
+                            Log.d("Notification", "Sending notification to user: " + user.getName());
 
+                            JSONObject notification = new JSONObject();
+                            notification.put("title", "Alert");
+                            notification.put("body", "Please check your email for important information");
+
+                            JSONObject dataObj = new JSONObject();
+                            dataObj.put("userID", user.getUserId());
+
+                            jsonObject.put("notification", notification);
+                            jsonObject.put("data", dataObj);
+                            jsonObject.put("to", user.getNotificationToken());
+
+                            callApi(jsonObject);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+
+    }
+        } catch (Exception e) {
+            e.printStackTrace();
+    }
+    }
+
+    private void callApi(JSONObject jsonObject)
+    {
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        OkHttpClient client = new OkHttpClient();
+        String url = "https://fcm.googleapis.com/fcm/send";
+        RequestBody body = RequestBody.create(jsonObject.toString(), JSON);
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .header("Authorization", "Bearer AAAA-z98YP0:APA91bEoBWfmJI7JHaV87puPVmZhDNv-4m0cxhjYXjsD5mAiPoTuhGbC6xfV0rVBt9qXj59n3TPCRe2QnwlZFXb96DvtoxYvyT5tCNqgaR0m8PapWiWHFVWbNpChm37VzNImEXL5T_iu")
+                .build();
+        client.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(okhttp3.Call call, IOException e) {
+                Log.d("Notification", "Failed to send notification");
+            }
+
+            @Override
+            public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
+                Log.d("Notification", "Notification sent successfully");
+            }
+        });
     }
 }
 
