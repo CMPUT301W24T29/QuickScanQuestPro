@@ -184,7 +184,8 @@ public class EventAttendeeFragment extends Fragment {
         Request request = new Request.Builder()
                 .url(url)
                 .post(body)
-                .header("Authorization", "Bearer AAAA-z98YP0:APA91bEoBWfmJI7JHaV87puPVmZhDNv-4m0cxhjYXjsD5mAiPoTuhGbC6xfV0rVBt9qXj59n3TPCRe2QnwlZFXb96DvtoxYvyT5tCNqgaR0m8PapWiWHFVWbNpChm37VzNImEXL5T_iu")
+                // add the api key after bearer with a space
+                .header("Authorization", "Bearer ")
                 .build();
         client.newCall(request).enqueue(new okhttp3.Callback() {
             @Override
