@@ -150,8 +150,8 @@ public class EventAttendeeFragment extends Fragment {
                             Log.d("Notification", "Sending notification to user: " + user.getName());
 
                             JSONObject notification = new JSONObject();
-                            notification.put("title", "Alert");
-                            notification.put("body", "Please check your email for important information");
+                            notification.put("title", "Booty call");
+                            notification.put("body", "Raian should eat my ass");
 
                             JSONObject dataObj = new JSONObject();
                             dataObj.put("userID", user.getUserId());
@@ -161,11 +161,9 @@ public class EventAttendeeFragment extends Fragment {
                             jsonObject.put("to", user.getNotificationToken());
 
                             callApi(jsonObject);
-
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-
                     }
                 });
 
