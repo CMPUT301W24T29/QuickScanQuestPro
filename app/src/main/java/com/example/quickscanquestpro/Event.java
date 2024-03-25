@@ -9,9 +9,11 @@ import android.graphics.Color;
 import android.graphics.ImageDecoder;
 import android.location.Location;
 import android.media.Image;
+import android.media.projection.MediaProjection;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -36,6 +38,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -61,9 +64,11 @@ public class Event {
     boolean isCheckedIn = false;
 
     private String eventBannerUrl;
-
     private String eventBannerPath;
     private static ArrayList<String> announcements = new ArrayList<String>();
+
+    private String customCheckin;
+    private String customPromo;
 
     // josh
     private ArrayList<User> attendees = new ArrayList<User>();
@@ -81,7 +86,7 @@ public class Event {
     }
 
     /**
-     * Constructor for event that requires most attributes.
+     * Constructor for event that requires most attributes. Should only be used when testing an event, as it does not set all attributes.
      * @param id id of event
      * @param title title of event
      * @param description description of event
@@ -119,7 +124,11 @@ public class Event {
 
         if (Objects.equals(qrType, "checkin") || Objects.equals(qrType, "both")) {
             try {
-                checkinQRCode = mfWriter.encode("c" + id.toString(), BarcodeFormat.QR_CODE, 400, 400);
+                if (customCheckin != null) {
+                    checkinQRCode = mfWriter.encode(customCheckin, BarcodeFormat.QR_CODE, 400, 400);
+                } else {
+                    checkinQRCode = mfWriter.encode("c" + id, BarcodeFormat.QR_CODE, 400, 400);
+                }
                 BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
                 checkinQRImage = barcodeEncoder.createBitmap(checkinQRCode);
             } catch (WriterException e) {
@@ -129,7 +138,11 @@ public class Event {
 
         if (Objects.equals(qrType, "promo") || Objects.equals(qrType, "both")) {
             try {
-                promoQRCode = mfWriter.encode("p" + id.toString(), BarcodeFormat.QR_CODE, 400, 400);
+                if (customPromo != null) {
+                    promoQRCode = mfWriter.encode(customPromo, BarcodeFormat.QR_CODE, 400, 400);
+                } else {
+                    promoQRCode = mfWriter.encode("p" + id, BarcodeFormat.QR_CODE, 400, 400);
+                }
                 BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
                 promoQRImage = barcodeEncoder.createBitmap(promoQRCode);
             } catch (WriterException e) {
@@ -289,6 +302,28 @@ public class Event {
         this.announcements = announcements;
     }
 
+    public String getCustomCheckin() {
+        return customCheckin;
+    }
+
+    public void setCustomCheckin(String customCheckin) {
+        if (customCheckin != null) {
+            this.customCheckin = customCheckin;
+            generateQR("checkin", customCheckin);
+        }
+    }
+
+    public String getCustomPromo() {
+        return customPromo;
+    }
+
+    public void setCustomPromo(String customPromo) {
+        if (customPromo != null) {
+            this.customPromo = customPromo;
+            generateQR("promo", customPromo);
+        }
+    }
+
     /**
      * Used to create and return a test event as a class function / static method.
      * @param eventID the ID to use during event creation
@@ -363,5 +398,55 @@ public class Event {
     }
     public ArrayList<CheckIn> getCheckIns() {
         return checkIns;
+    }
+
+    /**
+     * Goes through the event's checkIns, and counts up how many times each user id has checked
+     * into the event. Then associates the user's name with how many times they've checked in. If there
+     * is currently no user associated with that id, then shows Unknown User.
+     * @param users a list of all users from the database, to get names from by comparing ids
+     * @return a list of lists, with the first element of each inner list being the name of the
+     * user who checked in, and the second element is how many times they checked in to the event
+     */
+    public ArrayList<ArrayList<Object>> countAttendees(List<User> users) {
+        ArrayList<CheckIn> checkIns = this.getCheckIns();
+
+        if (checkIns == null) {
+            return null;
+        }
+
+        ArrayList<ArrayList<Object>> outputList = new ArrayList<>();
+
+        for (CheckIn checkIn : checkIns) {
+            boolean found = false;
+            for (ArrayList<Object> outputs : outputList) {
+                if (outputs.get(0).equals(checkIn.getUserId())) {
+                    outputs.set(1, (int) outputs.get(1) + 1);
+                    found = true;
+                    break; // Break the loop once the user ID is found
+                }
+            }
+            if (!found) {
+                ArrayList<Object> innerList = new ArrayList<>();
+                innerList.add(checkIn.getUserId());
+                innerList.add(1);
+                outputList.add(innerList);
+            }
+        }
+        for (ArrayList<Object> output : outputList) {
+            boolean userFound = false; // Flag to track if the user is found
+            for (User user : users) {
+                if (output.get(0).equals(user.getUserId())) {
+                    Log.d("Event", "User found: " + user.getName());
+                    output.set(0, user.getName());
+                    userFound = true; // Set the flag to true if the user is found
+                    break; // Break the loop once the user is found
+                }
+            }
+            if (!userFound) {
+                output.set(0, "Unknown User");
+            }
+        }
+        return outputList;
     }
 }

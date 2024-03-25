@@ -20,6 +20,8 @@ public class AttendeesListAdapter extends ArrayAdapter<ArrayList<Object>> {
     // Will pass a list of user ids from check ins
     public AttendeesListAdapter(@NonNull Context context, ArrayList<ArrayList<Object>> attendeesList) {
         super(context, R.layout.list_attendees_view, attendeesList);
+        this.resourceLayout = R.layout.list_attendees_view;
+        mContext = context;
     }
     @NonNull
     @Override
@@ -36,7 +38,7 @@ public class AttendeesListAdapter extends ArrayAdapter<ArrayList<Object>> {
 
         // Set the text of the TextViews to the user's name and number of check-ins
         attendeeName.setText(attendeeCheckins.get(0).toString());
-        attendeeCheckIn.setText(attendeeCheckins.get(1).toString());
+        attendeeCheckIn.setText("Check-ins: " + attendeeCheckins.get(1).toString());
 
         return view;
     }

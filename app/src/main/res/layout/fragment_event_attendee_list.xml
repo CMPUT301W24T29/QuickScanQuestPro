@@ -62,17 +62,31 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/live_count"
-            android:text="Live Count: "
-            android:textSize="30dp">
-        </TextView>
+            android:paddingLeft="10dp"
+            android:text="Check-ins: "
+            android:textSize="25dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/live_count_number"
             android:text="0"
-            android:textSize="30dp">
-        </TextView>
+            android:textSize="25dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/attendee_count_total"
+            android:paddingLeft="30dp"
+            android:text="Attendees: "
+            android:textSize="25dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/attendee_count_number"
+            android:text="0"
+            android:textSize="25dp"/>
 
     </LinearLayout>
 
