@@ -172,6 +172,27 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         fragmentTransaction.commit();
     }
 
+
+    public void addFragment(Fragment fragment, String tag) {
+        FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.add(R.id.content, fragment, tag);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showFragment(Fragment fragment) {
+        FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.show(fragment);
+        fragmentTransaction.commit();
+    }
+
+    public void hideFragment(Fragment fragment) {
+        FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.hide(fragment);
+        fragmentTransaction.commit();
+    }
+
+
     @Override
     public void onUsersLoaded(List<User> users)
     {
