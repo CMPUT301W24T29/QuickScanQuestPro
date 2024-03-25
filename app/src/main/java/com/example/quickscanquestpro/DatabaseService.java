@@ -477,7 +477,7 @@ public class DatabaseService {
                         Log.e("DatabaseService", "Cannot set event banner URL because the event is null");
                     }
                     if (event != null) {
-                        updateEventInDatabase(event);
+                        addEvent(event);
                     } else {
                         Log.e(TAG, "Event object is null.");
                         // Handle the null case appropriately, maybe notify the user or log the error.
@@ -486,15 +486,6 @@ public class DatabaseService {
 
                 }))
                 .addOnFailureListener(callback::onFailure);
-    }
-
-    public void updateEventInDatabase(Event event) {
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("eventPictureUrl", event.getEventBannerUrl());
-        updates.put("eventPicturePath", event.getEventBannerPath());
-        Map<String, Object> combinedData = new HashMap<>();
-        combinedData.putAll(updates);
-        eventsRef.document(String.valueOf(event.getId())).set(combinedData, SetOptions.merge());
     }
 
 }

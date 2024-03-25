@@ -302,8 +302,6 @@ public class EventDetailsFragment extends Fragment {
      * @param file A URI of the image file to be uploaded
      */
     private void uploadImage(Uri file) {
-        MainActivity mainActivity = (MainActivity) getActivity();
-        event = mainActivity.getEvent();
         databaseService.uploadEventPhoto(file, event, new DatabaseService.OnEventPhotoUpload() {
             @Override
             public void onSuccess(String imageUrl, String imagePath) {
