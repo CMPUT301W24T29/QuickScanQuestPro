@@ -61,9 +61,11 @@ public class Event {
     boolean isCheckedIn = false;
 
     private String eventBannerUrl;
-
     private String eventBannerPath;
     private static ArrayList<String> announcements = new ArrayList<String>();
+
+    private String customCheckin;
+    private String customPromo;
 
     // josh
     private ArrayList<User> attendees = new ArrayList<User>();
@@ -79,7 +81,7 @@ public class Event {
     }
 
     /**
-     * Constructor for event that requires most attributes.
+     * Constructor for event that requires most attributes. Should only be used when testing an event, as it does not set all attributes.
      * @param id id of event
      * @param title title of event
      * @param description description of event
@@ -117,7 +119,11 @@ public class Event {
 
         if (Objects.equals(qrType, "checkin") || Objects.equals(qrType, "both")) {
             try {
-                checkinQRCode = mfWriter.encode("c" + id.toString(), BarcodeFormat.QR_CODE, 400, 400);
+                if (customCheckin != null) {
+                    checkinQRCode = mfWriter.encode(customCheckin, BarcodeFormat.QR_CODE, 400, 400);
+                } else {
+                    checkinQRCode = mfWriter.encode("c" + id, BarcodeFormat.QR_CODE, 400, 400);
+                }
                 BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
                 checkinQRImage = barcodeEncoder.createBitmap(checkinQRCode);
             } catch (WriterException e) {
@@ -127,7 +133,11 @@ public class Event {
 
         if (Objects.equals(qrType, "promo") || Objects.equals(qrType, "both")) {
             try {
-                promoQRCode = mfWriter.encode("p" + id.toString(), BarcodeFormat.QR_CODE, 400, 400);
+                if (customPromo != null) {
+                    promoQRCode = mfWriter.encode(customPromo, BarcodeFormat.QR_CODE, 400, 400);
+                } else {
+                    promoQRCode = mfWriter.encode("p" + id, BarcodeFormat.QR_CODE, 400, 400);
+                }
                 BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
                 promoQRImage = barcodeEncoder.createBitmap(promoQRCode);
             } catch (WriterException e) {
@@ -285,6 +295,28 @@ public class Event {
 
     public void setAnnouncements(ArrayList<String> announcements) {
         this.announcements = announcements;
+    }
+
+    public String getCustomCheckin() {
+        return customCheckin;
+    }
+
+    public void setCustomCheckin(String customCheckin) {
+        if (customCheckin != null) {
+            this.customCheckin = customCheckin;
+            generateQR("checkin", customCheckin);
+        }
+    }
+
+    public String getCustomPromo() {
+        return customPromo;
+    }
+
+    public void setCustomPromo(String customPromo) {
+        if (customPromo != null) {
+            this.customPromo = customPromo;
+            generateQR("promo", customPromo);
+        }
     }
 
     /**

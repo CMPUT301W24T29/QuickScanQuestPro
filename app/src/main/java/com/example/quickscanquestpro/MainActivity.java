@@ -112,7 +112,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
         // Create a new user with a Map or a custom object
         Map<String, Object> user = new HashMap<>();
-        user.put("exists", "Yes"); // Just a simple flag, you can add more user details here
         user.put("admin", true);
         user.put("check-ins", 0);
         user.put("name", "");
