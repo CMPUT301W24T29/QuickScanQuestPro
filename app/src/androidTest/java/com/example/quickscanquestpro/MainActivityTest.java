@@ -16,6 +16,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withSubstring;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
@@ -229,8 +230,20 @@ public class MainActivityTest {
         onView(withId(R.id.event_title)).check(matches(withText(eventTitle)));
         onView(withId(R.id.event_description)).check(matches(withText("My Event Description")));
         onView(withId(R.id.event_location)).check(matches(withText("My Event Location")));
-        onView(withId(R.id.event_date)).check(matches(withText("2024-07-18 at 12:30 until 2024-07-19 at 19:36")));
+        onView(withId(R.id.event_date)).check(matches(withText("2024-08-18 at 12:30 until 2024-08-19 at 19:36")));
 
+    }
+
+    @Test
+    public void testUS_02_08_01AttendeeBrowseEvents() {
+        onView(isRoot()).perform(waitFor(2000));
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.event_dashboard_browse_button)).perform(click());
+        onView(isRoot()).perform(waitFor(5000)); // Wait for navigation
+        onView(withId(R.id.browse_events_dashboard_title)).check(matches(isDisplayed()));
+        onView(withId(R.id.browse_events_dashboard_list)).check(matches(isDisplayed()));
     }
 
     public static ViewAction waitFor(long delay) {
@@ -331,6 +344,62 @@ public class MainActivityTest {
 
         onView(withId(R.id.admin_event_dashboard_list))
                 .check(matches(not(hasDescendant(withText(firstItemIdentifier)))));
+    }
+
+
+    @Test
+    public void testUS_04_03_01AdminRemoveUserImage(){
+        onView(isRoot()).perform(waitFor(5000));
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.admin_button_view_images)).perform(click());
+        onView(isRoot()).perform(waitFor(5000)); // Wait for the user list to load
+        onView(withId(R.id.profiles_recycler_view))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+        onView(withId(R.id.enlarged_photo)).check(matches(isDisplayed()));
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.delete_button)).perform(click());
+
+
+
+    }
+
+
+    @Test
+    public void testUS_04_03_01AdminRemoveEventImage(){
+        onView(isRoot()).perform(waitFor(5000));
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.admin_button_view_images)).perform(click());
+        onView(isRoot()).perform(waitFor(5000)); // Wait for the user list to load
+        onView(withId(R.id.events_recycler_view))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+        onView(withId(R.id.enlarged_photo)).check(matches(isDisplayed()));
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.delete_button)).perform(click());
+
+
+
+    }
+
+    @Test
+    public void testUS_04_05_01AdminBrowseImage(){
+        onView(isRoot()).perform(waitFor(5000));
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.admin_button_view_images)).perform(click());
+        onView(isRoot()).perform(waitFor(5000)); // Wait for the user list to load
+        onView(withId(R.id.events_recycler_view)).check(matches(isDisplayed()));
+        onView(withId(R.id.profiles_recycler_view)).check(matches(isDisplayed()));
     }
 
 

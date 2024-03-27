@@ -112,7 +112,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
         // Create a new user with a Map or a custom object
         Map<String, Object> user = new HashMap<>();
-
         user.put("admin", true);
         user.put("check-ins", 0);
         user.put("name", "");
@@ -172,6 +171,27 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         fragmentTransaction.replace(R.id.content, fragment, tag);
         fragmentTransaction.commit();
     }
+
+
+    public void addFragment(Fragment fragment, String tag) {
+        FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.add(R.id.content, fragment, tag);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showFragment(Fragment fragment) {
+        FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.show(fragment);
+        fragmentTransaction.commit();
+    }
+
+    public void hideFragment(Fragment fragment) {
+        FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.hide(fragment);
+        fragmentTransaction.commit();
+    }
+
 
     @Override
     public void onUsersLoaded(List<User> users)

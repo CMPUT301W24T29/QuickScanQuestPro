@@ -126,6 +126,10 @@ public class DatabaseService {
                 .addOnFailureListener(e -> Log.e("DatabaseService", "Error adding new check-in.", e));
     }
 
+    public void updateLastCheckIn(String userId, String eventId){
+        DocumentReference userRef = db.collection("users").document(userId);
+        userRef.update("lastCheckIn", eventId);
+    }
 
     public void addEvent(Event event) {
 
@@ -170,6 +174,7 @@ public class DatabaseService {
         userData.put("Homepage", user.getHomepage());
         userData.put("profilePictureUrl", user.getProfilePictureUrl());
         userData.put("profilePicturePath", user.getProfilePicturePath());
+        userData.put("lastCheckIn", user.getLastCheckIn());
 
         // Add the user data to the Firestore "users" collection with the incremented document number
         usersRef.document(String.valueOf(user.getUserId())).set(userData, SetOptions.merge());
@@ -225,7 +230,6 @@ public class DatabaseService {
         }).addOnFailureListener(e -> callback.onEventsLoaded(null));
     }
 
-
     /**
      * Method to get all users from the Firestore database
      * @param callback The callback to be called when the data is loaded
@@ -247,6 +251,8 @@ public class DatabaseService {
                 user.setHomepage(document.getString("Homepage"));
 //                user.setGeolocation(document.getBoolean("geoLocation"));
 //                user.setCheckins(document.getLong("check-ins").intValue());
+                user.setProfilePictureUrl(document.getString("profilePictureUrl"));
+                user.setProfilePicturePath(document.getString("profilePicturePath"));
                 users.add(user);
             }
             callback.onUsersLoaded(users);
@@ -276,6 +282,7 @@ public class DatabaseService {
             user.setAdmin(queryDocumentSnapshot.getBoolean("admin"));
             user.setProfilePictureUrl(queryDocumentSnapshot.getString("profilePictureUrl"));
             user.setProfilePicturePath(queryDocumentSnapshot.getString("profilePicturePath"));
+            user.setLastCheckIn(queryDocumentSnapshot.getString("lastCheckIn"));
 //            user.setGeolocation(queryDocumentSnapshot.getBoolean("geoLocation"));
 //            user.setCheckins(queryDocumentSnapshot.getLong("check-ins").intValue());
 
@@ -552,6 +559,21 @@ public class DatabaseService {
         combinedData.putAll(updates);
         eventsRef.document(String.valueOf(event.getId())).set(combinedData, SetOptions.merge());
     }
+
+    public void deleteUserProfilePicture(String userId, OnProfilePictureDelete callback) {
+        DocumentReference userRef = db.collection(USERS_COLLECTION).document(userId);
+        userRef.update("profilePictureUrl", null)
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure(e));
+    }
+
+    public void deleteEventPhoto(String eventId, OnProfilePictureDelete callback) {
+        DocumentReference eventRef = db.collection(EVENTS_COLLECTION).document(eventId);
+        eventRef.update("eventPictureUrl", null)
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure(e));
+    }
+
 }
 
 
