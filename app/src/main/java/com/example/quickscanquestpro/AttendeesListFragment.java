@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This fragment displays a list of attendees for a specific event.
@@ -32,11 +33,10 @@ public class AttendeesListFragment extends Fragment {
     private ArrayList<ArrayList<Object>> checkInList;
     private AttendeesListAdapter attendeesListAdapter;
     private Timer timer;
-    private Handler handler = new Handler();
     private TextView attendeeTotal;
     private TextView checkInTotal;
     private ListView attendeesListView;
-    private boolean firstrun = false;
+    private boolean firstrun = true;
 
     /**
      * This is the constructor for the AttendeesListFragment class.
@@ -68,33 +68,24 @@ public class AttendeesListFragment extends Fragment {
         attendeeTotal = view.findViewById(R.id.attendee_count_number);
 
         backButton.setOnClickListener(v -> {
-
             // goes back to event details page
             FragmentManager fragmentManager = getParentFragmentManager();
             fragmentManager.popBackStack();
-
         });
 
-        // Get the list of attendees for the event
-        checkInList = event.countAttendees();
-        checkInList = getAttendees();
-
-        // Create an AttendeesListAdapter and set it to the ListView
+        // Initialize checkInList with empty data
+        checkInList = new ArrayList<>();
         attendeesListAdapter = new AttendeesListAdapter(getContext(), checkInList);
         attendeesListView.setAdapter(attendeesListAdapter);
 
-        // Set the total number of check-ins and attendees
-        attendeeTotal.setText(String.valueOf(checkInList.size()));
-        int totalAttendees = 0;
-        for (ArrayList<Object> checkIn : checkInList) {
-            totalAttendees += (int) checkIn.get(1);
-        }
-        checkInTotal.setText(String.valueOf(totalAttendees));
-
         startFetchingData();
-
     }
 
+    /**
+     * This method starts a timer that fetches data from the database every 5 seconds.
+     * It uses a Timer and TimerTask to schedule the data fetching task.
+     * The task fetches the data from the database and updates the UI on the main thread.
+     */
     private void startFetchingData() {
         timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -102,24 +93,14 @@ public class AttendeesListFragment extends Fragment {
             public void run() {
                 // Fetch data from the database (you need to implement this method)
                 fetchData();
-
-                // Update UI on the main thread
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Update UI components with fetched data
-                        attendeeTotal.setText(String.valueOf(checkInList.size()));
-                        int totalAttendees = 0;
-                        for (ArrayList<Object> checkIn : checkInList) {
-                            totalAttendees += (int) checkIn.get(1);
-                        }
-                        checkInTotal.setText(String.valueOf(totalAttendees));
-                    }
-                });
             }
         }, 0, 5000); // Schedule to run every 5 seconds (5000 milliseconds)
     }
 
+    /**
+     * This method fetches the data from the database and updates the UI with the new data every 5 seconds.
+     * It fetches the event details and the list of attendees for the event.
+     */
     private void fetchData() {
         databaseService.getEvent(event.getId(), event -> {
             if (event != null) {
@@ -137,89 +118,63 @@ public class AttendeesListFragment extends Fragment {
 
 
     /**
-     * This method gets the list of attendees for the event from the database. It calls the getUsers method
-     * from the DatabaseService class and passes in an OnUsersDataLoaded listener. When the list of users is
-     * loaded, the onUsersLoaded method is called and the list of users is passed in. The method then calls
-     * the countAttendees method from the Event class and passes in the list of users. The method then sets
-     * the checkInList field to the list of attendee names with the number of check-ins for each attendee.
+     * This method fetches the list of attendees for the event from the database.
+     * It updates the attendeesListAdapter with the new data and updates the total attendee count.
+     * @return The updated list of attendees.
      */
-
-
-/*    private ArrayList<ArrayList<Object>> getAttendees() {
-        checkInList = event.countAttendees();
-        for (ArrayList<Object> attendee: checkInList) {
-            databaseService.getSpecificUserDetails(attendee.get(0).toString(), new DatabaseService.OnUserDataLoaded() {
-                @Override
-                public void onUserLoaded(User user) {
-                    if (getActivity() == null) {
-                        Log.e("AttendeeListFragment", "Activity is null. Skipping setup.");
-                        return;
-                    }
-
-                    if (user == null) {
-
-                        Log.e("AttendeeListFragment",  "User not found.");
-                        attendee.set(0, "Unknown User");
-                    } else {
-                        Log.d("AttendeeListFragment", user.getName() + " found!");
-                        // checkInList will be a list of user names and the number of check-ins for each user
-                        attendee.set(0, user.getName());
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                attendeesListAdapter.updateAttendeesList(checkInList);
-                                if (attendeesListView.getVisibility() == View.GONE) {
-                                    attendeesListView.setVisibility(View.VISIBLE);
-                                }
-                            }
-                        });
-                    }
-                }
-            });
-        }
-        return checkInList;
-    }*/
 
     private ArrayList<ArrayList<Object>> getAttendees() {
         ArrayList<ArrayList<Object>> newCheckInList = event.countAttendees();
         boolean dataChanged = !checkInList.equals(newCheckInList);
 
         // Update only if data has changed
-        if (dataChanged | ! firstrun) {
+        if (dataChanged || firstrun) {
             checkInList = newCheckInList;
+            AtomicInteger totalAttendees = new AtomicInteger(0);
+            int size = checkInList.size(); // Size of checkInList to compare with the count
+
             for (ArrayList<Object> attendee : checkInList) {
-                databaseService.getSpecificUserDetails(attendee.get(0).toString(), new DatabaseService.OnUserDataLoaded() {
+                String userId = (String) attendee.get(0);
+                databaseService.getSpecificUserDetails(userId, new DatabaseService.OnUserDataLoaded() {
                     @Override
                     public void onUserLoaded(User user) {
+                        // Check if the activity is still running
                         if (getActivity() == null) {
                             Log.e("AttendeeListFragment", "Activity is null. Skipping setup.");
                             return;
                         }
-
+                        // Update the user's name in the list
                         if (user == null) {
                             Log.e("AttendeeListFragment", "User not found.");
                             attendee.set(0, "Unknown User");
                         } else {
                             Log.d("AttendeeListFragment", user.getName() + " found!");
-                            // checkInList will be a list of user names and the number of check-ins for each user
                             attendee.set(0, user.getName());
                         }
-
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                attendeesListAdapter.updateAttendeesList(checkInList);
-                                if (attendeesListView.getVisibility() == View.GONE) {
-                                    attendeesListView.setVisibility(View.VISIBLE);
+                        // Increment the totalAttendees count
+                        if (totalAttendees.incrementAndGet() == size) {
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                // Update the UI on the main thread
+                                public void run() {
+                                    attendeesListAdapter.updateAttendeesList(checkInList);
+                                    if (attendeesListView.getVisibility() == View.GONE) {
+                                        attendeesListView.setVisibility(View.VISIBLE);
+                                    }
+                                    attendeeTotal.setText(String.valueOf(checkInList.size()));
+                                    int totalAttendees = 0;
+                                    for (ArrayList<Object> checkIn : checkInList) {
+                                        totalAttendees += (int) checkIn.get(1);
+                                    }
+                                    checkInTotal.setText(String.valueOf(totalAttendees));
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
                 });
             }
         }
-        firstrun = true;
+        firstrun = false;
         return checkInList;
     }
-
 }

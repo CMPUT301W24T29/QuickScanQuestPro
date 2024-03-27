@@ -220,7 +220,7 @@ public class EventDetailsFragment extends Fragment {
             else {
                 uploadImageButton.setVisibility(View.GONE);
                 shareButton.setVisibility(View.GONE);
-                //attendeesButton.setVisibility(View.GONE);
+                attendeesButton.setVisibility(View.GONE);
             }
             setShareButton(shareButton);
         }

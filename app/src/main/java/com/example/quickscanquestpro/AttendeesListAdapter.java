@@ -13,6 +13,11 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class is an adapter for the ListView that displays the list of attendees for an event.
+ * It displays the user's name and the number of check-ins they have made to the event.
+ */
+
 public class AttendeesListAdapter extends ArrayAdapter<ArrayList<Object>> {
     private int resourceLayout;
     private Context mContext;
@@ -23,6 +28,14 @@ public class AttendeesListAdapter extends ArrayAdapter<ArrayList<Object>> {
         this.resourceLayout = R.layout.list_attendees_view;
         mContext = context;
     }
+    /**
+     * This method is called when the ListView is created.
+     * It sets the text of the TextViews in the ListView to the user's name and the number of check-ins they have made.
+     * @param position The position of the item in the ListView.
+     * @param view The view to be displayed.
+     * @param parent The parent view of the ListView.
+     * @return The view to be displayed.
+     */
     @NonNull
     @Override
     public View getView(int position, @Nullable View view, @NonNull ViewGroup parent) {
@@ -43,7 +56,10 @@ public class AttendeesListAdapter extends ArrayAdapter<ArrayList<Object>> {
         return view;
     }
 
-    // This method is used to update the list of attendees in the adapter
+    /**
+     * Updates the list of attendees displayed in the ListView.
+     * @param attendeesList The list of attendees to display.
+     */
     public void updateAttendeesList(ArrayList<ArrayList<Object>> attendeesList) {
         clear();
         addAll(attendeesList);
