@@ -35,8 +35,6 @@ public class EventDashboardFragment extends Fragment {
 
     private ListView eventList;
 
-    private List<EventDashboardModel> modelList = new ArrayList<>();
-
     private EventTypeAdapter adapter;
 
     private DatabaseService databaseService = new DatabaseService();
@@ -72,10 +70,11 @@ public class EventDashboardFragment extends Fragment {
         RecyclerView eventRecyclerView = view.findViewById(R.id.event_dashboard_list);
         eventRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        List<EventDashboardModel> modelList = new ArrayList<>();
         List<Event> checked_in_events = new ArrayList<>();
         List<Event> signed_up_events = new ArrayList<>();
         List<Event> organized_events = new ArrayList<>();
-        List<Event> other_events = new ArrayList<>();  //Stores all past events. To be removed before final submission
+        List<Event> other_events = new ArrayList<>();  //TODO: Remove before final submission (Stores all past events)
         LocalDateTime currentDateTime = LocalDateTime.now();
 
         if(mainActivity.getUser().getLastCheckIn()!=null){
@@ -86,7 +85,7 @@ public class EventDashboardFragment extends Fragment {
                     LocalDateTime endDateTime = endDate.atTime(endTime);
                     if (endDateTime.compareTo(currentDateTime)>=0) {
                         checked_in_events.add(event1);
-                     }
+                    }
                 }
             });
         }
@@ -130,7 +129,10 @@ public class EventDashboardFragment extends Fragment {
 
         Button browseButton = view.findViewById(R.id.event_dashboard_browse_button);
         browseButton.setOnClickListener(v -> {
-
+            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+            transaction.replace(R.id.content, new BrowseEventsFragment()); // Ensure that 'R.id.content' is your container ID in the layout.
+            transaction.addToBackStack(null);
+            transaction.commit();
         });
     }
 }
