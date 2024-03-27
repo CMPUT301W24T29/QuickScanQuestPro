@@ -15,6 +15,7 @@ import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -50,7 +51,7 @@ import java.util.UUID;
  * Used to create a new event. Allows organizers to create events with event details. Optionally select and upload a poster image when creating event.
  * Optionally reuse an existing QRCode and associate it with the new event for either the promotional code or the checkin code. Stores the user that created the event as an organizer
  */
-public class EventCreationFragment extends Fragment {
+public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQRScanned{
     private Event creatingEvent;
     private DatabaseService databaseService = new DatabaseService();
     private EditText titleEditText;
@@ -63,6 +64,10 @@ public class EventCreationFragment extends Fragment {
     private MainActivity mainActivity;
     private Button createButton;
     private ImageView posterImageView;
+    private Button reuseCheckinButton;
+    private Button reusePromoButton;
+    private Integer originalRightPadding;
+    private String reuseType;
 
     private ActivityResultLauncher<Intent> pickImageLauncher;
 
@@ -154,6 +159,22 @@ public class EventCreationFragment extends Fragment {
             new DatePickerFragment(endDateText, creatingEvent, this).show(mainActivity.getSupportFragmentManager(), "endDatePicker");
         });
 
+        reuseCheckinButton = view.findViewById(R.id.reuse_checkin_button);
+        reuseCheckinButton.setOnClickListener(v -> {
+            reuseType = "checkin";
+            reuseCheckinButton.setError(null);
+            // launch qr scanner by ADDING the fragment (so it does not destroy this one, requiring it to be created again when its display)
+            mainActivity.addFragment(new HomeViewFragment(this), "ReuseCheckin");
+        });
+
+        reusePromoButton = view.findViewById(R.id.reuse_promo_button);
+        reusePromoButton.setOnClickListener(v -> {
+            reuseType = "promo";
+            reusePromoButton.setError(null);
+            // launch qr scanner by ADDING the fragment (so it does not destroy this one, requiring it to be created again when its display)
+            mainActivity.addFragment(new HomeViewFragment(this), "ReusePromo");
+        });
+
         // final button that creates event and stores it
         createButton = view.findViewById(R.id.create_event_confirm_button);
         createButton.setOnClickListener(v -> {
@@ -163,45 +184,14 @@ public class EventCreationFragment extends Fragment {
                 creatingEvent.setOrganizerId(organizerId);
                 // create a new event in the database
                 databaseService.addEvent(creatingEvent);
-                // to later upload the event image to the database
-                if (creatingEvent.getEventBanner() != null) {
-                    uploadImage(getImageToShare(creatingEvent.getEventBanner()));
-                }
                 Log.d("EventCreationFragment", "Event created: " + creatingEvent.toString() );
                 // set active fragment to the event dashboard again
                 mainActivity.transitionFragment(new EventDashboardFragment(), this.getString(R.string.title_dashboard));
             }
         });
 
-        view.findViewById(R.id.reuse_checkin_button).setOnClickListener(v -> showReuseFragment("checkin"));
-        // Reuse speaker button
-        view.findViewById(R.id.reuse_promo_button).setOnClickListener(v -> showReuseFragment("promo"));
-
         // must do this at the end, last thing before showing user the fields
         validateEntryFields();
-    }
-
-    /**
-     * Initiates the display of the ReuseQRFragment with specified content.
-     * This method creates a bundle to carry the type of content (reuseType) to be displayed in the ReuseQRFragment.
-     * It sets this bundle as arguments for the fragment, effectively informing the fragment about the content it needs to handle (e.g., check-in or promo).
-     * After preparing the fragment with the necessary information, it performs a fragment transaction to replace the current view in the 'content' container with this fragment.
-     * Optionally, the transaction is added to the back stack, allowing users to return to the previous state by pressing the back button.
-     *
-     * @param reuseType The specific content type the ReuseQRFragment should display or operate with, such as "CHECK_IN" or "PROMO".
-     */
-    private void showReuseFragment(String reuseType) {
-        // Pass the reuse type to the ReuseFragment using arguments
-        Bundle args = new Bundle();
-        args.putString("REUSE_TYPE", reuseType);
-        ReuseQRFragment reuseFragment = new ReuseQRFragment();
-        reuseFragment.setArguments(args);
-
-        // Perform the fragment transaction to display the ReuseFragment
-        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-        transaction.replace(R.id.content, reuseFragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
     }
 
     private TextWatcher getTextWatcher(final EditText editText) {
@@ -292,17 +282,22 @@ public class EventCreationFragment extends Fragment {
 
     /**
      * This method uploads an image to the database. It takes a URI of the image file and uploads the image
-     * to the database.
+     * to the database. We pass a null event to the database because we dont actually want it to update the
+     * event in the database too, just give us the url for the image so we can update the event when we call
+     * the DatabaseService addEvent when the user clicks the create event button.
      * @param file The URI of the image file to be uploaded.
      */
     private void uploadImage(Uri file) {
         // Implementation of uploadImage method, similar to the provided new code
-        databaseService.uploadEventPhoto(file, creatingEvent, new DatabaseService.OnEventPhotoUpload() {
+        databaseService.uploadEventPhoto(file, null, new DatabaseService.OnEventPhotoUpload() {
             @Override
             public void onSuccess(String imageUrl, String imagePath) {
+                creatingEvent.setEventBannerUrl(imageUrl);
+                creatingEvent.setEventBannerPath(imagePath);
                 posterImageView.setVisibility(View.VISIBLE);
                 Glide.with(EventCreationFragment.this).load(imageUrl).into(posterImageView);
                 Toast.makeText(getContext(), "Event Banner Uploaded", Toast.LENGTH_SHORT).show();
+
             }
 
             @Override
@@ -340,4 +335,61 @@ public class EventCreationFragment extends Fragment {
         return uri;
     }
 
+    @Override
+    public void onQRScanned(String scannedCode) {
+        if (scannedCode != null) {
+            //do something with scanned code
+            Log.d("EventCreationFragment", "Attempting to reuse code " + scannedCode);
+            //transition back to the edit screen
+            mainActivity.getSupportFragmentManager().popBackStackImmediate();
+            // verify the qr code is not already in use in the database
+            databaseService.getEventWithCustomQR(scannedCode, event -> {
+                Button reuseButton;
+                if (Objects.equals(reuseType, "checkin")) {
+                    reuseButton = reuseCheckinButton;
+                } else {
+                    reuseButton = reusePromoButton;
+                }
+                // if it is in use, send them back to the page with an error icon next to the button
+                if (event != null) {
+                    if (originalRightPadding == null) {
+                        originalRightPadding = reuseButton.getPaddingRight();
+                    }
+
+                    reuseButton.setError("The scanned QR code is already used by another event. You must scan an unused QR code.");
+                    reuseButton.setPadding(reuseButton.getPaddingLeft(),reuseButton.getPaddingTop(),originalRightPadding-15,reuseButton.getPaddingBottom());
+                    reuseButton.setFocusableInTouchMode(true);
+                    reuseButton.requestFocus();
+                    reuseButton.setFocusableInTouchMode(false);
+                } else {
+                    // as a final check, make sure they havent already set this code
+                    if (Objects.equals(creatingEvent.getCustomCheckin(), scannedCode) || Objects.equals(creatingEvent.getCustomPromo(), scannedCode)) {
+                        if (originalRightPadding == null) {
+                            originalRightPadding = reuseButton.getPaddingRight();
+                        }
+
+                        reuseButton.setError("The code you scanned has already been set as this event's promo or checkin code. You must scan an unused QR code.");
+                        reuseButton.setPadding(reuseButton.getPaddingLeft(),reuseButton.getPaddingTop(),originalRightPadding-15,reuseButton.getPaddingBottom());
+                        reuseButton.setFocusableInTouchMode(true);
+                        reuseButton.requestFocus();
+                        reuseButton.setFocusableInTouchMode(false);
+                    } else {
+                        // send them back to the page with a check if its not in use at all
+                        reuseButton.setError(null);
+                        reuseButton.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.reuse_qr_success_checkmark, 0);
+                        // sets a custom checkin/promo code and generates a new qrbitmap for respective code
+                        if (Objects.equals(reuseType, "checkin")) {
+                            creatingEvent.setCustomCheckin(scannedCode);
+                        } else {
+                            creatingEvent.setCustomPromo(scannedCode);
+                        }
+                        Toast.makeText(mainActivity.getApplicationContext(), "Set " + reuseType + " QR!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        } else {
+            // scanned code was somehow null
+            mainActivity.getSupportFragmentManager().popBackStackImmediate();
+        }
+    }
 }
