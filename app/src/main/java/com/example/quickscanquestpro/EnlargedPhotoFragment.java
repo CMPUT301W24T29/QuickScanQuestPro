@@ -125,6 +125,6 @@ public class EnlargedPhotoFragment extends Fragment {
             }
         });
 
-
+        view.setOnTouchListener((v, event) -> true);
     }
 }
