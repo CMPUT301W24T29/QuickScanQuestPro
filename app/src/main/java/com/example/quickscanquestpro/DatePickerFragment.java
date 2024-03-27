@@ -92,6 +92,8 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
      * @param day int day selected
      */
     public void onDateSet(DatePicker view, int year, int month, int day) {
+        // Adjust month value by adding 1 to it because DatePickerDialog uses 0-based indexing
+        month = month +1;
         // Do something with the time the user picks.
         LocalDate newDate = LocalDate.of(year, month, day);
         if (dateText.getId() == R.id.text_event_start_date) {

@@ -248,6 +248,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
 
             if (processingQrType.equals("c")){
                 databaseService.recordCheckIn(event.getId(), currentUser.getUserId(), "The location where QR is scanned");
+                databaseService.updateLastCheckIn(currentUser.getUserId(), event.getId());
 
                 Toast.makeText(mainActivity.getApplicationContext(), "Checked in!", Toast.LENGTH_SHORT).show();
                 event.checkIn();
