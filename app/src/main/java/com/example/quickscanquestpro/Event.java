@@ -392,10 +392,10 @@ public class Event {
     }
 
     public ArrayList<User> getSignUps() {
-        return signUps;
+        return new ArrayList<>(signUps); // Return a copy
     }
 
-    public void setSignUps(ArrayList<User> signUps) {
-        this.signUps = signUps;
+    public void addSignup(User user) {
+        this.signUps.add(user);
     }
 }

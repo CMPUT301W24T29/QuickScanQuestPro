@@ -67,6 +67,8 @@ public class EventDetailsFragment extends Fragment {
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private ImageView eventImage;
 
+    private User user;
+
     /**
      * This is the default constructor for the EventDetailsFragment class. If no event is passed in,
      * a test event is created.
@@ -196,6 +198,29 @@ public class EventDetailsFragment extends Fragment {
             // eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
             //uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
             setShareButton(shareButton);
+
+
+
+            // Signup and Signup List buttons
+
+            Button signupButton = view.findViewById(R.id.signup_button);
+            Button signupListButton = view.findViewById(R.id.signup_list);
+
+            signupButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(getContext(), "Signed up!", Toast.LENGTH_SHORT).show();
+                    signup();
+                }
+            });
+
+            signupListButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(getContext(), "Signup List", Toast.LENGTH_SHORT).show();
+                    signupList();
+                }
+            });
         }
         else {
             Log.e(TAG, "User or MainActivity is null");
@@ -329,5 +354,16 @@ public class EventDetailsFragment extends Fragment {
                 Log.d(TAG, "onFailure: " + e.getMessage());
             }
         });
+    }
+
+    private void signup(){
+        MainActivity mainActivity = (MainActivity) getActivity();
+        user = mainActivity.getUser();
+
+        databaseService.userSignup(user, event);
+    }
+
+    private void signupList(){
+
     }
 }

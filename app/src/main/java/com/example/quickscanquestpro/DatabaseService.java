@@ -532,6 +532,27 @@ public class DatabaseService {
         eventsRef.document(String.valueOf(event.getId())).set(combinedData, SetOptions.merge());
     }
 
+    public void userSignup(User user, Event event) {
+        // Start a Firestore transaction
+        db.runTransaction(transaction -> {
+                    // References to the user and event documents
+                    DocumentReference userRef = usersRef.document(user.getUserId());
+                    DocumentReference eventRef = eventsRef.document(event.getId());
+
+                    // Atomically add the event ID to the user's "signedUpEvents" list
+                    transaction.update(userRef, "signedUpEvents", FieldValue.arrayUnion(event.getId()));
+                    // Atomically add the user ID to the event's "signups" list
+                    transaction.update(eventRef, "signups", FieldValue.arrayUnion(user.getUserId()));
+
+                    // This function must return a result, null in this case
+                    return null;
+                }).addOnSuccessListener(aVoid -> Log.d(TAG, "User signup and event registration successful."))
+                .addOnFailureListener(e -> Log.e(TAG, "Error during user signup and event registration.", e));
+    }
+
+
+
+
 }
 
 
