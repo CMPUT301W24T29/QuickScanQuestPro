@@ -338,8 +338,6 @@ public class ProfileFragment extends Fragment {
                     String profilePictureUrl = document.getString("profilePictureUrl");
                     Boolean geolocation = document.getBoolean("geolocation");
 
-
-                    // Assuming this runs on the UI thread, but consider checking and/or using runOnUiThread if needed
                     updateUIWithUserData(name, homepage, mobileNum, email, geolocation, profilePictureUrl);
                 } else {
                     Log.d("ProfileFragment", "No such document");
@@ -349,7 +347,6 @@ public class ProfileFragment extends Fragment {
             }
         });
     }
-
 
     /**
      * Updates the UI with the user's data fetched from the database.

@@ -9,9 +9,11 @@ import android.graphics.Color;
 import android.graphics.ImageDecoder;
 import android.location.Location;
 import android.media.Image;
+import android.media.projection.MediaProjection;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -36,6 +38,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -70,6 +73,11 @@ public class Event {
     // josh
     private ArrayList<User> attendees = new ArrayList<User>();
     private Bitmap eventBanner = null;
+    private ArrayList<CheckIn> checkIns;
+
+
+    private ArrayList<User> signUps = new ArrayList<>();
+
 
     /**
      * Constructor for the event that just takes an id, used when constructing the object during event creation.
@@ -386,5 +394,56 @@ public class Event {
                 mGetContent.launch("image/*");
             }
         };
+    }
+
+    public ArrayList<User> getSignUps() {
+        return new ArrayList<>(signUps); // Return a copy
+    }
+
+    public void addSignup(User user) {
+        this.signUps.add(user);
+    }
+
+    public void setCheckIns(ArrayList<CheckIn> checkIns) {
+        this.checkIns = checkIns;
+    }
+    public ArrayList<CheckIn> getCheckIns() {
+        return checkIns;
+    }
+
+    /**
+     * Goes through the event's checkIns, and counts up how many times each user id has checked
+     * into the event. Then associates the user's name with how many times they've checked in. If there
+     * is currently no user associated with that id, then shows Unknown User.
+     * @param users a list of all users from the database, to get names from by comparing ids
+     * @return a list of lists, with the first element of each inner list being the name of the
+     * user who checked in, and the second element is how many times they checked in to the event
+     */
+    public ArrayList<ArrayList<Object>> countAttendees() {
+        ArrayList<CheckIn> checkIns = this.getCheckIns();
+
+        if (checkIns == null) {
+            return null;
+        }
+
+        ArrayList<ArrayList<Object>> outputList = new ArrayList<>();
+
+        for (CheckIn checkIn : checkIns) {
+            boolean found = false;
+            for (ArrayList<Object> outputs : outputList) {
+                if (outputs.get(0).equals(checkIn.getUserId())) {
+                    outputs.set(1, (int) outputs.get(1) + 1);
+                    found = true;
+                    break; // Break the loop once the user ID is found
+                }
+            }
+            if (!found) {
+                ArrayList<Object> innerList = new ArrayList<>();
+                innerList.add(checkIn.getUserId());
+                innerList.add(1);
+                outputList.add(innerList);
+            }
+        }
+        return outputList;
     }
 }

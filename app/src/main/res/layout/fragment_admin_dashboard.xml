@@ -42,7 +42,7 @@
         app:layout_constraintTop_toBottomOf="@id/admin_button_manage_events" />
 
     <Button
-        android:id="@+id/button_view_reports"
+        android:id="@+id/admin_button_view_images"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -57,7 +57,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="View Personal Profile"
-        app:layout_constraintTop_toBottomOf="@id/button_view_reports"
+        app:layout_constraintTop_toBottomOf="@id/admin_button_view_images"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
