@@ -230,8 +230,20 @@ public class MainActivityTest {
         onView(withId(R.id.event_title)).check(matches(withText(eventTitle)));
         onView(withId(R.id.event_description)).check(matches(withText("My Event Description")));
         onView(withId(R.id.event_location)).check(matches(withText("My Event Location")));
-        onView(withId(R.id.event_date)).check(matches(withText("2024-07-18 at 12:30 until 2024-07-19 at 19:36")));
+        onView(withId(R.id.event_date)).check(matches(withText("2024-08-18 at 12:30 until 2024-08-19 at 19:36")));
 
+    }
+
+    @Test
+    public void testUS_02_08_01AttendeeBrowseEvents() {
+        onView(isRoot()).perform(waitFor(2000));
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.event_dashboard_browse_button)).perform(click());
+        onView(isRoot()).perform(waitFor(5000)); // Wait for navigation
+        onView(withId(R.id.browse_events_dashboard_title)).check(matches(isDisplayed()));
+        onView(withId(R.id.browse_events_dashboard_list)).check(matches(isDisplayed()));
     }
 
     public static ViewAction waitFor(long delay) {
