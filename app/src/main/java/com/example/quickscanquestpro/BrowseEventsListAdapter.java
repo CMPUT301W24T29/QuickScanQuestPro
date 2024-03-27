@@ -1,30 +1,27 @@
 package com.example.quickscanquestpro;
 import android.content.Context;
 import android.util.Log;
-import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
-import android.util.SparseArray;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
 import java.util.List;
-public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.EventViewHolder> {
-
+public class BrowseEventsListAdapter extends RecyclerView.Adapter<BrowseEventsListAdapter.EventViewHolder> {
     private Context context;
     private List<Event> eventDataList;
     private DatabaseService databaseService = new DatabaseService();
 
-    public EventListAdapter(Context context, List<Event> eventDataList) {
+    public BrowseEventsListAdapter(Context context, List<Event> eventDataList) {
         this.context = context;
         this.eventDataList = eventDataList;
     }
@@ -46,13 +43,12 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.Even
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_event , parent , false);
-        return new EventViewHolder(view);
-
+        View itemView = LayoutInflater.from(context).inflate(R.layout.item_event, parent, false);
+        return new EventViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(EventViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = eventDataList.get(position);
 
         // Truncate title and location if longer than 30 characters
@@ -63,10 +59,10 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.Even
         String dates = event.getStartDate().toString() + " - " + event.getEndDate().toString();
         String times = event.getStartTime().toString() + " - " + event.getEndTime().toString();
 
-        ((EventViewHolder) holder).eventTitle.setText(title);
-        ((EventViewHolder) holder).eventLocation.setText(location);
-        ((EventViewHolder) holder).eventDates.setText(dates);
-        ((EventViewHolder) holder).eventTimes.setText(times);
+        holder.eventTitle.setText(title);
+        holder.eventLocation.setText(location);
+        holder.eventDates.setText(dates);
+        holder.eventTimes.setText(times);
 
 
         String imageUrl = event.getEventBannerUrl();
@@ -75,10 +71,12 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.Even
                     .load(imageUrl)
                     .placeholder(R.color.white)
                     .fitCenter()
-                    .into(((EventViewHolder) holder).eventImage);
+                    .into(holder.eventImage);
         } else {
-            ((EventViewHolder) holder).eventImage.setImageResource(R.drawable.ic_launcher_background);
+            holder.eventImage.setImageResource(R.drawable.ic_launcher_background);
         }
+
+
 
         holder.itemView.setOnClickListener(v -> {
             if (context instanceof FragmentActivity) {
@@ -106,5 +104,11 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.Even
     @Override
     public int getItemCount() {
         return eventDataList.size();
+    }
+
+    public void updateEvents(List<Event> events) {
+        this.eventDataList.clear();
+        this.eventDataList.addAll(events);
+        notifyDataSetChanged();
     }
 }
