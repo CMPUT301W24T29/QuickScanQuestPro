@@ -306,6 +306,13 @@ public class DatabaseService {
         return event;
     }
 
+    /**
+     * This function searches the database for an existing event that either has an ID that is the same as the string being passed in
+     * Or that has a customCheckin or customPromo attribute that contains the string passed in. Then it returns the Event with details from
+     * the database for this found event, or null otherwise if no event was found.
+     * @param customQR The string to search the database for
+     * @param callback The function to call once the data is retrieved and the event is found/not found, passes in either Event or null
+     */
     public void getEventWithCustomQR(String customQR, OnEventDataLoaded callback) {
         if (customQR.startsWith("c") || customQR.startsWith("p")) {
             // may be attempting to get a "custom" qr that is just the ID of an existing event

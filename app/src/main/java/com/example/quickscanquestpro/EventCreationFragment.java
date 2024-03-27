@@ -6,6 +6,7 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,7 +17,9 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
@@ -335,6 +338,12 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
         return uri;
     }
 
+    /**
+     * This function is called when a QRCode is scanned from a reuse QR button, from the QR scanner, with the code
+     * This validates if the scanned code is in use in the database already, and if not sets the event being created
+     * to use the custom qr code that was scanned in for its promo or checkin code (depending on which was chosen)
+     * @param scannedCode the string that was scanned in, could be any text, to be looked for in the database
+     */
     @Override
     public void onQRScanned(String scannedCode) {
         if (scannedCode != null) {
@@ -375,8 +384,25 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
                         reuseButton.setFocusableInTouchMode(false);
                     } else {
                         // send them back to the page with a check if its not in use at all
-                        reuseButton.setError(null);
+                        if (originalRightPadding == null) {
+                            originalRightPadding = reuseButton.getPaddingRight();
+                        }
+                        // sets a checkmark
+                        // this will hopefully force the button to refresh, avoiding the issue where it removes the error but does not add the checkmark
+
+                        reuseButton.setCompoundDrawables(null, null, null, null);
+                        // sets a checkmark
+
+                        reuseButton.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
                         reuseButton.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.reuse_qr_success_checkmark, 0);
+                        Drawable drawable = ContextCompat.getDrawable(getContext(), R.drawable.reuse_qr_success_checkmark);
+                        reuseButton.setError("", drawable);
+                        reuseButton.setError(null, drawable);
+                        reuseButton.setCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
+                        reuseButton.setPadding(reuseButton.getPaddingLeft(),reuseButton.getPaddingTop(),originalRightPadding-15,reuseButton.getPaddingBottom());
+                        reuseButton.setFocusableInTouchMode(true);
+                        reuseButton.requestFocus();
+                        reuseButton.setFocusableInTouchMode(false);
                         // sets a custom checkin/promo code and generates a new qrbitmap for respective code
                         if (Objects.equals(reuseType, "checkin")) {
                             creatingEvent.setCustomCheckin(scannedCode);
