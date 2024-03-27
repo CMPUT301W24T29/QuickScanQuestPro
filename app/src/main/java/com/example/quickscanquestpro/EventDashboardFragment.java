@@ -39,6 +39,8 @@ public class EventDashboardFragment extends Fragment {
 
     private DatabaseService databaseService = new DatabaseService();
 
+    private User user;
+
     public EventDashboardFragment() {
         // Required empty public constructor
     }
@@ -109,8 +111,17 @@ public class EventDashboardFragment extends Fragment {
                     }
                 }
 
+                // Signed up events
+                user = mainActivity.getUser();
+                databaseService.getUserSignedupEvents(user, signedUpEvents -> {
+                    if (isAdded() && getActivity() != null) {
+                        modelList.add(new EventDashboardModel(signedUpEvents, "Signed Up Events"));
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+
                 modelList.add(new EventDashboardModel(checked_in_events, "Checked In Events"));
-                modelList.add(new EventDashboardModel(signed_up_events, "Signed Up Events"));
+                //modelList.add(new EventDashboardModel(signed_up_events, "Signed Up Events"));
                 modelList.add(new EventDashboardModel(organized_events, "Organized Events"));
                 modelList.add(new EventDashboardModel(other_events, "Other Events"));
 
