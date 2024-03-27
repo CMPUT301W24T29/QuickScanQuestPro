@@ -4,14 +4,11 @@ import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.pressKey;
-import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
-import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
@@ -20,7 +17,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withSubstring;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.allOf;
@@ -30,31 +26,16 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 
 import android.Manifest;
-import android.app.Activity;
-import android.app.Instrumentation;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.Environment;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.DatePicker;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.ListView;
 import android.widget.TimePicker;
 
-import androidx.annotation.IdRes;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.contrib.PickerActions;
-
-import androidx.test.espresso.contrib.RecyclerViewActions;
-import androidx.test.espresso.intent.Intents;
-import androidx.test.espresso.matcher.ViewMatchers;
 
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -67,8 +48,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-import java.util.Map;
 import java.util.UUID;
 
 @RunWith(AndroidJUnit4.class)
@@ -92,7 +71,7 @@ public class MainActivityTest {
 
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
 
-        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("My Event Title"));
+        onView(withId(R.id.edit_notification_title)).perform(ViewActions.typeText("My Event Title"));
         onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
         onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
         Espresso.closeSoftKeyboard();
@@ -191,7 +170,7 @@ public class MainActivityTest {
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
 
         String eventTitle = UUID.randomUUID().toString();
-        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText(eventTitle));
+        onView(withId(R.id.edit_notification_title)).perform(ViewActions.typeText(eventTitle));
         onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
         onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
         Espresso.closeSoftKeyboard();
@@ -229,8 +208,20 @@ public class MainActivityTest {
         onView(withId(R.id.event_title)).check(matches(withText(eventTitle)));
         onView(withId(R.id.event_description)).check(matches(withText("My Event Description")));
         onView(withId(R.id.event_location)).check(matches(withText("My Event Location")));
-        onView(withId(R.id.event_date)).check(matches(withText("2024-07-18 at 12:30 until 2024-07-19 at 19:36")));
+        onView(withId(R.id.event_date)).check(matches(withText("2024-08-18 at 12:30 until 2024-08-19 at 19:36")));
 
+    }
+
+    @Test
+    public void testUS_02_08_01AttendeeBrowseEvents() {
+        onView(isRoot()).perform(waitFor(2000));
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.event_dashboard_browse_button)).perform(click());
+        onView(isRoot()).perform(waitFor(5000)); // Wait for navigation
+        onView(withId(R.id.browse_events_dashboard_title)).check(matches(isDisplayed()));
+        onView(withId(R.id.browse_events_dashboard_list)).check(matches(isDisplayed()));
     }
 
     public static ViewAction waitFor(long delay) {

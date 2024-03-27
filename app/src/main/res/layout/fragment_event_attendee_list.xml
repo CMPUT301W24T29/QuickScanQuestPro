@@ -36,8 +36,8 @@
             android:id="@+id/alert_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:src="@drawable/ic_arrow_back"
+            android:layout_marginStart="40dp"
+            android:src="@drawable/alerts"
             app:layout_constraintEnd_toEndOf="parent">
 
         </com.google.android.material.floatingactionbutton.FloatingActionButton>
