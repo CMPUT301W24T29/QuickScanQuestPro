@@ -42,4 +42,11 @@ public class AttendeesListAdapter extends ArrayAdapter<ArrayList<Object>> {
 
         return view;
     }
+
+    // This method is used to update the list of attendees in the adapter
+    public void updateAttendeesList(ArrayList<ArrayList<Object>> attendeesList) {
+        clear();
+        addAll(attendeesList);
+        notifyDataSetChanged();
+    }
 }

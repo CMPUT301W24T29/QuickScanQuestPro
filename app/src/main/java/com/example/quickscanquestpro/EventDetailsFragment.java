@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -142,11 +143,6 @@ public class EventDetailsFragment extends Fragment {
 
             uploadImageButton.setVisibility(View.VISIBLE);
 
-            // Get the list of users and the list of check-ins for the event if event has check-ins
-            if (this.event.getCheckIns() != null) {
-                getAttendees();
-            }
-
             // If there is no event passed in, create a test event
             if (this.event == null) {
                 event = Event.createTestEvent(mainActivity.getNewEventID());
@@ -186,18 +182,27 @@ public class EventDetailsFragment extends Fragment {
             // If clicked, this button brings the user to the attendees list fragment. If there
             // is no attendees in the current event, it will instead show the user a message
             attendeesButton.setOnClickListener(v -> {
-                if (checkInList == null) {
-                    Toast.makeText(getContext(), "No attendees found", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    getAttendees();
-                    AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.checkInList);
-                    FragmentManager fragmentManager = getParentFragmentManager();
-                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                    fragmentTransaction.replace(R.id.content, attendeesListFragment);
-                    fragmentTransaction.addToBackStack(null);
-                    fragmentTransaction.commit();
-                }
+                databaseService.getEvent(event.getId(), event -> {
+                    if (event != null) {
+                        if (this.event.getCheckIns() != null) {
+                            this.event = event;
+                             AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.event);
+                             FragmentManager fragmentManager = getParentFragmentManager();
+                             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                             fragmentTransaction.replace(R.id.content, attendeesListFragment);
+                             fragmentTransaction.addToBackStack(null);
+                             fragmentTransaction.commit();
+                        }
+                        else {
+                            Toast.makeText(getContext(), "No attendees found", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    else {
+                        Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
+                        FragmentManager fragmentManager = getParentFragmentManager();
+                        fragmentManager.popBackStack();
+                    }
+                });
             });
 
             // Enable these buttons if the user is the organizer of the event
@@ -349,33 +354,6 @@ public class EventDetailsFragment extends Fragment {
                     getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Upload Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                 }
                 Log.d(TAG, "onFailure: " + e.getMessage());
-            }
-        });
-    }
-    /**
-     * This method gets the list of attendees for the event from the database. It calls the getUsers method
-     * from the DatabaseService class and passes in an OnUsersDataLoaded listener. When the list of users is
-     * loaded, the onUsersLoaded method is called and the list of users is passed in. The method then calls
-     * the countAttendees method from the Event class and passes in the list of users. The method then sets
-     * the checkInList field to the list of attendee names with the number of check-ins for each attendee.
-     */
-
-    private void getAttendees() {
-        databaseService.getUsers(new DatabaseService.OnUsersDataLoaded() {
-            @Override
-            public void onUsersLoaded(List<User> users) {
-                if (getActivity() == null) {
-                    Log.e("EventDetailsFragment", "Activity is null. Skipping setup.");
-                    return;
-                }
-
-                if (users.isEmpty()) {
-                    Log.e("EventDetailsFragment", "No users found!");
-                } else {
-                    Log.d("EventDetailsFragment", "Users found!");
-                    // checkInList will be a list of user names and the number of check-ins for each user
-                    checkInList = event.countAttendees(users);
-                }
             }
         });
     }

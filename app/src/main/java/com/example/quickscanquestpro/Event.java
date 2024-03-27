@@ -408,7 +408,7 @@ public class Event {
      * @return a list of lists, with the first element of each inner list being the name of the
      * user who checked in, and the second element is how many times they checked in to the event
      */
-    public ArrayList<ArrayList<Object>> countAttendees(List<User> users) {
+    public ArrayList<ArrayList<Object>> countAttendees() {
         ArrayList<CheckIn> checkIns = this.getCheckIns();
 
         if (checkIns == null) {
@@ -431,20 +431,6 @@ public class Event {
                 innerList.add(checkIn.getUserId());
                 innerList.add(1);
                 outputList.add(innerList);
-            }
-        }
-        for (ArrayList<Object> output : outputList) {
-            boolean userFound = false; // Flag to track if the user is found
-            for (User user : users) {
-                if (output.get(0).equals(user.getUserId())) {
-                    Log.d("Event", "User found: " + user.getName());
-                    output.set(0, user.getName());
-                    userFound = true; // Set the flag to true if the user is found
-                    break; // Break the loop once the user is found
-                }
-            }
-            if (!userFound) {
-                output.set(0, "Unknown User");
             }
         }
         return outputList;
