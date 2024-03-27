@@ -9,6 +9,9 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -127,7 +130,11 @@ public class DatabaseService {
 
     public void updateLastCheckIn(String userId, String eventId){
         DocumentReference userRef = db.collection("users").document(userId);
-        userRef.update("lastCheckIn", eventId);
+        User user = new User(userId);
+        user.setLastCheckIn(eventId);
+        userRef.set(user, SetOptions.mergeFields("lastCheckIn"))
+                .addOnSuccessListener(aVoid -> Log.d("DatabaseService", "Last Checked in event update successfully."))
+                .addOnFailureListener(e -> Log.e("DatabaseService", "Error updating last checked in event", e));
     }
 
     public void addEvent(Event event) {

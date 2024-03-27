@@ -109,10 +109,10 @@ public class EventDashboardFragment extends Fragment {
                     }
                 }
 
-                modelList.add(new EventDashboardModel(checked_in_events, "Checked In Events"));
+                modelList.add(new EventDashboardModel(checked_in_events, "Current Checked-In Event"));
                 modelList.add(new EventDashboardModel(signed_up_events, "Signed Up Events"));
                 modelList.add(new EventDashboardModel(organized_events, "Organized Events"));
-                modelList.add(new EventDashboardModel(other_events, "Other Events"));
+                modelList.add(new EventDashboardModel(other_events, "Other Events"));    //TODO: Remove before submitting
 
                 adapter = new EventTypeAdapter(getContext(), modelList);
                 eventRecyclerView.setAdapter(adapter);

@@ -29,4 +29,8 @@ public class EventDashboardModel {
     public void setExpandable(boolean expandable) {
         isExpandable = expandable;
     }
+
+    public int getEventListSize() {
+        return eventList.size();
+    }
 }

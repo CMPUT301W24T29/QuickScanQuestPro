@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class EventTypeAdapter extends RecyclerView.Adapter<EventTypeAdapter.EventTypeViewHolder>{
 
@@ -34,6 +35,7 @@ public class EventTypeAdapter extends RecyclerView.Adapter<EventTypeAdapter.Even
         private TextView textView;
         private ImageView arrowImage;
         private RecyclerView nestedRecyclerView;
+        private TextView defaultEventText;
 
 
         public EventTypeViewHolder(@NonNull View itemView) {
@@ -44,6 +46,7 @@ public class EventTypeAdapter extends RecyclerView.Adapter<EventTypeAdapter.Even
             textView = itemView.findViewById(R.id.event_header_title);
             arrowImage = itemView.findViewById(R.id.arrow_imageview);
             nestedRecyclerView = itemView.findViewById(R.id.events_rv);
+            defaultEventText = itemView.findViewById(R.id.default_event_text);
         }
     }
 
@@ -58,7 +61,11 @@ public class EventTypeAdapter extends RecyclerView.Adapter<EventTypeAdapter.Even
 
         EventDashboardModel model = modelList.get(position);
         holder.textView.setText(model.getEventType());
-
+/**
+        if(model.getEventType().equals("Current Checked-In Event")) {
+            model.setExpandable(true);
+        }
+*/
         boolean isExpandable = model.isExpandable();
         holder.expandableLayout.setVisibility(isExpandable ? View.VISIBLE : View.GONE);
 
@@ -67,7 +74,19 @@ public class EventTypeAdapter extends RecyclerView.Adapter<EventTypeAdapter.Even
         }else{
             holder.arrowImage.setImageResource(R.drawable.baseline_arrow_drop_down_24);
         }
-
+/**
+        if(model.getEventListSize()==0) {
+            holder.nestedRecyclerView.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext()));
+            holder.linearLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    model.setExpandable(!model.isExpandable());
+                    holder.nestedRecyclerView.setContentDescription();
+                    notifyItemChanged(holder.getAbsoluteAdapterPosition());
+                }
+            });
+        }
+*/
         EventListAdapter adapter = new EventListAdapter(context, list);
         holder.nestedRecyclerView.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext()));
         holder.nestedRecyclerView.setAdapter(adapter);
