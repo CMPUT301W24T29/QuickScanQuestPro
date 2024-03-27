@@ -35,6 +35,7 @@ import com.google.mlkit.vision.common.InputImage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -51,12 +52,17 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
     private PreviewView previewView;
     private Context context;
     private BarcodeScanner scanner;
-
     private LifecycleOwner lifecycleOwner;
     private MainActivity mainActivity;
     private Boolean processingQr = false;
     private DatabaseService databaseService = new DatabaseService();
     private String processingQrType;
+    private OnQRScanned callback;
+    private String customCode;
+
+    public interface OnQRScanned {
+        void onQRScanned(String scannedCode);
+    }
 
     /**
      * Constructor for QRCodeScanner
@@ -71,6 +77,18 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
         this.cameraExecutor = Executors.newSingleThreadExecutor();
         this.scanner = BarcodeScanning.getClient();
         this.lifecycleOwner = lifecycleOwner;
+
+    }
+
+    public QRCodeScanner(Context context, PreviewView previewView, LifecycleOwner lifecycleOwner, MainActivity mainActivity, OnQRScanned callback)
+    {
+        this.mainActivity = mainActivity;
+        this.context = context;
+        this.previewView = previewView;
+        this.cameraExecutor = Executors.newSingleThreadExecutor();
+        this.scanner = BarcodeScanning.getClient();
+        this.lifecycleOwner = lifecycleOwner;
+        this.callback = callback;
 
     }
 
@@ -113,7 +131,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
                         scanner.process(inputImage)
                                 .addOnSuccessListener(barcodes -> {
                                     Log.d("QRCodeScanner", "Barcodes detected: " + barcodes.size());
-                                    if (!processingQr) {
+                                    if (!processingQr && barcodes.size() > 0) {
                                         processingQr = true;
                                         processBarcodes(barcodes);
                                     }
@@ -153,11 +171,19 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
      * @param barcodes The list of barcodes detected in the frame.
      */
     private void processBarcodes(List<Barcode> barcodes) {
-        for (Barcode barcode : barcodes) {
+        Barcode barcode = barcodes.get(0);
+        if (barcode != null) {
             String rawValue = barcode.getRawValue();
             Log.d("QRCodeScanner", "Barcode detected: " + rawValue);
 
-            if(rawValue.startsWith("c") || rawValue.startsWith("p")) {
+            if (callback != null) {
+                // this was called with the intent of returning the scanned value and not actually processing it (for reusing a qr code)
+                callback.onQRScanned(rawValue);
+                shutdown();
+                return;
+            }
+
+            if (rawValue.startsWith("c") || rawValue.startsWith("p")) {
                 // Extracting the prefix and ID from the QR code
                 processingQrType = rawValue.substring(0, 1); // "c" for check-in, "p" for promo
                 String eventId = rawValue.substring(1);
@@ -168,8 +194,13 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
                 // to continue the processing
                 return;
             } else {
-                Log.e("QRCodeScanner", "Unknown QR Code format: " + rawValue);
-                Toast.makeText(mainActivity.getApplicationContext(), "Invalid QR", Toast.LENGTH_SHORT).show();
+                // lets look for a custom qr code
+                Log.e("QRCodeScanner", "QR Code may be custom: " + rawValue);
+                customCode = rawValue;
+                databaseService.getEventWithCustomQR(rawValue, this);
+                // this returns now because when the data is retrieved or fails to retrieve the data, it will call onEventLoaded
+                // to continue the processing
+                return;
             }
         }
         // if there is an error, then this will wait 4 seconds before allowing processing of a QR code again to stop toasts from stacking
@@ -200,11 +231,19 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
         } else {
             // Check if user is null before attempting to use getUserId()
             User currentUser = mainActivity.getUser();
-            if (currentUser == null || processingQrType == null) {
-                Toast.makeText(mainActivity.getApplicationContext(), "User not logged in or invalid processing type", Toast.LENGTH_SHORT).show();
-                Log.e("QRCodeScanner", "User not logged in or invalid processing type");
+            if (currentUser == null) {
+                Toast.makeText(mainActivity.getApplicationContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+                Log.e("QRCodeScanner", "User not logged in");
                 processingQr = false;
                 return;
+            }
+            if (processingQrType == null){
+                // we were checking a custom qr code, so lets find out if it was a promo or a checkin code
+                if (Objects.equals(event.getCustomCheckin(), customCode)) {
+                    processingQrType = "c";
+                } else {
+                    processingQrType = "p";
+                }
             }
 
             if (processingQrType.equals("c")){
@@ -217,14 +256,9 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
                 Toast.makeText(mainActivity.getApplicationContext(), "Promotion code scanned!", Toast.LENGTH_SHORT).show();
             }
 
-            EventDetailsFragment fragment = new EventDetailsFragment();
-            FragmentManager fragmentManager = ((FragmentActivity) context).getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.content, fragment);
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.commit();
+            // transition to the new event
+            mainActivity.transitionFragment(new EventDetailsFragment(event), "EventDetailsFragment");
 
-            // Navigates to the details for the event
             NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
             // Sets navbar selection to the event dashboard
             MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);

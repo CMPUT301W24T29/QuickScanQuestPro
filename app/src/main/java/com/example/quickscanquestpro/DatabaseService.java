@@ -2,10 +2,6 @@ package com.example.quickscanquestpro;
 
 
 import static android.content.ContentValues.TAG;
-import static androidx.camera.core.impl.utils.ContextUtil.getApplicationContext;
-
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 
 import android.net.Uri;
 import android.util.Log;
@@ -13,23 +9,13 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 
-import androidx.annotation.NonNull;
-
-import androidx.annotation.NonNull;
-
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.transition.Transition;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.OnSuccessListener;
-
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.Filter;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.OnProgressListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -81,8 +67,6 @@ public class DatabaseService {
         void onProgress(double progress);
     }
 
-
-
     /**
      * Interfaces to handle deleting profile picture
      */
@@ -90,8 +74,6 @@ public class DatabaseService {
         void onSuccess();
         void onFailure(Exception e);
     }
-
-
 
     public interface OnEventDataLoaded {
         void onEventLoaded(Event event);
@@ -159,6 +141,8 @@ public class DatabaseService {
         eventData.put("organizerId", event.getOrganizerId());
         eventData.put("eventPictureUrl", event.getEventBannerUrl());
         eventData.put("eventPicturePath", event.getEventBannerPath());
+        eventData.put("customCheckin", event.getCustomCheckin());
+        eventData.put("customPromo", event.getCustomPromo());
 
         // Combine all data into a single map
         Map<String, Object> combinedData = new HashMap<>();
@@ -282,35 +266,26 @@ public class DatabaseService {
         }).addOnFailureListener(e -> callback.onUserLoaded(null));
     }
 
-    /**
-     * This will get a requested event from the Firestore database, then call a callback when the data is loaded into an event class
-     * @param eventId the id of the event to search for in the database
-     * @param callback the callback function in the class that called this, which will run when the data is loaded
-     */
-    public void getEvent(String eventId, OnEventDataLoaded callback) {
-        eventsRef.document(eventId).get().addOnSuccessListener(queryDocumentSnapshot -> {
-                if (!queryDocumentSnapshot.exists()) {
-                    callback.onEventLoaded(null);
-                    return;
-                }
+    public Event createEventFromDocumentSnapshot(String eventId, DocumentSnapshot queryDocumentSnapshot) {
+        // creating an event using its id will also create a QR code from the id it was given, which will always be the same
+        Event event = new Event(eventId);
 
-                // creating an event using its id will also create a QR code from the id it was given, which will always be the same
-                Event event = new Event(eventId);
+        // Set other fields as before
+        event.setTitle(queryDocumentSnapshot.getString("title"));
+        event.setDescription(queryDocumentSnapshot.getString("description"));
+        event.setLocation(queryDocumentSnapshot.getString("location"));
+        event.setOrganizerId(queryDocumentSnapshot.getString("organizerId"));
+        event.setStartDate(LocalDate.parse(queryDocumentSnapshot.getString("Start-date")));
+        event.setEndDate(LocalDate.parse(queryDocumentSnapshot.getString("End-date")));
+        event.setStartTime(LocalTime.parse(queryDocumentSnapshot.getString("Start-time")));
+        event.setEndTime(LocalTime.parse(queryDocumentSnapshot.getString("End-time")));
+        event.setEventBannerUrl(queryDocumentSnapshot.getString("eventPictureUrl"));
+        event.setEventBannerPath(queryDocumentSnapshot.getString("eventPicturePath"));
+        event.setCustomCheckin(queryDocumentSnapshot.getString("customCheckin"));
+        event.setCustomPromo(queryDocumentSnapshot.getString("customPromo"));
 
-                // Set other fields as before
-                event.setTitle(queryDocumentSnapshot.getString("title"));
-                event.setDescription(queryDocumentSnapshot.getString("description"));
-                event.setLocation(queryDocumentSnapshot.getString("location"));
-                event.setOrganizerId(queryDocumentSnapshot.getString("organizerId"));
-                event.setStartDate(LocalDate.parse(queryDocumentSnapshot.getString("Start-date")));
-                event.setEndDate(LocalDate.parse(queryDocumentSnapshot.getString("End-date")));
-                event.setStartTime(LocalTime.parse(queryDocumentSnapshot.getString("Start-time")));
-                event.setEndTime(LocalTime.parse(queryDocumentSnapshot.getString("End-time")));
-                event.setEventBannerUrl(queryDocumentSnapshot.getString("eventPictureUrl"));
-                event.setEventBannerPath(queryDocumentSnapshot.getString("eventPicturePath"));
-
-                // This is supposed to load event picture, but unsure if it works properly
-                // To be implemented later
+        // This is supposed to load event picture, but unsure if it works properly
+        // To be implemented later
                 /*String eventPictureUrl = queryDocumentSnapshot.getString("eventPictureUrl");
                 if (eventPictureUrl != null) {
                     Glide.with(mainActivity)
@@ -326,8 +301,68 @@ public class DatabaseService {
                                 }
                             });
                 }*/
+        return event;
+    }
 
-                callback.onEventLoaded(event);
+    public void getEventWithCustomQR(String customQR, OnEventDataLoaded callback) {
+        if (customQR.startsWith("c") || customQR.startsWith("p")) {
+            // may be attempting to get a "custom" qr that is just the ID of an existing event
+            getEvent(customQR.substring(1), event -> {
+                if (event != null) {
+                    // found an existing event with that QR code, so return it
+                    callback.onEventLoaded(event);
+                } else {
+                    // else, this qr just happens to start with c or p but its not actually used as an event id, so go ahead and look for it in the rest of the custom codes
+                    // search database for an event that has a customCheckin or customPromo attribute matching the scanned code
+                    eventsRef.where(Filter.or(
+                            Filter.equalTo("customCheckin", customQR),
+                            Filter.equalTo("customPromo", customQR))
+                    ).get().addOnSuccessListener(querySnapshot -> {
+                        if (querySnapshot.isEmpty()) {
+                            // no matching events found
+                            callback.onEventLoaded(null);
+                            return;
+                        } else {
+                            DocumentSnapshot queryDocumentSnapshot = querySnapshot.getDocuments().get(0);
+                            Event customQREvent = createEventFromDocumentSnapshot(queryDocumentSnapshot.getId(), queryDocumentSnapshot);
+                            callback.onEventLoaded(customQREvent);
+                        }
+                    }).addOnFailureListener(e -> callback.onEventLoaded(null));
+                }
+            });
+        } else {
+            // search database for an event that has a customCheckin or customPromo attribute matching the scanned code
+            eventsRef.where(Filter.or(
+                    Filter.equalTo("customCheckin", customQR),
+                    Filter.equalTo("customPromo", customQR))
+            ).get().addOnSuccessListener(querySnapshot -> {
+                if (querySnapshot.isEmpty()) {
+                    // no matching events found
+                    callback.onEventLoaded(null);
+                    return;
+                } else {
+                    DocumentSnapshot queryDocumentSnapshot = querySnapshot.getDocuments().get(0);
+                    Event customQREvent = createEventFromDocumentSnapshot(queryDocumentSnapshot.getId(), queryDocumentSnapshot);
+                    callback.onEventLoaded(customQREvent);
+                }
+            }).addOnFailureListener(e -> callback.onEventLoaded(null));
+        }
+    }
+    /**
+     * This will get a requested event from the Firestore database, then call a callback when the data is loaded into an event class
+     * @param eventId the id of the event to search for in the database
+     * @param callback the callback function in the class that called this, which will run when the data is loaded
+     */
+    public void getEvent(String eventId, OnEventDataLoaded callback) {
+        eventsRef.document(eventId).get().addOnSuccessListener(queryDocumentSnapshot -> {
+            if (!queryDocumentSnapshot.exists()) {
+                    callback.onEventLoaded(null);
+                    return;
+            }
+
+            Event event = createEventFromDocumentSnapshot(eventId, queryDocumentSnapshot);
+            callback.onEventLoaded(event);
+
         }).addOnFailureListener(e -> callback.onEventLoaded(null));
 
     }
