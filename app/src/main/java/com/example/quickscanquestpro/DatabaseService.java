@@ -24,13 +24,16 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A class to handle all database operations
@@ -539,6 +542,67 @@ public class DatabaseService {
         combinedData.putAll(updates);
         eventsRef.document(String.valueOf(event.getId())).set(combinedData, SetOptions.merge());
     }
+
+    public void userSignup(User user, Event event) {
+        // Start a Firestore transaction
+        db.runTransaction(transaction -> {
+                    // References to the user and event documents
+                    DocumentReference userRef = usersRef.document(user.getUserId());
+                    DocumentReference eventRef = eventsRef.document(event.getId());
+
+                    // Atomically add the event ID to the user's "signedUpEvents" list
+                    transaction.update(userRef, "signedUpEvents", FieldValue.arrayUnion(event.getId()));
+                    // Atomically add the user ID to the event's "signups" list
+                    transaction.update(eventRef, "signups", FieldValue.arrayUnion(user.getUserId()));
+
+                    // This function must return a result, null in this case
+                    return null;
+                }).addOnSuccessListener(aVoid -> Log.d(TAG, "User signup and event registration successful."))
+                .addOnFailureListener(e -> Log.e(TAG, "Error during user signup and event registration.", e));
+    }
+
+    public interface OnSignedUpEventsLoaded {
+        void onSignedUpEventsLoaded(List<Event> events);
+    }
+
+    public void getUserSignedupEvents(User user, OnSignedUpEventsLoaded callback) {
+        DocumentReference userRef = usersRef.document(user.getUserId());
+        userRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists() && documentSnapshot.contains("signedUpEvents")) {
+                List<String> eventIds = (List<String>) documentSnapshot.get("signedUpEvents");
+                if (eventIds != null && !eventIds.isEmpty()) {
+                    List<Event> signedUpEvents = new ArrayList<>();
+                    AtomicInteger eventsCount = new AtomicInteger(eventIds.size());
+                    for (String eventId : eventIds) {
+                        getEvent(eventId, event -> {
+                            if (event != null) {
+                                // Checks if the events date is already passed
+                                LocalDate endDate = event.getEndDate();
+                                LocalDateTime endDateTime = endDate.atTime(event.getEndTime());
+                                if (endDateTime.isAfter(LocalDateTime.now())) {
+                                    signedUpEvents.add(event);
+                                }
+                            }
+                            if (eventsCount.decrementAndGet() == 0) {
+                                callback.onSignedUpEventsLoaded(signedUpEvents);
+                            }
+                        });
+                    }
+                } else {
+                    // if there are no signups
+                    callback.onSignedUpEventsLoaded(Collections.emptyList());
+                }
+            } else {
+                callback.onSignedUpEventsLoaded(Collections.emptyList());
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("DatabaseService", "Error fetching signedUpEvents", e);
+            callback.onSignedUpEventsLoaded(Collections.emptyList());
+        });
+    }
+
+
+
 
     public void deleteUserProfilePicture(String userId, OnProfilePictureDelete callback) {
         DocumentReference userRef = db.collection(USERS_COLLECTION).document(userId);
