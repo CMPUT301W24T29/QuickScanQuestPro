@@ -531,6 +531,21 @@ public class DatabaseService {
                 .addOnFailureListener(callback::onFailure);
     }
 
+
+    public void deleteUserProfilePicture(String userId, OnProfilePictureDelete callback) {
+        DocumentReference userRef = db.collection(USERS_COLLECTION).document(userId);
+        userRef.update("profilePictureUrl", null)
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure(e));
+    }
+
+    public void deleteEventPhoto(String eventId, OnProfilePictureDelete callback) {
+        DocumentReference eventRef = db.collection(EVENTS_COLLECTION).document(eventId);
+        eventRef.update("eventPictureUrl", null)
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure(e));
+    }
+
 }
 
 
