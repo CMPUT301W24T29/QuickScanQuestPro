@@ -29,6 +29,7 @@ public class User {
     private String profilePictureUrl;
 
     private String profilePicturePath;
+    private String lastCheckIn;
 
     /*
      * user preference
@@ -39,7 +40,7 @@ public class User {
         this.userId = userId;
     }
 
-    public void updateUser(String name, int checkins, String mobileNum, String email, String homepage, boolean geolocation, String profilePictureUrl) {
+    public void updateUser(String name, int checkins, String mobileNum, String email, String homepage, boolean geolocation, String profilePictureUrl, String lastCheckiIn) {
         this.name = name;
         this.checkins = checkins;
         this.mobileNum = mobileNum;
@@ -47,6 +48,7 @@ public class User {
         this.homepage = homepage;
         this.geolocation = geolocation;
         this.profilePictureUrl = profilePictureUrl;
+        this.lastCheckIn = lastCheckiIn;
     }
 
     public String getName() {
@@ -127,6 +129,13 @@ public class User {
         return profilePicturePath;
     }
 
+    public String getLastCheckIn() {
+        return lastCheckIn;
+    }
+
+    public void setLastCheckIn(String lastCheckIn) {
+        this.lastCheckIn = lastCheckIn;
+    }
 
     public void setAdmin(boolean admin){
         this.admin = admin;

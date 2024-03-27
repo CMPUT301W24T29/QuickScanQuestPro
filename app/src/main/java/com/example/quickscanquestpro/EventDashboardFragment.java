@@ -35,8 +35,11 @@ public class EventDashboardFragment extends Fragment {
 
     private ListView eventList;
 
+    private List<EventDashboardModel> modelList = new ArrayList<>();
+
+    private EventTypeAdapter adapter;
+
     private DatabaseService databaseService = new DatabaseService();
-    private static final String TAG = "EventDashboardFragment";
 
     public EventDashboardFragment() {
         // Required empty public constructor
@@ -64,30 +67,56 @@ public class EventDashboardFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        MainActivity mainActivity = (MainActivity) this.getActivity();
+
         RecyclerView eventRecyclerView = view.findViewById(R.id.event_dashboard_list);
         eventRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Initialize with an empty list; we will update the list when data is loaded
-        BrowseEventListAdapter eventAdapter = new BrowseEventListAdapter(getContext(), new ArrayList<>());
-        eventRecyclerView.setAdapter(eventAdapter);
+        List<Event> checked_in_events = new ArrayList<>();
+        List<Event> signed_up_events = new ArrayList<>();
+        List<Event> organized_events = new ArrayList<>();
+        List<Event> other_events = new ArrayList<>();  //Stores all past events. To be removed before final submission
+        LocalDateTime currentDateTime = LocalDateTime.now();
+
+        if(mainActivity.getUser().getLastCheckIn()!=null){
+            databaseService.getEvent(mainActivity.getUser().getLastCheckIn(), event1 -> {
+                if (event1 != null) {
+                    LocalDate endDate = event1.getEndDate();
+                    LocalTime endTime = event1.getEndTime();
+                    LocalDateTime endDateTime = endDate.atTime(endTime);
+                    if (endDateTime.compareTo(currentDateTime)>=0) {
+                        checked_in_events.add(event1);
+                     }
+                }
+            });
+        }
 
         // Use a data loading method. It could be `listenForEventUpdates` or any other method you have.
         databaseService.getEvents(updatedEvents -> {
             // Ensure fragment is still attached to an activity
-            if (isAdded() && getActivity() != null) {
-                LocalDateTime currentDateTime = LocalDateTime.now();
-                Toast.makeText(getContext(), currentDateTime.toString(), Toast.LENGTH_SHORT).show();
-                Log.d("Dashboard", currentDateTime.toString());
-                List<Event> filteredEvents = new ArrayList<>();
+            if (isAdded() && getActivity() != null && mainActivity.getUser() != null) {
                 for (Event event : updatedEvents) {
                     LocalDate endDate = event.getEndDate();
                     LocalTime endTime = event.getEndTime();
                     LocalDateTime endDateTime = endDate.atTime(endTime);
                     if (endDateTime.compareTo(currentDateTime)>=0) {
-                        filteredEvents.add(event);
+                        if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())){
+                            organized_events.add(event);
+                        } //else if (){  TODO: Add condition to get signed up events
+                            //signed_up_events.add(event);
+                        //}
+                    } else {  //TODO: Remove this before submitting
+                        other_events.add(event);
                     }
                 }
-                eventAdapter.updateEvents(filteredEvents);
+
+                modelList.add(new EventDashboardModel(checked_in_events, "Checked In Events"));
+                modelList.add(new EventDashboardModel(signed_up_events, "Signed Up Events"));
+                modelList.add(new EventDashboardModel(organized_events, "Organized Events"));
+                modelList.add(new EventDashboardModel(other_events, "Other Events"));
+
+                adapter = new EventTypeAdapter(getContext(), modelList);
+                eventRecyclerView.setAdapter(adapter);
             }
         });
 
@@ -104,14 +133,4 @@ public class EventDashboardFragment extends Fragment {
 
         });
     }
-
-    public List<String> setEventHeaders() {
-        List <String> eventHeaders = new ArrayList<>();
-        eventHeaders.add("Checked-In Events");
-        //eventHeaders.add("Signed-Up Events");
-        //eventHeaders.add("Organized Events");
-
-        return eventHeaders;
-    }
-
 }

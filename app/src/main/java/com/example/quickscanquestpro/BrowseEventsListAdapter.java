@@ -16,12 +16,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
-public class BrowseEventListAdapter extends RecyclerView.Adapter<BrowseEventListAdapter.EventViewHolder> {
+public class BrowseEventsListAdapter extends RecyclerView.Adapter<BrowseEventsListAdapter.EventViewHolder> {
     private Context context;
     private List<Event> eventDataList;
     private DatabaseService databaseService = new DatabaseService();
 
-    public BrowseEventListAdapter(Context context, List<Event> eventDataList) {
+    public BrowseEventsListAdapter(Context context, List<Event> eventDataList) {
         this.context = context;
         this.eventDataList = eventDataList;
     }
