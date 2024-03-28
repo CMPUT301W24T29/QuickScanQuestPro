@@ -165,17 +165,23 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
         reuseCheckinButton = view.findViewById(R.id.reuse_checkin_button);
         reuseCheckinButton.setOnClickListener(v -> {
             reuseType = "checkin";
-            reuseCheckinButton.setError(null);
             // launch qr scanner by ADDING the fragment (so it does not destroy this one, requiring it to be created again when its display)
-            //mainActivity.addFragment(new HomeViewFragment(this), "ReuseCheckin");
+            reuseCheckinButton.setFocusableInTouchMode(true);
+            reuseCheckinButton.clearFocus();
+            reuseCheckinButton.setFocusableInTouchMode(false);
+            mainActivity.addFragment(new HomeViewFragment(this), "ReuseCheckin");
+//            reuseCheckinButton.setError(null);
         });
 
         reusePromoButton = view.findViewById(R.id.reuse_promo_button);
         reusePromoButton.setOnClickListener(v -> {
             reuseType = "promo";
-            reusePromoButton.setError(null);
+            reusePromoButton.setFocusableInTouchMode(true);
+            reusePromoButton.clearFocus();
+            reusePromoButton.setFocusableInTouchMode(false);
             // launch qr scanner by ADDING the fragment (so it does not destroy this one, requiring it to be created again when its display)
-            //mainActivity.addFragment(new HomeViewFragment(this), "ReusePromo");
+            mainActivity.addFragment(new HomeViewFragment(this), "ReusePromo");
+//            reusePromoButton.setError(null);
         });
 
         // final button that creates event and stores it
@@ -365,6 +371,7 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
                         originalRightPadding = reuseButton.getPaddingRight();
                     }
 
+                    reuseButton.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.reuse_qr_success_checkmark, 0);
                     reuseButton.setError("The scanned QR code is already used by another event. You must scan an unused QR code.");
                     reuseButton.setPadding(reuseButton.getPaddingLeft(),reuseButton.getPaddingTop(),originalRightPadding-15,reuseButton.getPaddingBottom());
                     reuseButton.setFocusableInTouchMode(true);
@@ -377,6 +384,7 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
                             originalRightPadding = reuseButton.getPaddingRight();
                         }
 
+                        reuseButton.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.reuse_qr_success_checkmark, 0);
                         reuseButton.setError("The code you scanned has already been set as this event's promo or checkin code. You must scan an unused QR code.");
                         reuseButton.setPadding(reuseButton.getPaddingLeft(),reuseButton.getPaddingTop(),originalRightPadding-15,reuseButton.getPaddingBottom());
                         reuseButton.setFocusableInTouchMode(true);
@@ -387,22 +395,14 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
                         if (originalRightPadding == null) {
                             originalRightPadding = reuseButton.getPaddingRight();
                         }
-                        // sets a checkmark
-                        // this will hopefully force the button to refresh, avoiding the issue where it removes the error but does not add the checkmark
 
-                        reuseButton.setCompoundDrawables(null, null, null, null);
-                        // sets a checkmark
-
-                        reuseButton.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+                        reuseButton.setError(null);
                         reuseButton.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.reuse_qr_success_checkmark, 0);
-                        Drawable drawable = ContextCompat.getDrawable(getContext(), R.drawable.reuse_qr_success_checkmark);
-                        reuseButton.setError("", drawable);
-                        reuseButton.setError(null, drawable);
-                        reuseButton.setCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
                         reuseButton.setPadding(reuseButton.getPaddingLeft(),reuseButton.getPaddingTop(),originalRightPadding-15,reuseButton.getPaddingBottom());
                         reuseButton.setFocusableInTouchMode(true);
-                        reuseButton.requestFocus();
+                        reuseButton.clearFocus();
                         reuseButton.setFocusableInTouchMode(false);
+
                         // sets a custom checkin/promo code and generates a new qrbitmap for respective code
                         if (Objects.equals(reuseType, "checkin")) {
                             creatingEvent.setCustomCheckin(scannedCode);
