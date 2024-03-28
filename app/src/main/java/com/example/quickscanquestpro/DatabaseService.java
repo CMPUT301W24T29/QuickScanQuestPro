@@ -599,6 +599,47 @@ public class DatabaseService {
         });
     }
 
+    public interface OnEventSignUpsLoaded {
+        void onSignUpsLoaded(List<User> users);
+    }
+
+    public void getEventSignUps(String eventId, OnEventSignUpsLoaded callback) {
+        DocumentReference eventRef = eventsRef.document(eventId);
+
+        eventRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists() && documentSnapshot.contains("signups")) {
+                List<String> userIds = (List<String>) documentSnapshot.get("signups");
+                if (userIds != null && !userIds.isEmpty()) {
+                    List<User> signedUpUsers = new ArrayList<>();
+                    AtomicInteger usersCount = new AtomicInteger(userIds.size());
+
+                    for (String userId : userIds) {
+                        getSpecificUserDetails(userId, new OnUserDataLoaded() {
+                            @Override
+                            public void onUserLoaded(User user) {
+                                if (user != null) {
+                                    signedUpUsers.add(user);
+                                }
+                                if (usersCount.decrementAndGet() == 0) {
+                                    callback.onSignUpsLoaded(signedUpUsers);
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    // If there are no users signed up for the event
+                    callback.onSignUpsLoaded(new ArrayList<>());
+                }
+            } else {
+                // If the event does not exist or does not have any signups
+                callback.onSignUpsLoaded(new ArrayList<>());
+            }
+        }).addOnFailureListener(e -> {
+            // In case of any failure, return an empty list
+            callback.onSignUpsLoaded(new ArrayList<>());
+        });
+    }
+
 
 
 

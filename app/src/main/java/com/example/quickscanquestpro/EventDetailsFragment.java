@@ -363,7 +363,19 @@ public class EventDetailsFragment extends Fragment {
         databaseService.userSignup(user, event);
     }
 
-    private void signupList(){
+    private void signupList() {
+        SignupListFragment signupListFragment = new SignupListFragment();
 
+        // If you have the event object or its ID, pass it here
+        Bundle args = new Bundle();
+        args.putString("eventId", event.getId()); // Assuming 'event' is your Event object
+        signupListFragment.setArguments(args);
+
+        // Begin the transaction
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+        transaction.replace(R.id.content, signupListFragment); // 'R.id.content' should be your container ID
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
+
 }
