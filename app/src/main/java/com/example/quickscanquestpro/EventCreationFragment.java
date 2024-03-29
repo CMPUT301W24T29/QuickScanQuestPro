@@ -164,7 +164,7 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
             reuseType = "checkin";
             reuseCheckinButton.setError(null);
             // launch qr scanner by ADDING the fragment (so it does not destroy this one, requiring it to be created again when its display)
-            mainActivity.addFragment(new HomeViewFragment(this), "ReuseCheckin");
+            //mainActivity.addFragment(new HomeViewFragment(this), "ReuseCheckin");
         });
 
         reusePromoButton = view.findViewById(R.id.reuse_promo_button);
@@ -172,7 +172,7 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
             reuseType = "promo";
             reusePromoButton.setError(null);
             // launch qr scanner by ADDING the fragment (so it does not destroy this one, requiring it to be created again when its display)
-            mainActivity.addFragment(new HomeViewFragment(this), "ReusePromo");
+            //mainActivity.addFragment(new HomeViewFragment(this), "ReusePromo");
         });
 
         // final button that creates event and stores it

@@ -9,9 +9,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -27,13 +25,16 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A class to handle all database operations
@@ -130,11 +131,7 @@ public class DatabaseService {
 
     public void updateLastCheckIn(String userId, String eventId){
         DocumentReference userRef = db.collection("users").document(userId);
-        User user = new User(userId);
-        user.setLastCheckIn(eventId);
-        userRef.set(user, SetOptions.mergeFields("lastCheckIn"))
-                .addOnSuccessListener(aVoid -> Log.d("DatabaseService", "Last Checked in event update successfully."))
-                .addOnFailureListener(e -> Log.e("DatabaseService", "Error updating last checked in event", e));
+        userRef.update("lastCheckIn", eventId);
     }
 
     public void addEvent(Event event) {
@@ -209,8 +206,29 @@ public class DatabaseService {
                 event.setEndTime(LocalTime.parse(document.getString("End-time")));
                 event.setEventBannerUrl(document.getString("eventPictureUrl"));
                 event.setEventBannerPath(document.getString("eventPicturePath"));
+
+                // Retrieve check-ins for this event
+                ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) document.get("checkins");
+                Log.d(TAG, "Retrieved " + (checkInsArray != null ? checkInsArray.size() : 0) + " check-ins for event " + eventId);
+
+                if (checkInsArray != null) {
+                    // Process the check-ins array
+                    ArrayList<CheckIn> checkIns = new ArrayList<>();
+                    for (Map<String, Object> checkInMap : checkInsArray) {
+                        String userId = (String) checkInMap.get("userId");
+                        String location = (String) checkInMap.get("location");
+                        checkIns.add(new CheckIn(userId, location));
+                    }
+
+                    Log.d(TAG, "Created " + checkIns.size() + " check-ins for event " + eventId);
+                    event.setCheckIns(checkIns);
+                }
+
+                // Add the event to the list
                 events.add(event);
             }
+
+            // Call the callback with the list of events
             callback.onEventsLoaded(events);
         }).addOnFailureListener(e -> callback.onEventsLoaded(null));
     }
@@ -236,6 +254,8 @@ public class DatabaseService {
                 user.setHomepage(document.getString("Homepage"));
 //                user.setGeolocation(document.getBoolean("geoLocation"));
 //                user.setCheckins(document.getLong("check-ins").intValue());
+                user.setProfilePictureUrl(document.getString("profilePictureUrl"));
+                user.setProfilePicturePath(document.getString("profilePicturePath"));
                 users.add(user);
             }
             callback.onUsersLoaded(users);
@@ -291,23 +311,21 @@ public class DatabaseService {
         event.setCustomCheckin(queryDocumentSnapshot.getString("customCheckin"));
         event.setCustomPromo(queryDocumentSnapshot.getString("customPromo"));
 
-        // This is supposed to load event picture, but unsure if it works properly
-        // To be implemented later
-                /*String eventPictureUrl = queryDocumentSnapshot.getString("eventPictureUrl");
-                if (eventPictureUrl != null) {
-                    Glide.with(mainActivity)
-                            .asBitmap()
-                            .load(eventPictureUrl)
-                            .into(new CustomTarget<Bitmap>() {
-                                @Override
-                                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                    event.setEventBanner(resource);
-                                }
-                                @Override
-                                public void onLoadCleared(@Nullable Drawable placeholder) {
-                                }
-                            });
-                }*/
+        // Retrieve check-ins for this event
+        ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) queryDocumentSnapshot.get("checkins");
+        Log.d(TAG, "Retrieved " + (checkInsArray != null ? checkInsArray.size() : 0) + " check-ins for event " + eventId);
+        if (checkInsArray != null) {
+            // Process the check-ins array
+            ArrayList<CheckIn> checkIns = new ArrayList<>();
+            for (Map<String, Object> checkInMap : checkInsArray) {
+                String userId = (String) checkInMap.get("userId");
+                String location = (String) checkInMap.get("location");
+                checkIns.add(new CheckIn(userId, location));
+            }
+
+            Log.d(TAG, "Created " + checkIns.size() + " check-ins for event " + eventId);
+            event.setCheckIns(checkIns);
+        }
         return event;
     }
 
@@ -543,6 +561,81 @@ public class DatabaseService {
         Map<String, Object> combinedData = new HashMap<>();
         combinedData.putAll(updates);
         eventsRef.document(String.valueOf(event.getId())).set(combinedData, SetOptions.merge());
+    }
+
+    public void userSignup(User user, Event event) {
+        // Start a Firestore transaction
+        db.runTransaction(transaction -> {
+                    // References to the user and event documents
+                    DocumentReference userRef = usersRef.document(user.getUserId());
+                    DocumentReference eventRef = eventsRef.document(event.getId());
+
+                    // Atomically add the event ID to the user's "signedUpEvents" list
+                    transaction.update(userRef, "signedUpEvents", FieldValue.arrayUnion(event.getId()));
+                    // Atomically add the user ID to the event's "signups" list
+                    transaction.update(eventRef, "signups", FieldValue.arrayUnion(user.getUserId()));
+
+                    // This function must return a result, null in this case
+                    return null;
+                }).addOnSuccessListener(aVoid -> Log.d(TAG, "User signup and event registration successful."))
+                .addOnFailureListener(e -> Log.e(TAG, "Error during user signup and event registration.", e));
+    }
+
+    public interface OnSignedUpEventsLoaded {
+        void onSignedUpEventsLoaded(List<Event> events);
+    }
+
+    public void getUserSignedupEvents(User user, OnSignedUpEventsLoaded callback) {
+        DocumentReference userRef = usersRef.document(user.getUserId());
+        userRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists() && documentSnapshot.contains("signedUpEvents")) {
+                List<String> eventIds = (List<String>) documentSnapshot.get("signedUpEvents");
+                if (eventIds != null && !eventIds.isEmpty()) {
+                    List<Event> signedUpEvents = new ArrayList<>();
+                    AtomicInteger eventsCount = new AtomicInteger(eventIds.size());
+                    for (String eventId : eventIds) {
+                        getEvent(eventId, event -> {
+                            if (event != null) {
+                                // Checks if the events date is already passed
+                                LocalDate endDate = event.getEndDate();
+                                LocalDateTime endDateTime = endDate.atTime(event.getEndTime());
+                                if (endDateTime.isAfter(LocalDateTime.now())) {
+                                    signedUpEvents.add(event);
+                                }
+                            }
+                            if (eventsCount.decrementAndGet() == 0) {
+                                callback.onSignedUpEventsLoaded(signedUpEvents);
+                            }
+                        });
+                    }
+                } else {
+                    // if there are no signups
+                    callback.onSignedUpEventsLoaded(Collections.emptyList());
+                }
+            } else {
+                callback.onSignedUpEventsLoaded(Collections.emptyList());
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("DatabaseService", "Error fetching signedUpEvents", e);
+            callback.onSignedUpEventsLoaded(Collections.emptyList());
+        });
+    }
+
+
+
+
+    public void deleteUserProfilePicture(String userId, OnProfilePictureDelete callback) {
+        DocumentReference userRef = db.collection(USERS_COLLECTION).document(userId);
+        userRef.update("profilePictureUrl", null)
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure(e));
+    }
+
+    public void deleteEventPhoto(String eventId, OnProfilePictureDelete callback) {
+        DocumentReference eventRef = db.collection(EVENTS_COLLECTION).document(eventId);
+        eventRef.update("eventPictureUrl", null)
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure(e));
     }
 
 }

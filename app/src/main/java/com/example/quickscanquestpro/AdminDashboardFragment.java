@@ -76,6 +76,24 @@ public class AdminDashboardFragment extends Fragment {
             }
         });
 
+        Button viewImagesButton = view.findViewById(R.id.admin_button_view_images);
+
+        viewImagesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AdminManageImagesFragment adminManageImagesFragment = new AdminManageImagesFragment();
+
+                if (isAdded() && getActivity() != null) {
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.content, adminManageImagesFragment)
+                            .addToBackStack(null)
+                            .commit();
+                }
+            }
+        });
+
+
+
         Button viewProfileButton = view.findViewById(R.id.button_profile);
         viewProfileButton.setOnClickListener(new View.OnClickListener() {
             @Override
