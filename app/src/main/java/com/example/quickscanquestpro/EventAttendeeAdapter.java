@@ -72,7 +72,7 @@ public class EventAttendeeAdapter extends ArrayAdapter<User>{
                 if (user != null) {
                     nameTextView.setText(user.getName());
                 } else {
-                    nameTextView.setText("Unknown User");
+                    nameTextView.setText("Deleted User");
                 }
                 // convert the integer to a string
                 checkinCountTextView.setText(String.valueOf(currentUser.getCheckins()));

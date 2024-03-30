@@ -36,6 +36,15 @@ public class HomeViewFragment extends Fragment {
                 }
             });
 
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
+        @Override
+        public void onActivityResult(Boolean o) {
+            if (o) {
+                Toast.makeText(getContext(), "Notifications Permission granted", Toast.LENGTH_LONG).show();
+            }
+        }
+    });
+
     public HomeViewFragment() {
         // Required empty public constructor
     }
@@ -67,6 +76,11 @@ public class HomeViewFragment extends Fragment {
         }
         else{
             requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+        }
+
+
+        if(ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
         }
 
     }
