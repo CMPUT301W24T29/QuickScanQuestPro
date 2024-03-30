@@ -53,13 +53,15 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 /**
  * This fragment displays the details of an event, including the title, description, date, location,
  * announcements, and the event banner. It also allows the event organizer to upload a new event
- * banner and share the event QR code.
+ * banner and share the event QR code. It also allows the organizer to view the list of attendees and
+ * the number of check-ins for each attendee.
  */
 public class EventDetailsFragment extends Fragment {
 
@@ -67,6 +69,10 @@ public class EventDetailsFragment extends Fragment {
     private DatabaseService databaseService = new DatabaseService();
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private ImageView eventImage;
+    private ArrayList<ArrayList<Object>> checkInList;
+
+    private User user;
+    private FloatingActionButton shareButton;
 
     /**
      * This is the default constructor for the EventDetailsFragment class. If no event is passed in,
@@ -134,11 +140,10 @@ public class EventDetailsFragment extends Fragment {
         TextView eventLocation = view.findViewById(R.id.event_location);
         ImageView eventImage = view.findViewById(R.id.event_banner);
         FloatingActionButton backButton = view.findViewById(R.id.back_button);
-        FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
+        shareButton = view.findViewById(R.id.share_event_button);
         Button uploadImageButton = view.findViewById(R.id.edit_banner_button);
         Button attendeesButton = view.findViewById(R.id.event_attendee_button);
         uploadImageButton.setVisibility(View.VISIBLE);
-
 
 
             // If there is no event passed in, create a test event
@@ -174,6 +179,31 @@ public class EventDetailsFragment extends Fragment {
                 fragmentManager.popBackStack();
             });
 
+            // If clicked, this button brings the user to the attendees list fragment. If there
+            // is no attendees in the current event, it will instead show the user a message
+            attendeesButton.setOnClickListener(v -> {
+                databaseService.getEvent(event.getId(), event -> {
+                    if (event != null) {
+                        if (this.event.getCheckIns() != null) {
+                            this.event = event;
+                             AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.event);
+                             FragmentManager fragmentManager = getParentFragmentManager();
+                             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                             fragmentTransaction.replace(R.id.content, attendeesListFragment);
+                             fragmentTransaction.addToBackStack(null);
+                             fragmentTransaction.commit();
+                        }
+                        else {
+                            Toast.makeText(getContext(), "No attendees found", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    else {
+                        Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
+                        FragmentManager fragmentManager = getParentFragmentManager();
+                        fragmentManager.popBackStack();
+                    }
+                });
+            });
 
             // Enable these buttons if the user is the organizer of the event
             if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
@@ -201,8 +231,32 @@ public class EventDetailsFragment extends Fragment {
             }
 
         } else {
-            Log.e(TAG, "User or MainActivity is null");
+            setShareButton(shareButton);
+
+
+
+            // Signup and Signup List buttons
+
+            Button signupButton = view.findViewById(R.id.signup_button);
+            Button signupListButton = view.findViewById(R.id.signup_list);
+
+            signupButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(getContext(), "Signed up!", Toast.LENGTH_SHORT).show();
+                    signup();
+                }
+            });
+
+            signupListButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(getContext(), "Signup List", Toast.LENGTH_SHORT).show();
+                    signupList();
+                }
+            });
         }
+
     }
 
     @Override
@@ -331,5 +385,16 @@ public class EventDetailsFragment extends Fragment {
                 Log.d(TAG, "onFailure: " + e.getMessage());
             }
         });
+    }
+
+    private void signup(){
+        MainActivity mainActivity = (MainActivity) getActivity();
+        user = mainActivity.getUser();
+
+        databaseService.userSignup(user, event);
+    }
+
+    private void signupList(){
+
     }
 }

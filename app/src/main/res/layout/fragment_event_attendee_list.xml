@@ -56,7 +56,8 @@
         app:layout_constraintBottom_toTopOf="@+id/live_count"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/event_attendee_dashboard_title" />
+        app:layout_constraintTop_toBottomOf="@+id/event_attendee_dashboard_title"
+        tools:listitem="@layout/list_attendees_view"/>
 
 
     <TextView
@@ -80,6 +81,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.137"
         app:layout_constraintStart_toEndOf="@+id/live_count"></TextView>
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
