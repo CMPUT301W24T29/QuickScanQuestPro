@@ -147,6 +147,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         user.put("email", "");
         user.put("geolocation", false);
         user.put("NotificationToken", notificationToken);
+        user.put("ReceiveNotifications", false);
 
         // Add a new document with the generated userId
         db.collection("users").document(userId).set(user)

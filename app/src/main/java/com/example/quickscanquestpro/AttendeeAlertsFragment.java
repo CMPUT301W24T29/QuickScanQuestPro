@@ -78,26 +78,34 @@ public class AttendeeAlertsFragment extends DialogFragment {
                 databaseService.getSpecificUserDetails(user.getUserId(), new DatabaseService.OnUserDataLoaded() {
                     @Override
                     public void onUserLoaded(User user) {
-                        JSONObject jsonObject = new JSONObject();
-                        try {
-                            Log.d("Notification", "Sending notification to user: " + user.getName());
+                        if(user.getGetNotification() == false)
+                        {
+                            // skip this iteration
+                            Log.d("Notification", "User: " + user.getName() + " has notifications turned off");
+                        }
+                        else{
+                            JSONObject jsonObject = new JSONObject();
+                            try {
+                                Log.d("Notification", "Sending notification to user: " + user.getName());
 
-                            JSONObject notification = new JSONObject();
-                            notification.put("title", title);
-                            notification.put("body", body);
+                                JSONObject notification = new JSONObject();
+                                notification.put("title", title);
+                                notification.put("body", body);
 
-                            JSONObject dataObj = new JSONObject();
-                            dataObj.put("userID", user.getUserId());
+                                JSONObject dataObj = new JSONObject();
+                                dataObj.put("userID", user.getUserId());
 
-                            jsonObject.put("notification", notification);
-                            jsonObject.put("data", dataObj);
-                            jsonObject.put("to", user.getNotificationToken());
+                                jsonObject.put("notification", notification);
+                                jsonObject.put("data", dataObj);
+                                jsonObject.put("to", user.getNotificationToken());
 
-                            callApi(jsonObject);
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                                callApi(jsonObject);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
+
                 });
 
             }

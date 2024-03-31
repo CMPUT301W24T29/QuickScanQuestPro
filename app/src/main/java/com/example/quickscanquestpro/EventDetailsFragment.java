@@ -232,9 +232,6 @@ public class EventDetailsFragment extends Fragment {
 
         } else {
             setShareButton(shareButton);
-
-
-
             // Signup and Signup List buttons
 
             Button signupButton = view.findViewById(R.id.signup_button);

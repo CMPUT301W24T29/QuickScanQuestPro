@@ -19,8 +19,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -66,11 +68,21 @@ public class ProfileFragment extends Fragment {
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private Button deleteProfilePictureButton;
 
+    private Boolean isNotificationAllowed = false;
+
     LinearProgressIndicator progressIndicator;
 
     private DatabaseService databaseService = new DatabaseService();
 
     private User user;
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
+        @Override
+        public void onActivityResult(Boolean o) {
+            if (o) {
+                Toast.makeText(getContext(), "Notifications Permission granted", Toast.LENGTH_LONG).show();
+            }
+        }
+    });
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -106,9 +118,6 @@ public class ProfileFragment extends Fragment {
         });
     }
 
-
-
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -128,7 +137,26 @@ public class ProfileFragment extends Fragment {
             fragmentManager.popBackStack();
         });
 
-
+        Switch notificationSwitch = view.findViewById(R.id.alert_switch);
+        notificationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                    user.setGetNotification(true);
+                    databaseService.addUser(user);
+                }
+                else
+                {
+                    user.setGetNotification(true);
+                    databaseService.addUser(user);
+                }
+            }
+            else
+                {
+                    user.setGetNotification(false);
+                    databaseService.addUser(user);
+                }
+        });
     }
 
 
@@ -159,6 +187,7 @@ public class ProfileFragment extends Fragment {
         EditText mobileNumberInput = view.findViewById(R.id.mobileNumberInput);
         EditText emailAddressInput = view.findViewById(R.id.emailAddressInput);
         SwitchMaterial geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
+        Switch notificationSwitch = view.findViewById(R.id.alert_switch);
 
         //Get User from Main activity
 
@@ -337,8 +366,9 @@ public class ProfileFragment extends Fragment {
                     String email = document.getString("email");
                     String profilePictureUrl = document.getString("profilePictureUrl");
                     Boolean geolocation = document.getBoolean("geolocation");
+                    Boolean NotificationPermission = document.getBoolean("ReceiveNotifications");
 
-                    updateUIWithUserData(name, homepage, mobileNum, email, geolocation, profilePictureUrl);
+                    updateUIWithUserData(name, homepage, mobileNum, email, geolocation, profilePictureUrl, NotificationPermission);
                 } else {
                     Log.d("ProfileFragment", "No such document");
                 }
@@ -365,7 +395,7 @@ public class ProfileFragment extends Fragment {
      * @param geolocation The user's geolocation preference to be updated in the UI.
      * @param profilePictureUrl The URL of the user's profile picture. If provided, it is loaded into the profile picture view.
      */
-    private void updateUIWithUserData(String name, String homepage, String mobileNum, String email, Boolean geolocation, String profilePictureUrl) {
+    private void updateUIWithUserData(String name, String homepage, String mobileNum, String email, Boolean geolocation, String profilePictureUrl, Boolean getNotification) {
         View view = getView();
         if (view == null) return; // Ensure view is available
 
@@ -374,6 +404,7 @@ public class ProfileFragment extends Fragment {
         EditText mobileNumberInput = view.findViewById(R.id.mobileNumberInput);
         EditText emailAddressInput = view.findViewById(R.id.emailAddressInput);
         SwitchMaterial geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
+        Switch notificationSwitch = view.findViewById(R.id.alert_switch);
 
         fullNameInput.setText(name);
         homepageInput.setText(homepage);
@@ -390,6 +421,11 @@ public class ProfileFragment extends Fragment {
         }
         if (geolocation != null) {
             geolocationSwitch.setChecked(geolocation);
+        }
+        // set the notification switch to on or off based on the user's preference
+        if(getNotification != null)
+        {
+            notificationSwitch.setChecked(getNotification);
         }
     }
 

@@ -33,6 +33,8 @@ public class User {
 
     private String notificationToken;
 
+    private Boolean getNotification;
+
 
     /*
      * user preference
@@ -97,6 +99,14 @@ public class User {
 
     public void setGeolocation(boolean geolocation) {
         this.geolocation = geolocation;
+    }
+
+    public void setGetNotification(Boolean getNotification) {
+        this.getNotification = getNotification;
+    }
+
+    public Boolean getGetNotification() {
+        return getNotification;
     }
 
     public boolean isAdmin() {

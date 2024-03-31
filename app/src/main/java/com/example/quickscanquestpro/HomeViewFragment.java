@@ -36,15 +36,6 @@ public class HomeViewFragment extends Fragment {
                 }
             });
 
-    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
-        @Override
-        public void onActivityResult(Boolean o) {
-            if (o) {
-                Toast.makeText(getContext(), "Notifications Permission granted", Toast.LENGTH_LONG).show();
-            }
-        }
-    });
-
     public HomeViewFragment() {
         // Required empty public constructor
     }
@@ -70,20 +61,20 @@ public class HomeViewFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         view.findViewById(R.id.homeViewLayout).setBackgroundColor(getActivity().getColor(R.color.white));
 
-        // If the app already has run time permission for camera it will start setupCamera otherwise invoke requestCameraPermissionLauncher
+        // Request camera permission first
         if(ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
+
+            // Camera permission granted, setup camera
             setupCamera();
         }
         else{
+            // Request camera permission
             requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA);
         }
 
 
-        if(ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){
-            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-        }
-
     }
+
 
     /**
      * This method initializes the camera for QR Code Scanning

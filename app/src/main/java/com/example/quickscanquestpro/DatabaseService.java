@@ -180,6 +180,7 @@ public class DatabaseService {
         userData.put("profilePicturePath", user.getProfilePicturePath());
         userData.put("NotificationToken", user.getNotificationToken());
         userData.put("lastCheckIn", user.getLastCheckIn());
+        userData.put("ReceiveNotifications", user.getGetNotification());
 
         // Add the user data to the Firestore "users" collection with the incremented document number
         usersRef.document(String.valueOf(user.getUserId())).set(userData, SetOptions.merge());
@@ -290,6 +291,7 @@ public class DatabaseService {
             user.setProfilePicturePath(queryDocumentSnapshot.getString("profilePicturePath"));
             user.setNotificationToken(queryDocumentSnapshot.getString("NotificationToken"));
             user.setLastCheckIn(queryDocumentSnapshot.getString("lastCheckIn"));
+            user.setGetNotification(queryDocumentSnapshot.getBoolean("ReceiveNotifications"));
 //            user.setGeolocation(queryDocumentSnapshot.getBoolean("geoLocation"));
 //            user.setCheckins(queryDocumentSnapshot.getLong("check-ins").intValue());
 
