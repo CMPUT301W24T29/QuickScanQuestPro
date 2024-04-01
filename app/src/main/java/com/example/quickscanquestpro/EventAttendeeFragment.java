@@ -127,13 +127,27 @@ public class EventAttendeeFragment extends Fragment {
                             uniqueAttendees.add(attendee);
                         }
                     }
-                    // Create an adapter for the attendee list
-                    EventAttendeeAdapter adapter = new EventAttendeeAdapter(mainActivity, R.layout.list_attendee_view, uniqueAttendees);
+                }
+                // checks if the user exists in the database, if not it deletes it from uniqueAttendees
+                for (User attendee : uniqueAttendees) {
+                    databaseService.getSpecificUserDetails(attendee.getUserId(), new DatabaseService.OnUserDataLoaded() {
 
-                    // Set the adapter for the attendeeListView
-                    TextView liveAttendeeCount = view.findViewById(R.id.live_count_number);
-                    liveAttendeeCount.setText(String.valueOf(uniqueAttendees.size()));
-                    attendeeListView.setAdapter(adapter);
+                        @Override
+                        public void onUserLoaded(User user) {
+                            if(user == null)
+                            {
+                                // remove the user from the list
+                                uniqueAttendees.remove(attendee);
+                            }
+                            // Create an adapter for the attendee list
+                            EventAttendeeAdapter adapter = new EventAttendeeAdapter(mainActivity, R.layout.list_attendee_view, uniqueAttendees);
+
+                            // Set the adapter for the attendeeListView
+                            TextView liveAttendeeCount = view.findViewById(R.id.live_count_number);
+                            liveAttendeeCount.setText(String.valueOf(uniqueAttendees.size()));
+                            attendeeListView.setAdapter(adapter);
+                        }
+                    });
                 }
             }
         });
