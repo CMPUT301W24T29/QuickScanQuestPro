@@ -55,7 +55,7 @@ import java.util.UUID;
  * Optionally reuse an existing QRCode and associate it with the new event for either the promotional code or the checkin code. Stores the user that created the event as an organizer
  */
 public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQRScanned{
-    private Event creatingEvent;
+    Event creatingEvent;
     private DatabaseService databaseService = new DatabaseService();
     private EditText titleEditText;
     private EditText descriptionEditText;
@@ -370,7 +370,7 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
                     if (originalRightPadding == null) {
                         originalRightPadding = reuseButton.getPaddingRight();
                     }
-
+                    // you have to set the success checkmark before setting an error, because the onl way you can change the right drawable is apparently through seterror if you EVER call seterror... forever
                     reuseButton.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.reuse_qr_success_checkmark, 0);
                     reuseButton.setError("The scanned QR code is already used by another event. You must scan an unused QR code.");
                     reuseButton.setPadding(reuseButton.getPaddingLeft(),reuseButton.getPaddingTop(),originalRightPadding-15,reuseButton.getPaddingBottom());

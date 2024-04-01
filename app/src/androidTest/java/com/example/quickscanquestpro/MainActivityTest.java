@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import android.Manifest;
 import android.app.Activity;
@@ -38,6 +39,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.DatePicker;
@@ -47,6 +49,7 @@ import android.widget.ListView;
 import android.widget.TimePicker;
 
 import androidx.annotation.IdRes;
+import androidx.fragment.app.Fragment;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
@@ -71,6 +74,7 @@ import org.junit.runner.RunWith;
 import java.io.File;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -402,5 +406,97 @@ public class MainActivityTest {
         onView(withId(R.id.profiles_recycler_view)).check(matches(isDisplayed()));
     }
 
+    /**
+     * This gets an activity reference from a running test, but you should not hold onto this reference as it may change
+     * or be recreated. Try to call this every time you need something out of the activity.
+     * @param activityScenarioRule the scenario from the scenarioTestRule
+     * @return returns the Activity from the scenario, which can then be cast to (MainActivity) if needed
+     */
+    private <T extends Activity> T getActivityFromScenario(ActivityScenarioRule<T> activityScenarioRule) {
+        AtomicReference<T> activityRef = new AtomicReference<>();
+        activityScenarioRule.getScenario().onActivity(activityRef::set);
+        return activityRef.get();
+    }
+
+    /**
+     * This test requires a custom QR code that is loaded into the virtual camera that isnt used by an event yet, or it will fail.
+     */
+    @Test
+    public void testUS01_01_02ReuseQR(){
+        // begin event creation
+        // fill all the boxes
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+
+        onView(withId(R.id.event_dashboard_create_button)).perform(click());
+
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("My Event Title"));
+        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
+        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
+        Espresso.closeSoftKeyboard();
+
+        setDate(R.id.text_event_start_date, 2024, 8, 18);
+        Espresso.closeSoftKeyboard();
+        setDate(R.id.text_event_end_date, 2024, 8, 19);
+        Espresso.closeSoftKeyboard();
+
+        setTime(R.id.text_event_start_time, 12, 30);
+        Espresso.closeSoftKeyboard();
+        setTime(R.id.text_event_end_time, 19, 36);
+        Espresso.closeSoftKeyboard();
+
+        // click reuse qr checkin code
+        onView(withId(R.id.reuse_checkin_button)).perform(click());
+        onView(isRoot()).perform(waitFor(7000)); // Wait for scanning
+        // verify that the checkin code actually got set, then overwrite it manually with "CUSTOMCHECKINQRTESTCODE"
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        EventCreationFragment fragment = (EventCreationFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventCreation");
+        Event creatingEvent = fragment.creatingEvent;
+        assertNotNull(creatingEvent.getCustomCheckin());
+        Log.d("testUS01_01_02", "custom checkin QR was originally set to " + creatingEvent.getCustomCheckin());
+        creatingEvent.setCustomCheckin("CUSTOMCHECKINQRTESTCODE");
+        // click reuse qr promo code
+        onView(withId(R.id.reuse_promo_button)).perform(click());
+        onView(isRoot()).perform(waitFor(7000)); // Wait for scanning
+        // verify that the promo code actually got set, then overwrite it manually with "CUSTOMPROMOQRTESTCODE"
+        mainActivity = getActivityFromScenario(scenario);
+        fragment = (EventCreationFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventCreation");
+        creatingEvent = fragment.creatingEvent;
+        assertNotNull(creatingEvent.getCustomPromo());
+        Log.d("testUS01_01_02", "custom promo QR was originally set to " + creatingEvent.getCustomPromo());
+        creatingEvent.setCustomPromo("CUSTOMPROMOQRTESTCODE");
+        // store the creating event id
+        String creatingId = creatingEvent.getId();
+        try {
+            // create event
+            onView(withId(R.id.create_event_confirm_button)).perform(click());
+            onView(isRoot()).perform(waitFor(3000)); // Wait for creation
+            // call database service function to get event with custom qr
+            // verify that the ID matches the event that was being created and the two custom qr codes are set correctly
+            DatabaseService databaseService = new DatabaseService();
+            databaseService.getEventWithCustomQR("CUSTOMCHECKINQRTESTCODE", event -> {
+                assertNotNull(event);
+                assertEquals(event.getId(), creatingId);
+                assertEquals(event.getCustomCheckin(), "CUSTOMCHECKINQRTESTCODE");
+                assertEquals(event.getCustomPromo(), "CUSTOMPROMOQRTESTCODE");
+            });
+        } finally {
+            // this code will make sure the event is deleted from the database after, even if the test fails
+            DatabaseService databaseService = new DatabaseService();
+            databaseService.getEventWithCustomQR("CUSTOMCHECKINQRTESTCODE", event -> {
+                if (event != null) {
+                    databaseService.deleteEvent(event);
+                }
+            });
+        }
+
+
+
+
+    }
 
 }
