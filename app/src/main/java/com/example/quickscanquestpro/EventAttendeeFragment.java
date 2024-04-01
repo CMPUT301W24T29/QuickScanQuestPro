@@ -127,10 +127,6 @@ public class EventAttendeeFragment extends Fragment {
                             uniqueAttendees.add(attendee);
                         }
                     }
-
-                    Log.d("UniqueAttendees", uniqueAttendees.toString());
-                    Log.d("Checkins", String.valueOf(uniqueAttendees.get(0).getCheckins()));
-
                     // Create an adapter for the attendee list
                     EventAttendeeAdapter adapter = new EventAttendeeAdapter(mainActivity, R.layout.list_attendee_view, uniqueAttendees);
 

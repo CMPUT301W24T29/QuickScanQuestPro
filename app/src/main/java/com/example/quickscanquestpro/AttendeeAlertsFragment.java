@@ -78,6 +78,11 @@ public class AttendeeAlertsFragment extends DialogFragment {
                 databaseService.getSpecificUserDetails(user.getUserId(), new DatabaseService.OnUserDataLoaded() {
                     @Override
                     public void onUserLoaded(User user) {
+                        if(user == null)
+                        {
+                            Log.d("Notification", "User not found");
+                            return;
+                        }
                         if(user.getGetNotification() == false)
                         {
                             // skip this iteration

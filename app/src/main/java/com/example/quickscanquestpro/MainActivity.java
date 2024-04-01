@@ -93,9 +93,9 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
                         }
                         // Get new FCM registration token
                         notificationToken = task.getResult();
+                        databaseService.getUsers(MainActivity.this);
                     }
                 });
-        databaseService.getUsers(this);
 
         this.transitionFragment(new HomeViewFragment(), this.getString(R.string.title_qr_scanner));
 
