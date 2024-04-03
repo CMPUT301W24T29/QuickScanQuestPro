@@ -142,6 +142,13 @@ public class EventAttendeeFragment extends Fragment {
                             // Create an adapter for the attendee list
                             EventAttendeeAdapter adapter = new EventAttendeeAdapter(mainActivity, R.layout.list_attendee_view, uniqueAttendees);
 
+                            // change this if you need to change the milestone count
+                            // if the unique attendees are 2 or more send a notification ot the organiser of the event
+                            if(uniqueAttendees.size() >= 3)
+                            {
+                                sendAlert();
+                            }
+
                             // Set the adapter for the attendeeListView
                             TextView liveAttendeeCount = view.findViewById(R.id.live_count_number);
                             liveAttendeeCount.setText(String.valueOf(uniqueAttendees.size()));
@@ -149,6 +156,73 @@ public class EventAttendeeFragment extends Fragment {
                         }
                     });
                 }
+            }
+        });
+    }
+
+    public void sendAlert() {
+        try {
+            // send the notification to the organiser of the event
+            String userId = event.getOrganizerId();
+            databaseService.getSpecificUserDetails(userId, new DatabaseService.OnUserDataLoaded() {
+                @Override
+                public void onUserLoaded(User user) {
+                    if (user == null) {
+                        Log.d("Notification", "User not found");
+                        return;
+                    }
+                    if (user.getGetNotification() == false) {
+                        // skip this iteration
+                        Log.d("Notification", "User: " + user.getName() + " has notifications turned off");
+                    } else {
+                        JSONObject jsonObject = new JSONObject();
+                        try {
+                            Log.d("Notification", "Sending notification to user: " + user.getName());
+
+                            JSONObject notification = new JSONObject();
+                            notification.put("title", "Attendence Milestone");
+                            notification.put("body", "You have reached a milestone!!!! Yahoooo!!!!");
+
+                            JSONObject dataObj = new JSONObject();
+                            dataObj.put("userID", user.getUserId());
+
+                            jsonObject.put("notification", notification);
+                            jsonObject.put("data", dataObj);
+                            jsonObject.put("to", user.getNotificationToken());
+
+                            callApi(jsonObject);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void callApi(JSONObject jsonObject)
+    {
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        OkHttpClient client = new OkHttpClient();
+        String url = "https://fcm.googleapis.com/fcm/send";
+        RequestBody body = RequestBody.create(jsonObject.toString(), JSON);
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                // add the api key after bearer with a space
+                .header("Authorization", "Bearer AAAA-z98YP0:APA91bEoBWfmJI7JHaV87puPVmZhDNv-4m0cxhjYXjsD5mAiPoTuhGbC6xfV0rVBt9qXj59n3TPCRe2QnwlZFXb96DvtoxYvyT5tCNqgaR0m8PapWiWHFVWbNpChm37VzNImEXL5T_iu")
+                .build();
+        client.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(okhttp3.Call call, IOException e) {
+                Log.d("Notification", "Failed to send notification");
+            }
+
+            @Override
+            public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
+                Log.d("Notification", "Notification sent successfully");
             }
         });
     }
