@@ -62,6 +62,9 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
     private OnQRScanned callback;
     private String customCode;
 
+    /**
+     * Interface for callbacks when a QRCode is scanned that returns the scanned code instead.
+     */
     public interface OnQRScanned {
         void onQRScanned(String scannedCode);
     }

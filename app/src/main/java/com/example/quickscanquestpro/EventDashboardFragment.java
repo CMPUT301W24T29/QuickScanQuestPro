@@ -145,6 +145,18 @@ public class EventDashboardFragment extends Fragment {
             fragmentTransaction.replace(R.id.content, fragment);
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
+            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+            transaction.replace(R.id.content, new EventCreationFragment(), "EventCreation"); // Ensure that 'R.id.content' is your container ID in the layout.
+            transaction.addToBackStack(null);
+            transaction.commit();
+        });
+
+        Button browseButton = view.findViewById(R.id.event_dashboard_browse_button);
+        browseButton.setOnClickListener(v -> {
+            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+            transaction.replace(R.id.content, new BrowseEventsFragment()); // Ensure that 'R.id.content' is your container ID in the layout.
+            transaction.addToBackStack(null);
+            transaction.commit();
         });
     }
 
