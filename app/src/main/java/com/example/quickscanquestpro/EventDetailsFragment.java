@@ -212,13 +212,6 @@ public class EventDetailsFragment extends Fragment {
                     intent.setType("image/*");
                     pickImageLauncher.launch(intent);
                 });
-                attendeesButton.setOnClickListener(v -> {
-                    FragmentManager fragmentManager = getParentFragmentManager();
-                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                    fragmentTransaction.replace(R.id.content, new EventAttendeeFragment(event));
-                    fragmentTransaction.addToBackStack(null);
-                    fragmentTransaction.commit();
-                });
                 // For now, option to change event banner is unavailable
                 // eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
                 setShareButton(shareButton);
