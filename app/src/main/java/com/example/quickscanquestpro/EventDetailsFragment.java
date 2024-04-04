@@ -65,12 +65,10 @@ import java.util.UUID;
  */
 public class EventDetailsFragment extends Fragment {
 
-    private Event event;
+    Event event;
     private DatabaseService databaseService = new DatabaseService();
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private ImageView eventImage;
-    private ArrayList<ArrayList<Object>> checkInList;
-
     private User user;
 
     /**
@@ -140,8 +138,8 @@ public class EventDetailsFragment extends Fragment {
             eventImage = view.findViewById(R.id.event_banner);
             FloatingActionButton backButton = view.findViewById(R.id.back_button);
             FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
-            Button uploadImageButton = view.findViewById(R.id.edit_banner_button);
-            Button attendeesButton = view.findViewById(R.id.view_attendees_button);
+            FloatingActionButton uploadImageButton = view.findViewById(R.id.edit_banner_button);
+            FloatingActionButton attendeesButton = view.findViewById(R.id.view_attendees_button);
 
             uploadImageButton.setVisibility(View.VISIBLE);
 
@@ -186,12 +184,12 @@ public class EventDetailsFragment extends Fragment {
             attendeesButton.setOnClickListener(v -> {
                 databaseService.getEvent(event.getId(), event -> {
                     if (event != null) {
-                        if (this.event.getCheckIns() != null) {
+                        if (event.getCheckIns() != null) {
                             this.event = event;
                              AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.event);
                              FragmentManager fragmentManager = getParentFragmentManager();
                              FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                             fragmentTransaction.replace(R.id.content, attendeesListFragment);
+                             fragmentTransaction.replace(R.id.content, attendeesListFragment, "AttendeesList");
                              fragmentTransaction.addToBackStack(null);
                              fragmentTransaction.commit();
                         }
@@ -222,7 +220,7 @@ public class EventDetailsFragment extends Fragment {
             else {
                 uploadImageButton.setVisibility(View.GONE);
                 shareButton.setVisibility(View.GONE);
-                attendeesButton.setVisibility(View.GONE);
+               //attendeesButton.setVisibility(View.GONE);
             }
             setShareButton(shareButton);
 
@@ -354,8 +352,6 @@ public class EventDetailsFragment extends Fragment {
      * @param file A URI of the image file to be uploaded
      */
     private void uploadImage(Uri file) {
-        MainActivity mainActivity = (MainActivity) getActivity();
-        event = mainActivity.getEvent();
         databaseService.uploadEventPhoto(file, event, new DatabaseService.OnEventPhotoUpload() {
             @Override
             public void onSuccess(String imageUrl, String imagePath) {

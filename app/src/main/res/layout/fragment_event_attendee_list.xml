@@ -27,6 +27,7 @@
             android:text="@string/attendee_list"
             android:textSize="24sp"
             android:textStyle="bold"
+            android:paddingStart="90dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -61,7 +62,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/live_count"
-            android:paddingLeft="10dp"
+            android:paddingLeft="45dp"
             android:paddingBottom="10dp"
             android:text="Check-ins: "
             android:textSize="25dp"/>
