@@ -68,8 +68,6 @@ public class ProfileFragment extends Fragment {
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private Button deleteProfilePictureButton;
 
-    private Boolean isNotificationAllowed = false;
-
     LinearProgressIndicator progressIndicator;
 
     private DatabaseService databaseService = new DatabaseService();
