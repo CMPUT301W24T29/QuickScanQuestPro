@@ -6,10 +6,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+
+import com.bumptech.glide.Glide;
 
 import org.w3c.dom.Text;
 
@@ -47,20 +51,6 @@ public class EventAttendeeAdapter extends ArrayAdapter<User>{
 
         // Fetch the user details from the database based on the user ID
         View finalConvertView = convertView;
-//        databaseService.getSpecificUserDetails(userId, user -> {
-//            // Update the list item with the user's name and check-in count
-//            TextView nameTextView = finalConvertView.findViewById(R.id.attendee_name_text_view);
-//            TextView checkinCountTextView = finalConvertView.findViewById(R.id.attendee_check_in_text_view);
-//
-//            if (user != null) {
-//                nameTextView.setText(user.getName());
-//            } else {
-//                nameTextView.setText("Unknown User");
-//            }
-//            // convert the integer to a string
-//            checkinCountTextView.setText(String.valueOf(currentUser.getCheckins()));
-//        });
-
         databaseService.listenForSpecificUserDetails(userId, new DatabaseService.OnUserDataLoaded() {
 
             @Override
@@ -68,14 +58,20 @@ public class EventAttendeeAdapter extends ArrayAdapter<User>{
                 // Update the list item with the user's name and check-in count
                 TextView nameTextView = finalConvertView.findViewById(R.id.attendee_name_text_view);
                 TextView checkinCountTextView = finalConvertView.findViewById(R.id.attendee_check_in_text_view);
+                ImageView attendeeImageView = finalConvertView.findViewById(R.id.attendee_image_view);
 
                 if (user != null) {
                     nameTextView.setText(user.getName());
+                    Glide.with(mContext)
+                            .load(user.getProfilePictureUrl() != null ? user.getProfilePictureUrl() : ContextCompat.getDrawable(mContext, R.drawable.default_profile))
+                            .placeholder(R.drawable.default_profile)
+                            .into(attendeeImageView);
                 } else {
                     nameTextView.setText("Deleted User");
                 }
                 // convert the integer to a string
                 checkinCountTextView.setText(String.valueOf(currentUser.getCheckins()));
+
             }
         }
         );

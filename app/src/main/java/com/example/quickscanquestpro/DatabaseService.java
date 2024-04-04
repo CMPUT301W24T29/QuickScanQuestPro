@@ -462,6 +462,11 @@ public class DatabaseService {
             });
         }
 
+    /**
+     * This function listens for updates to the check-ins array of a specific event document in the Firestore database.
+     * @param userId
+     * @param callback
+     */
     public void listenForSpecificUserDetails(String userId, OnUserDataLoaded callback) {
         DocumentReference userRef = db.collection("users").document(userId);
 
@@ -481,7 +486,7 @@ public class DatabaseService {
 //                    user.setMobileNum(documentSnapshot.getString("phone"));
 //                    user.setHomepage(documentSnapshot.getString("Homepage"));
 //                    user.setAdmin(documentSnapshot.getBoolean("admin"));
-//                    user.setProfilePictureUrl(documentSnapshot.getString("profilePictureUrl"));
+                    user.setProfilePictureUrl(documentSnapshot.getString("profilePictureUrl"));
 //                    user.setProfilePicturePath(documentSnapshot.getString("profilePicturePath"));
 //                    user.setGeolocation(documentSnapshot.getBoolean("geoLocation"));
 //                    user.setCheckins(documentSnapshot.getLong("check-ins").intValue());

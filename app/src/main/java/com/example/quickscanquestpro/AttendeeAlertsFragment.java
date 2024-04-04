@@ -28,6 +28,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
+/**
+* create an alert to send to all attendees of an event if they have notifications turned on
+*/
 public class AttendeeAlertsFragment extends DialogFragment {
 
     public AttendeeAlertsFragment() {
@@ -36,6 +39,11 @@ public class AttendeeAlertsFragment extends DialogFragment {
 
     private DatabaseService databaseService;
     private ArrayList<User> uniqueAttendees;
+
+    /**
+     *  this is the list of unique attendees attending the event
+     * @param uniqueAttendees
+     */
     public AttendeeAlertsFragment(ArrayList<User> uniqueAttendees) {
         this.uniqueAttendees = uniqueAttendees;
     }
@@ -70,6 +78,11 @@ public class AttendeeAlertsFragment extends DialogFragment {
         });
     }
 
+    /**
+     * called on once the organiser clicks send notification button
+     * @param title  the title of the notification
+     * @param body   the body of the notification
+     */
     public void sendAlert(String title, String body) {
         try {
             // send to all users in uniqueAttendees
@@ -119,6 +132,11 @@ public class AttendeeAlertsFragment extends DialogFragment {
         }
     }
 
+
+    /**
+     *  this calls the API to send a request FCM to send a notification to all attendees that have notifications turned on
+     * @param jsonObject
+     */
     private void callApi(JSONObject jsonObject)
     {
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");

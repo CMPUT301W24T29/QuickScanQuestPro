@@ -81,6 +81,9 @@ public class ProfileFragment extends Fragment {
             if (o) {
                 Toast.makeText(getContext(), "Notifications Permission granted", Toast.LENGTH_LONG).show();
             }
+            else {
+                Toast.makeText(getContext(), "Notifications Permission denied", Toast.LENGTH_LONG).show();
+            }
         }
     });
 
@@ -142,8 +145,10 @@ public class ProfileFragment extends Fragment {
             if (isChecked) {
                 if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){
                     requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-                    user.setGetNotification(true);
-                    databaseService.addUser(user);
+                    // check if user has accepted the permission, if not turn the switch off
+                    if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){
+                        notificationSwitch.setChecked(false);
+                    }
                 }
                 else
                 {
