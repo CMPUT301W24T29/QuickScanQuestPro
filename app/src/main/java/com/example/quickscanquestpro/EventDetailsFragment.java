@@ -65,12 +65,10 @@ import java.util.UUID;
  */
 public class EventDetailsFragment extends Fragment {
 
-    private Event event;
+    Event event;
     private DatabaseService databaseService = new DatabaseService();
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private ImageView eventImage;
-    private ArrayList<ArrayList<Object>> checkInList;
-
     private User user;
     private FloatingActionButton shareButton;
 
@@ -133,17 +131,16 @@ public class EventDetailsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         MainActivity mainActivity = (MainActivity) this.getActivity();
         if(mainActivity != null && mainActivity.getUser() != null) {
-        // Initialize the views that will display the event details
-        TextView eventTitle = view.findViewById(R.id.event_title);
-        TextView eventDescription = view.findViewById(R.id.event_description);
-        TextView eventDate = view.findViewById(R.id.event_date);
-        TextView eventLocation = view.findViewById(R.id.event_location);
-        ImageView eventImage = view.findViewById(R.id.event_banner);
-        FloatingActionButton backButton = view.findViewById(R.id.back_button);
-        shareButton = view.findViewById(R.id.share_event_button);
-        Button uploadImageButton = view.findViewById(R.id.edit_banner_button);
-        Button attendeesButton = view.findViewById(R.id.event_attendee_button);
-        uploadImageButton.setVisibility(View.VISIBLE);
+            // Initialize the views that will display the event details
+            TextView eventTitle = view.findViewById(R.id.event_title);
+            TextView eventDescription = view.findViewById(R.id.event_description);
+            TextView eventDate = view.findViewById(R.id.event_date);
+            TextView eventLocation = view.findViewById(R.id.event_location);
+            eventImage = view.findViewById(R.id.event_banner);
+            FloatingActionButton backButton = view.findViewById(R.id.back_button);
+            FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
+            FloatingActionButton uploadImageButton = view.findViewById(R.id.edit_banner_button);
+            FloatingActionButton attendeesButton = view.findViewById(R.id.view_attendees_button);
 
 
             // If there is no event passed in, create a test event
@@ -181,29 +178,29 @@ public class EventDetailsFragment extends Fragment {
 
             // If clicked, this button brings the user to the attendees list fragment. If there
             // is no attendees in the current event, it will instead show the user a message
-            attendeesButton.setOnClickListener(v -> {
-                databaseService.getEvent(event.getId(), event -> {
-                    if (event != null) {
-                        if (this.event.getCheckIns() != null) {
-                            this.event = event;
-                             AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.event);
-                             FragmentManager fragmentManager = getParentFragmentManager();
-                             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                             fragmentTransaction.replace(R.id.content, attendeesListFragment);
-                             fragmentTransaction.addToBackStack(null);
-                             fragmentTransaction.commit();
-                        }
-                        else {
-                            Toast.makeText(getContext(), "No attendees found", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    else {
-                        Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
-                        FragmentManager fragmentManager = getParentFragmentManager();
-                        fragmentManager.popBackStack();
-                    }
-                });
-            });
+//            attendeesButton.setOnClickListener(v -> {
+//                databaseService.getEvent(event.getId(), event -> {
+//                    if (event != null) {
+//                        if (event.getCheckIns() != null) {
+//                            this.event = event;
+//                             AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.event);
+//                             FragmentManager fragmentManager = getParentFragmentManager();
+//                             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+//                             fragmentTransaction.replace(R.id.content, attendeesListFragment, "AttendeesList");
+//                             fragmentTransaction.addToBackStack(null);
+//                             fragmentTransaction.commit();
+//                        }
+//                        else {
+//                            Toast.makeText(getContext(), "No attendees found", Toast.LENGTH_SHORT).show();
+//                        }
+//                    }
+//                    else {
+//                        Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
+//                        FragmentManager fragmentManager = getParentFragmentManager();
+//                        fragmentManager.popBackStack();
+//                    }
+//                });
+//            });
 
             // Enable these buttons if the user is the organizer of the event
             if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
@@ -211,6 +208,12 @@ public class EventDetailsFragment extends Fragment {
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("image/*");
                     pickImageLauncher.launch(intent);
+                });
+                attendeesButton.setOnClickListener(v -> {
+                    FragmentTransaction fragmentTransaction = getParentFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.content, new EventAttendeeFragment(event));
+                    fragmentTransaction.addToBackStack(null);
+                    fragmentTransaction.commit();
                 });
                 // For now, option to change event banner is unavailable
                 // eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
@@ -220,7 +223,7 @@ public class EventDetailsFragment extends Fragment {
             else {
                 uploadImageButton.setVisibility(View.GONE);
                 shareButton.setVisibility(View.GONE);
-                attendeesButton.setVisibility(View.GONE);
+               //attendeesButton.setVisibility(View.GONE);
             }
 
         } else {
@@ -348,8 +351,6 @@ public class EventDetailsFragment extends Fragment {
      * @param file A URI of the image file to be uploaded
      */
     private void uploadImage(Uri file) {
-        MainActivity mainActivity = (MainActivity) getActivity();
-        event = mainActivity.getEvent();
         databaseService.uploadEventPhoto(file, event, new DatabaseService.OnEventPhotoUpload() {
             @Override
             public void onSuccess(String imageUrl, String imagePath) {

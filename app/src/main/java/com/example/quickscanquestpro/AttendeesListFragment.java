@@ -65,6 +65,7 @@ public class AttendeesListFragment extends Fragment {
         FloatingActionButton backButton = view.findViewById(R.id.back_button);
         attendeesListView = view.findViewById(R.id.event_attendee_list);
         checkInTotal = view.findViewById(R.id.live_count_number);
+//        attendeeTotal = view.findViewById(R.id.attendee_count_number);
 
         backButton.setOnClickListener(v -> {
             // goes back to event details page
