@@ -138,7 +138,7 @@ public class EventDashboardFragment extends Fragment {
         Button createButton = view.findViewById(R.id.event_dashboard_create_button);
         createButton.setOnClickListener(v -> {
             FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-            transaction.replace(R.id.content, new EventCreationFragment()); // Ensure that 'R.id.content' is your container ID in the layout.
+            transaction.replace(R.id.content, new EventCreationFragment(), "EventCreation"); // Ensure that 'R.id.content' is your container ID in the layout.
             transaction.addToBackStack(null);
             transaction.commit();
         });
