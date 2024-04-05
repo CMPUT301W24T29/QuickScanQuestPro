@@ -40,7 +40,7 @@ public class User {
         this.userId = userId;
     }
 
-    public void updateUser(String name, int checkins, String mobileNum, String email, String homepage, boolean geolocation, String profilePictureUrl, String lastCheckiIn) {
+    public void updateUser(String name, int checkins, String mobileNum, String email, String homepage, boolean geolocation, String profilePictureUrl, String lastCheckIn) {
         this.name = name;
         this.checkins = checkins;
         this.mobileNum = mobileNum;
@@ -48,7 +48,7 @@ public class User {
         this.homepage = homepage;
         this.geolocation = geolocation;
         this.profilePictureUrl = profilePictureUrl;
-        this.lastCheckIn = lastCheckiIn;
+        this.lastCheckIn = lastCheckIn;
     }
 
     public String getName() {

@@ -131,7 +131,11 @@ public class DatabaseService {
 
     public void updateLastCheckIn(String userId, String eventId){
         DocumentReference userRef = db.collection("users").document(userId);
-        userRef.update("lastCheckIn", eventId);
+        User user = new User(userId);
+        user.setLastCheckIn(eventId);
+        userRef.set(user, SetOptions.mergeFields("lastCheckIn"))
+                .addOnSuccessListener(aVoid -> Log.d("DatabaseService", "Last Checked in event update successfully"))
+                .addOnFailureListener(e -> Log.e("DatabaseService", "Error updating last checked in event", e));
     }
 
     public void addEvent(Event event) {
