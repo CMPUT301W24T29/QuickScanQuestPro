@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -51,6 +52,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -60,18 +62,14 @@ import java.util.UUID;
  * The user can upload profile picture
  * The user can delete profile picture
  */
-public class ProfileFragment extends Fragment {
-
-
+public class ProfileFragment extends Fragment implements GeolocationService.GeolocationRegisteredFragment {
     private ImageView profilePicturePlaceholder;
-
     private ActivityResultLauncher<Intent> pickImageLauncher;
+    private ActivityResultLauncher<String[]> locPermLauncher;
+    private ActivityResultLauncher<IntentSenderRequest> locResolutionIntentSender;
     private Button deleteProfilePictureButton;
-
     LinearProgressIndicator progressIndicator;
-
     private DatabaseService databaseService = new DatabaseService();
-
     private User user;
     private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
         @Override
@@ -84,6 +82,9 @@ public class ProfileFragment extends Fragment {
             }
         }
     });
+    private GeolocationService geolocationService = new GeolocationService(this, this);
+    private boolean ignoreGeolocSwitch = false;
+    private SwitchMaterial geolocationSwitch;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -96,7 +97,7 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-  
+
         setupActivityResultLaunchers();
 
     }
@@ -117,6 +118,13 @@ public class ProfileFragment extends Fragment {
                 }
             }
         });
+
+        // launcher to deal with permission results
+        locPermLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), geolocationService::locationPermissionResultHandler);
+
+        // launcher to deal with user's not having location enabled, but having geolocation permissions granted and toggled on in profile
+        locResolutionIntentSender = registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(), geolocationService::locationEnabledResolutionHandler);
+
     }
 
     @Override
@@ -190,7 +198,7 @@ public class ProfileFragment extends Fragment {
         EditText mobileNumberInput = view.findViewById(R.id.mobileNumberInput);
         EditText emailAddressInput = view.findViewById(R.id.emailAddressInput);
         SwitchMaterial geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
-        Switch notificationSwitch = view.findViewById(R.id.alert_switch);
+//        geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
 
         //Get User from Main activity
 
@@ -264,8 +272,14 @@ public class ProfileFragment extends Fragment {
         });
 
         geolocationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            user.setGeolocation(isChecked);
-            databaseService.addUser(user);
+            if (isChecked && !ignoreGeolocSwitch) {
+                // disable it before attempting to get location, because this could take a while
+                geolocationSwitch.setEnabled(false);
+                geolocationService.getLocation();
+            } else if (!ignoreGeolocSwitch){
+                user.setGeolocation(false);
+                databaseService.addUser(user);
+            }
         });
 
         //Prepopulate EditText
@@ -423,7 +437,9 @@ public class ProfileFragment extends Fragment {
             deleteProfilePictureButton.setVisibility(View.GONE);
         }
         if (geolocation != null) {
+            ignoreGeolocSwitch = true;
             geolocationSwitch.setChecked(geolocation);
+            ignoreGeolocSwitch = false;
         }
         // set the notification switch to on or off based on the user's preference
         if(getNotification != null)
@@ -487,4 +503,25 @@ public class ProfileFragment extends Fragment {
     }
 
 
+    @Override
+    public void geolocationRequestComplete(boolean success, String result) {
+        if (success) {
+            user.setGeolocation(true);
+            databaseService.addUser(user);
+            geolocationSwitch.setEnabled(true);
+            Toast.makeText(getContext(), "Location enabled!", Toast.LENGTH_SHORT).show();
+        } else {
+            geolocationSwitch.setChecked(false);
+            Toast.makeText(getContext(), result, Toast.LENGTH_LONG).show();
+            geolocationSwitch.setEnabled(true);
+        }
+    }
+
+    public ActivityResultLauncher<String[]> getLocPermLauncher() {
+        return locPermLauncher;
+    }
+
+    public ActivityResultLauncher<IntentSenderRequest> getLocResolutionIntentSender() {
+        return locResolutionIntentSender;
+    }
 }

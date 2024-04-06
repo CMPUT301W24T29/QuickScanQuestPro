@@ -1,5 +1,12 @@
 package com.example.quickscanquestpro;
 
+import android.content.pm.PackageManager;
+
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;

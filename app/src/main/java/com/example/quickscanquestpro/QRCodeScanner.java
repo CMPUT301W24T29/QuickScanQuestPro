@@ -232,14 +232,26 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
     public void onEventLoaded(Event event) {
         if (event == null) {
             Toast.makeText(mainActivity.getApplicationContext(), "Invalid QR", Toast.LENGTH_SHORT).show();
-            processingQr = false;
+            // if there is an error, then this will wait 4 seconds before allowing processing of a QR code again to stop toasts from stacking
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    processingQr = false;
+                }
+            }, 4000);
         } else {
             // Check if user is null before attempting to use getUserId()
             User currentUser = mainActivity.getUser();
             if (currentUser == null) {
                 Toast.makeText(mainActivity.getApplicationContext(), "User not logged in", Toast.LENGTH_SHORT).show();
                 Log.e("QRCodeScanner", "User not logged in");
-                processingQr = false;
+                // if there is an error, then this will wait 4 seconds before allowing processing of a QR code again to stop toasts from stacking
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        processingQr = false;
+                    }
+                }, 4000);
                 return;
             }
             if (processingQrType == null){

@@ -88,7 +88,6 @@ public class DatabaseService {
     }
 
     /**
-<<<<<<< HEAD
      * Callback interface for uploading event photos to Firebase Storage.
      * This interface is used to notify the caller of the progress, success, or failure of the upload operation.
      */
@@ -175,6 +174,8 @@ public class DatabaseService {
         userData.put("phone", user.getMobileNum());
         userData.put("geoLocation", user.isGeolocation());
 //        userData.put("check-ins", user.getCheckins());
+        userData.put("geolocation", user.isGeolocation());
+        userData.put("check-ins", user.getCheckins());
         userData.put("Homepage", user.getHomepage());
         userData.put("profilePictureUrl", user.getProfilePictureUrl());
         userData.put("profilePicturePath", user.getProfilePicturePath());
@@ -256,6 +257,7 @@ public class DatabaseService {
                 user.setHomepage(document.getString("Homepage"));
                 user.setNotificationToken(document.getString("NotificationToken"));
 //                user.setGeolocation(document.getBoolean("geoLocation"));
+                user.setGeolocation(Boolean.TRUE.equals(document.getBoolean("geolocation")));
 //                user.setCheckins(document.getLong("check-ins").intValue());
                 user.setProfilePictureUrl(document.getString("profilePictureUrl"));
                 user.setProfilePicturePath(document.getString("profilePicturePath"));
@@ -286,13 +288,14 @@ public class DatabaseService {
             user.setEmail(queryDocumentSnapshot.getString("email"));
             user.setMobileNum(queryDocumentSnapshot.getString("phone"));
             user.setHomepage(queryDocumentSnapshot.getString("Homepage"));
-            user.setAdmin(queryDocumentSnapshot.getBoolean("admin"));
+            user.setAdmin(Boolean.TRUE.equals(queryDocumentSnapshot.getBoolean("admin")));
             user.setProfilePictureUrl(queryDocumentSnapshot.getString("profilePictureUrl"));
             user.setProfilePicturePath(queryDocumentSnapshot.getString("profilePicturePath"));
             user.setNotificationToken(queryDocumentSnapshot.getString("NotificationToken"));
             user.setLastCheckIn(queryDocumentSnapshot.getString("lastCheckIn"));
             user.setGetNotification(queryDocumentSnapshot.getBoolean("ReceiveNotifications"));
 //            user.setGeolocation(queryDocumentSnapshot.getBoolean("geoLocation"));
+            user.setGeolocation(Boolean.TRUE.equals(queryDocumentSnapshot.getBoolean("geolocation")));
 //            user.setCheckins(queryDocumentSnapshot.getLong("check-ins").intValue());
 
             callback.onUserLoaded(user);
