@@ -143,6 +143,9 @@ public class EventDetailsFragment extends Fragment {
             FloatingActionButton attendeesButton = view.findViewById(R.id.view_attendees_button);
             FloatingActionButton expandButton = view.findViewById(R.id.expand_button);
 
+            // Set the tag of the expand button to false
+            expandButton.setTag("false");
+
             // Hide the upload image button and the share button by default
             uploadImageButton.setVisibility(View.GONE);
             shareButton.setVisibility(View.GONE);
@@ -184,32 +187,6 @@ public class EventDetailsFragment extends Fragment {
 
             });
 
-            // If clicked, this button brings the user to the attendees list fragment. If there
-            // is no attendees in the current event, it will instead show the user a message
-            attendeesButton.setOnClickListener(v -> {
-                databaseService.getEvent(event.getId(), event -> {
-                    if (event != null) {
-                        if (event.getCheckIns() != null) {
-                            this.event = event;
-                             AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.event);
-                             FragmentManager fragmentManager = getParentFragmentManager();
-                             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                             fragmentTransaction.replace(R.id.content, attendeesListFragment, "AttendeesList");
-                             fragmentTransaction.addToBackStack(null);
-                             fragmentTransaction.commit();
-                        }
-                        else {
-                            Toast.makeText(getContext(), "No attendees found", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    else {
-                        Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
-                        FragmentManager fragmentManager = getParentFragmentManager();
-                        fragmentManager.popBackStack();
-                    }
-                });
-            });
-
             // Enable these buttons if the user is the organizer of the event
             if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
                 uploadImageButton.setOnClickListener(v -> {
@@ -217,20 +194,58 @@ public class EventDetailsFragment extends Fragment {
                     intent.setType("image/*");
                     pickImageLauncher.launch(intent);
                 });
-                // For now, option to change event banner is unavailable
-                // eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
                 setShareButton(shareButton);
+
+                // If clicked, this button brings the user to the attendees list fragment. If there
+                // is no attendees in the current event, it will instead show the user a message
+                attendeesButton.setOnClickListener(v -> {
+                    databaseService.getEvent(event.getId(), event -> {
+                        if (event != null) {
+                            if (event.getCheckIns() != null) {
+                                this.event = event;
+                                AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.event);
+                                FragmentManager fragmentManager = getParentFragmentManager();
+                                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                                fragmentTransaction.replace(R.id.content, attendeesListFragment, "AttendeesList");
+                                fragmentTransaction.addToBackStack(null);
+                                fragmentTransaction.commit();
+                            }
+                            else {
+                                Toast.makeText(getContext(), "No attendees found", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        else {
+                            Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
+                            FragmentManager fragmentManager = getParentFragmentManager();
+                            fragmentManager.popBackStack();
+                        }
+                    });
+                });
+
+                expandButton.setOnClickListener(v -> {
+                    if (expandButton.getTag() == "false") {
+                        expandButton.setImageResource(R.drawable.baseline_close_24);
+                        uploadImageButton.setVisibility(View.VISIBLE);
+                        shareButton.setVisibility(View.VISIBLE);
+                        attendeesButton.setVisibility(View.VISIBLE);
+                        expandButton.setTag("true");
+
+                    } else {
+                        expandButton.setImageResource(R.drawable.baseline_menu_24);
+                        uploadImageButton.setVisibility(View.GONE);
+                        shareButton.setVisibility(View.GONE);
+                        attendeesButton.setVisibility(View.GONE);
+                        expandButton.setTag("false");
+                    }
+                });
             }
-            // Hide these buttons if user is not the organizer
+            // Hide expand button if user is not the organizer
             else {
                 expandButton.setVisibility(View.GONE);
             }
             setShareButton(shareButton);
 
-
-
             // Signup and Signup List buttons
-
             Button signupButton = view.findViewById(R.id.signup_button);
             Button signupListButton = view.findViewById(R.id.signup_list);
 
@@ -247,23 +262,6 @@ public class EventDetailsFragment extends Fragment {
                 public void onClick(View v) {
                     Toast.makeText(getContext(), "Signup List", Toast.LENGTH_SHORT).show();
                     signupList();
-                }
-            });
-
-            expandButton.setOnClickListener(v -> {
-                if (expandButton.getTag() == "false") {
-                    expandButton.setImageResource(R.drawable.baseline_remove_24);
-                    uploadImageButton.setVisibility(View.VISIBLE);
-                    shareButton.setVisibility(View.VISIBLE);
-                    attendeesButton.setVisibility(View.VISIBLE);
-                    expandButton.setTag("true");
-
-                } else {
-                    expandButton.setImageResource(R.drawable.baseline_add_24);
-                    uploadImageButton.setVisibility(View.GONE);
-                    shareButton.setVisibility(View.GONE);
-                    attendeesButton.setVisibility(View.GONE);
-                    expandButton.setTag("false");
                 }
             });
         }
@@ -309,7 +307,7 @@ public class EventDetailsFragment extends Fragment {
                 shareQRImage(checkInCodeImage, "checkIn");
             });
 
-            ImageButton closeDialog = shareQrDialog.findViewById(R.id.share_close_button);
+            Button closeDialog = shareQrDialog.findViewById(R.id.share_cancel_button);
             closeDialog.setOnClickListener(v1 -> shareQrDialog.dismiss());
         });
     }
