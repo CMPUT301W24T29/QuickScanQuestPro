@@ -4,6 +4,7 @@ import static android.app.PendingIntent.getActivity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.MenuItem;
@@ -186,7 +187,22 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
                 return;
             }
 
-            if (rawValue.startsWith("c") || rawValue.startsWith("p")) {
+            // check if it is the admin access qr code
+            if (rawValue.equals("QuickScanQuestProADMIN")){
+                // make sure user is not null before giving admin access
+                if(mainActivity.getUser()!=null){
+                    databaseService.enableAdmin(mainActivity.getUser().getUserId());
+                    Toast.makeText(mainActivity.getApplicationContext(), "Congratulations, you are now an Admin!!", Toast.LENGTH_SHORT).show();
+                    mainActivity.transitionFragment(new AdminDashboardFragment(), "AdminDashboardFragment");
+                    NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
+                    // Sets navbar selection to the profile dashboard
+                    MenuItem item = navBarView.getMenu().findItem(R.id.navigation_profile);
+                    item.setChecked(true);
+                } else {
+                    Toast.makeText(mainActivity.getApplicationContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+                    Log.e("QRCodeScanner", "User not logged in");
+                }
+            } else if (rawValue.startsWith("c") || rawValue.startsWith("p")) {
                 // Extracting the prefix and ID from the QR code
                 processingQrType = rawValue.substring(0, 1); // "c" for check-in, "p" for promo
                 String eventId = rawValue.substring(1);

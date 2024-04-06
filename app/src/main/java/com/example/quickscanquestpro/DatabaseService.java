@@ -134,8 +134,17 @@ public class DatabaseService {
         User user = new User(userId);
         user.setLastCheckIn(eventId);
         userRef.set(user, SetOptions.mergeFields("lastCheckIn"))
-                .addOnSuccessListener(aVoid -> Log.d("DatabaseService", "Last Checked in event update successfully"))
+                .addOnSuccessListener(aVoid -> Log.d("DatabaseService", "Last Checked in event updated successfully"))
                 .addOnFailureListener(e -> Log.e("DatabaseService", "Error updating last checked in event", e));
+    }
+
+    public void enableAdmin(String userId){
+        DocumentReference userRef = db.collection("users").document(userId);
+        User user = new User(userId);
+        user.setAdmin(true);
+        userRef.set(user, SetOptions.mergeFields("admin"))
+                .addOnSuccessListener(aVoid -> Log.d("DatabaseService", "Admin enabled successfully"))
+                .addOnFailureListener(e -> Log.e("DatabaseService", "Error enabling admin", e));
     }
 
     public void addEvent(Event event) {
