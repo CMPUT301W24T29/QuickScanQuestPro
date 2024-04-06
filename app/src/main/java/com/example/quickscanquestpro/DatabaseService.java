@@ -212,7 +212,6 @@ public class DatabaseService {
                 event.setEventBannerPath(document.getString("eventPicturePath"));
                 // Retrieve check-ins for this event
                 ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) document.get("checkins");
-                Log.d(TAG, "Retrieved " + (checkInsArray != null ? checkInsArray.size() : 0) + " check-ins for event " + eventId);
 
                 if (checkInsArray != null) {
                     // Process the check-ins array
@@ -223,7 +222,6 @@ public class DatabaseService {
                         checkIns.add(new CheckIn(userId, location));
                     }
 
-                    Log.d(TAG, "Created " + checkIns.size() + " check-ins for event " + eventId);
                     event.setCheckIns(checkIns);
                 }
 
@@ -342,7 +340,6 @@ public class DatabaseService {
 
         // Retrieve check-ins for this event
         ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) queryDocumentSnapshot.get("checkins");
-        //Log.d(TAG, "Retrieved " + (checkInsArray != null ? checkInsArray.size() : 0) + " check-ins for event " + eventId);
         if (checkInsArray != null) {
             // Process the check-ins array
             ArrayList<CheckIn> checkIns = new ArrayList<>();
@@ -352,7 +349,6 @@ public class DatabaseService {
                 checkIns.add(new CheckIn(userId, location));
             }
 
-            //Log.d(TAG, "Created " + checkIns.size() + " check-ins for event " + eventId);
             event.setCheckIns(checkIns);
         }
         return event;
