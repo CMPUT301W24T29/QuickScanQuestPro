@@ -230,6 +230,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
 
     /**
      * This runs when the processed QRcode returns from the database and either checks in the user or shows them the details page
+     * Depending on if the event code was a promo or checkin code
      * @param event Event returned from DatabaseService, can be null if not found.
      */
     @Override
@@ -276,7 +277,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
                 } else {
                     databaseService.recordCheckIn(event.getId(), currentUser.getUserId(), "");
                     databaseService.updateLastCheckIn(currentUser.getUserId(), event.getId());
-                    locationGettingEvent.checkIn();
+                    event.checkIn();
                 }
             } else {
                 Toast.makeText(mainActivity.getApplicationContext(), "Promotion code scanned!", Toast.LENGTH_SHORT).show();
