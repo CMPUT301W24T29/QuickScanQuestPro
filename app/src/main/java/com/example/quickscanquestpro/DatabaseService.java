@@ -5,6 +5,7 @@ import static android.content.ContentValues.TAG;
 
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -574,7 +575,13 @@ public class DatabaseService {
         eventsRef.document(String.valueOf(event.getId())).set(combinedData, SetOptions.merge());
     }
 
-    public void userSignup(User user, Event event) {
+    public interface SignupCallback {
+        void onSuccess();
+        void onSignupLimitReached();
+        void onFailure(Exception e);
+    }
+
+    public void userSignup(User user, Event event, SignupCallback callback) {
         // Start a Firestore transaction
         db.runTransaction(transaction -> {
                     // References to the user and event documents
@@ -600,13 +607,14 @@ public class DatabaseService {
 
                     // This function must return a result, null in this case
                     return null;
-                }).addOnSuccessListener(aVoid -> Log.d(TAG, "User signup and event registration successful."))
+                }).addOnSuccessListener(aVoid -> callback.onSuccess())
                 .addOnFailureListener(e -> {
                     if (e instanceof FirebaseFirestoreException &&
                             ((FirebaseFirestoreException) e).getCode() == FirebaseFirestoreException.Code.ABORTED) {
-                        Log.d(TAG, "Could not sign up - signup limit reached.");
+                        // This specific error should be used to indicate that the signup limit was reached
+                        callback.onSignupLimitReached();
                     } else {
-                        Log.e(TAG, "Error during user signup and event registration.", e);
+                        callback.onFailure(e);
                     }
                 });
     }

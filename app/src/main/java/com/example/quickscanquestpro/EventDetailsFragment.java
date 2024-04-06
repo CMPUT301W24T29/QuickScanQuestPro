@@ -233,6 +233,8 @@ public class EventDetailsFragment extends Fragment {
             Button signupButton = view.findViewById(R.id.signup_button);
             Button signupListButton = view.findViewById(R.id.signup_list);
 
+
+
             signupButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -387,7 +389,28 @@ public class EventDetailsFragment extends Fragment {
         MainActivity mainActivity = (MainActivity) getActivity();
         user = mainActivity.getUser();
 
-        databaseService.userSignup(user, event);
+        databaseService.userSignup(user, event, new DatabaseService.SignupCallback() {
+            @Override
+            public void onSuccess() {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getActivity(), "Signed up!", Toast.LENGTH_SHORT).show());
+                }
+            }
+
+            @Override
+            public void onSignupLimitReached() {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getActivity(), "User signup limit reached.", Toast.LENGTH_SHORT).show());
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getActivity(), "Failed to sign up. Please try again later.", Toast.LENGTH_SHORT).show());
+                }
+            }
+        });
     }
 
     private void signupList() {
