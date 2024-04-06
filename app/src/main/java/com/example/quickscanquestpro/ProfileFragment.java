@@ -197,8 +197,7 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
         EditText homepageInput = view.findViewById(R.id.homepageInput);
         EditText mobileNumberInput = view.findViewById(R.id.mobileNumberInput);
         EditText emailAddressInput = view.findViewById(R.id.emailAddressInput);
-        SwitchMaterial geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
-//        geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
+        geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
 
         //Get User from Main activity
 
