@@ -38,26 +38,21 @@ import java.util.Map;
 
 public class GeolocationService {
     private Fragment fragment;
-    private GeolocationRegisteredFragment fragmentResultGetter;
-    GeolocationRequestComplete callback;
+    private GeolocationRegisteredFragment callback;
 
     /**
      * Callback for when location is found / for error because permissions not granted or location not enabled
      */
-    public interface GeolocationRequestComplete {
-        void geolocationRequestComplete(boolean success, String result);
-    }
-
     public interface GeolocationRegisteredFragment {
+        void geolocationRequestComplete(boolean success, String result);
         ActivityResultLauncher<String[]> getLocPermLauncher();
         ActivityResultLauncher<IntentSenderRequest> getLocResolutionIntentSender();
     }
 
-    public GeolocationService(Fragment fragment, GeolocationRequestComplete callback, GeolocationRegisteredFragment fragmentResultGetter) {
-        // these are all the same thing, but java SUCKS!!!! and you have to pretend theyre all different idk man
+    public GeolocationService(Fragment fragment, GeolocationRegisteredFragment callback) {
+        // these are all the same thing, but java SUCKS!!!! and you have to pretend theyre all different idk!!!
         this.fragment = fragment;
         this.callback = callback;
-        this.fragmentResultGetter = fragmentResultGetter;
     }
 
     @SuppressLint("MissingPermission")
@@ -100,7 +95,7 @@ public class GeolocationService {
 
         if (ActivityCompat.checkSelfPermission(fragment.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(fragment.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             String[] permList = new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
-            fragmentResultGetter.getLocPermLauncher().launch(permList);
+            callback.getLocPermLauncher().launch(permList);
             return false;
         }
 
@@ -145,7 +140,7 @@ public class GeolocationService {
                                 try {
                                     ResolvableApiException rae = (ResolvableApiException) e;
                                     IntentSenderRequest request = new IntentSenderRequest.Builder(rae.getResolution()).setFillInIntent(new Intent()).setFlags(0, 0).build();
-                                    fragmentResultGetter.getLocResolutionIntentSender().launch(request);
+                                    callback.getLocResolutionIntentSender().launch(request);
                                 } catch (Exception sie) {
                                     Log.e("GeolocationService","Failure executing settings request.");
                                     callback.geolocationRequestComplete(false, "Please enable location in settings.");

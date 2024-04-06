@@ -60,7 +60,7 @@ import java.util.UUID;
  * The user can upload profile picture
  * The user can delete profile picture
  */
-public class ProfileFragment extends Fragment implements GeolocationService.GeolocationRequestComplete, GeolocationService.GeolocationRegisteredFragment {
+public class ProfileFragment extends Fragment implements GeolocationService.GeolocationRegisteredFragment {
     private ImageView profilePicturePlaceholder;
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private ActivityResultLauncher<String[]> locPermLauncher;
@@ -69,7 +69,7 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
     LinearProgressIndicator progressIndicator;
     private DatabaseService databaseService = new DatabaseService();
     private User user;
-    private GeolocationService geolocationService = new GeolocationService(this, this, this);
+    private GeolocationService geolocationService = new GeolocationService(this, this);
     private boolean ignoreGeolocSwitch = false;
     private SwitchMaterial geolocationSwitch;
 
