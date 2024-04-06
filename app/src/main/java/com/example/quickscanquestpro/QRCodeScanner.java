@@ -268,17 +268,22 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
             }
 
             if (processingQrType.equals("c")){
-                locationGettingEvent = event;
-                // will eventually call geolocationRequestComplete() with result
-                geolocationService.getLocation();
-                return;
+                if (currentUser.isGeolocation()) {
+                    locationGettingEvent = event;
+                    // will eventually call geolocationRequestComplete() with result
+                    geolocationService.getLocation();
+                    return;
+                } else {
+                    databaseService.recordCheckIn(event.getId(), currentUser.getUserId(), "");
+                    databaseService.updateLastCheckIn(currentUser.getUserId(), event.getId());
+                    locationGettingEvent.checkIn();
+                }
             } else {
                 Toast.makeText(mainActivity.getApplicationContext(), "Promotion code scanned!", Toast.LENGTH_SHORT).show();
             }
 
             // transition to the new event
             mainActivity.transitionFragment(new EventDetailsFragment(event), "EventDetailsFragment");
-
             NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
             // Sets navbar selection to the event dashboard
             MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
@@ -303,16 +308,15 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
         } else {
             Toast.makeText(mainActivity.getApplicationContext(), result, Toast.LENGTH_SHORT).show();
             result = "";
+            Toast.makeText(mainActivity.getApplicationContext(), "Checked in!", Toast.LENGTH_SHORT).show();
         }
 
         databaseService.recordCheckIn(locationGettingEvent.getId(), currentUser.getUserId(), result);
         databaseService.updateLastCheckIn(currentUser.getUserId(), locationGettingEvent.getId());
-
         locationGettingEvent.checkIn();
 
         // transition to the new event
         mainActivity.transitionFragment(new EventDetailsFragment(locationGettingEvent), "EventDetailsFragment");
-
         NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
         // Sets navbar selection to the event dashboard
         MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
