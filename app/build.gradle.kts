@@ -85,4 +85,6 @@ dependencies {
     }
     implementation("androidx.recyclerview:recyclerview:1.2.1");
 
+    implementation("com.google.android.gms:play-services-location:21.2.0")
+
 }

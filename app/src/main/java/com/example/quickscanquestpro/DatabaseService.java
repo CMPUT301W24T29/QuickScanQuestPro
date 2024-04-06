@@ -88,7 +88,6 @@ public class DatabaseService {
     }
 
     /**
-<<<<<<< HEAD
      * Callback interface for uploading event photos to Firebase Storage.
      * This interface is used to notify the caller of the progress, success, or failure of the upload operation.
      */
@@ -172,7 +171,7 @@ public class DatabaseService {
         userData.put("name", user.getName());
         userData.put("email", user.getEmail());
         userData.put("phone", user.getMobileNum());
-        userData.put("geoLocation", user.isGeolocation());
+        userData.put("geolocation", user.isGeolocation());
         userData.put("check-ins", user.getCheckins());
         userData.put("Homepage", user.getHomepage());
         userData.put("profilePictureUrl", user.getProfilePictureUrl());
@@ -252,7 +251,7 @@ public class DatabaseService {
                 user.setEmail(document.getString("email"));
                 user.setMobileNum(document.getString("phone"));
                 user.setHomepage(document.getString("Homepage"));
-//                user.setGeolocation(document.getBoolean("geoLocation"));
+                user.setGeolocation(Boolean.TRUE.equals(document.getBoolean("geolocation")));
 //                user.setCheckins(document.getLong("check-ins").intValue());
                 user.setProfilePictureUrl(document.getString("profilePictureUrl"));
                 user.setProfilePicturePath(document.getString("profilePicturePath"));
@@ -282,11 +281,11 @@ public class DatabaseService {
             user.setEmail(queryDocumentSnapshot.getString("email"));
             user.setMobileNum(queryDocumentSnapshot.getString("phone"));
             user.setHomepage(queryDocumentSnapshot.getString("Homepage"));
-            user.setAdmin(queryDocumentSnapshot.getBoolean("admin"));
+            user.setAdmin(Boolean.TRUE.equals(queryDocumentSnapshot.getBoolean("admin")));
             user.setProfilePictureUrl(queryDocumentSnapshot.getString("profilePictureUrl"));
             user.setProfilePicturePath(queryDocumentSnapshot.getString("profilePicturePath"));
             user.setLastCheckIn(queryDocumentSnapshot.getString("lastCheckIn"));
-//            user.setGeolocation(queryDocumentSnapshot.getBoolean("geoLocation"));
+            user.setGeolocation(Boolean.TRUE.equals(queryDocumentSnapshot.getBoolean("geolocation")));
 //            user.setCheckins(queryDocumentSnapshot.getLong("check-ins").intValue());
 
             callback.onUserLoaded(user);
