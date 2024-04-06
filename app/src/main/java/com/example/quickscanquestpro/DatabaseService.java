@@ -316,6 +316,12 @@ public class DatabaseService {
         event.setCustomCheckin(queryDocumentSnapshot.getString("customCheckin"));
         event.setCustomPromo(queryDocumentSnapshot.getString("customPromo"));
 
+        //update optional signuplimit
+        Number signupLimitNumber = queryDocumentSnapshot.getLong("signupLimit"); // Using getLong for a more direct approach
+        if (signupLimitNumber != null) {
+            event.setSignupLimit(signupLimitNumber.intValue());
+        }
+
         // Retrieve check-ins for this event
         ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) queryDocumentSnapshot.get("checkins");
         Log.d(TAG, "Retrieved " + (checkInsArray != null ? checkInsArray.size() : 0) + " check-ins for event " + eventId);
@@ -584,40 +590,38 @@ public class DatabaseService {
     public void userSignup(User user, Event event, SignupCallback callback) {
         // Start a Firestore transaction
         db.runTransaction(transaction -> {
-                    // References to the user and event documents
-                    DocumentReference userRef = usersRef.document(user.getUserId());
-                    DocumentReference eventRef = eventsRef.document(event.getId());
+            DocumentReference userRef = usersRef.document(user.getUserId());
+            DocumentReference eventRef = eventsRef.document(event.getId());
 
-                    // Get the current state of the event document
-                    DocumentSnapshot eventSnapshot = transaction.get(eventRef);
-                    List<String> currentSignups = (List<String>) eventSnapshot.get("signups");
-                    Number signupLimit = (Number) eventSnapshot.get("signupLimit"); // Make sure this field is correctly named as in your Firestore
+            DocumentSnapshot eventSnapshot = transaction.get(eventRef);
+            List<String> currentSignups = (List<String>) eventSnapshot.get("signups");
+            Number signupLimit = (Number) eventSnapshot.get("signupLimit");
 
-                    // Check if the event has a signup limit and if it's been reached
-                    if (signupLimit != null && currentSignups != null && currentSignups.size() >= signupLimit.intValue()) {
-                        // Throw an exception to abort the transaction
-                        throw new FirebaseFirestoreException("Signup limit reached",
-                                FirebaseFirestoreException.Code.ABORTED);
-                    }
+            // Check if the event has a signup limit and if it's been reached
+            if (signupLimit != null && currentSignups != null && currentSignups.size() >= signupLimit.intValue()) {
+                // Instead of throwing an exception, return a specific result indicating the signup limit was reached
+                return "Signup limit reached";
+            }
 
-                    // Atomically add the user ID to the event's "signups" list
-                    transaction.update(eventRef, "signups", FieldValue.arrayUnion(user.getUserId()));
-                    // Atomically add the event ID to the user's "signedUpEvents" list
-                    transaction.update(userRef, "signedUpEvents", FieldValue.arrayUnion(event.getId()));
+            transaction.update(eventRef, "signups", FieldValue.arrayUnion(user.getUserId()));
+            transaction.update(userRef, "signedUpEvents", FieldValue.arrayUnion(event.getId()));
 
-                    // This function must return a result, null in this case
-                    return null;
-                }).addOnSuccessListener(aVoid -> callback.onSuccess())
-                .addOnFailureListener(e -> {
-                    if (e instanceof FirebaseFirestoreException &&
-                            ((FirebaseFirestoreException) e).getCode() == FirebaseFirestoreException.Code.ABORTED) {
-                        // This specific error should be used to indicate that the signup limit was reached
-                        callback.onSignupLimitReached();
-                    } else {
-                        callback.onFailure(e);
-                    }
-                });
+            // Return a success indicator
+            return "Success";
+        }).addOnSuccessListener(result -> {
+            // Use the result of the transaction to determine the outcome
+            if ("Signup limit reached".equals(result)) {
+                callback.onSignupLimitReached();
+            } else {
+                callback.onSuccess();
+            }
+        }).addOnFailureListener(e -> {
+            callback.onFailure(e);
+        });
     }
+
+
+
 
 
     public interface OnSignedUpEventsLoaded {

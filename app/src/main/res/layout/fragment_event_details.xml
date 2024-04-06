@@ -132,18 +132,6 @@
             app:layout_constraintTop_toBottomOf="@id/where_text" />
 
         <TextView
-            android:id="@+id/event_announcements_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:text="@string/event_announcements_text"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/event_location" />
-
-        <TextView
             android:id="@+id/signup_limit_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -153,7 +141,7 @@
             android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/event_date" />
+            app:layout_constraintTop_toBottomOf="@id/event_location" />
 
         <TextView
             android:id="@+id/signup_number"
@@ -162,9 +150,21 @@
             android:layout_marginStart="32dp"
             android:layout_marginTop="16dp"
             android:ems="20"
-            android:text="@string/event_location"
+            android:text="This will be the maximum number of signups"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/where_text" />
+            app:layout_constraintTop_toBottomOf="@id/signup_limit_text" />
+
+        <TextView
+            android:id="@+id/event_announcements_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/event_announcements_text"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/signup_number" />
 
         <ListView
             android:id="@+id/event_announcements_list"

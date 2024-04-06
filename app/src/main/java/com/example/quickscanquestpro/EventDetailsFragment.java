@@ -137,6 +137,7 @@ public class EventDetailsFragment extends Fragment {
             TextView eventDescription = view.findViewById(R.id.event_description);
             TextView eventDate = view.findViewById(R.id.event_date);
             TextView eventLocation = view.findViewById(R.id.event_location);
+            TextView signupLimit = view.findViewById(R.id.signup_number);
             eventImage = view.findViewById(R.id.event_banner);
             FloatingActionButton backButton = view.findViewById(R.id.back_button);
             FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
@@ -164,6 +165,15 @@ public class EventDetailsFragment extends Fragment {
             eventDate.setText(eventDateString);
             eventLocation.setText(event.getLocation());
             ArrayList<String> announcementList = event.getAnnouncements();
+
+
+
+            if (event.getSignupLimit() != null) {
+                signupLimit.setText(event.getSignupLimit().toString());
+            } else {
+                signupLimit.setText("No limit");
+            }
+
 
             // Set the listview of announcements to the announcements of the event and set the height of the listview
             ArrayAdapter<String> announcementAdapter =
@@ -238,7 +248,6 @@ public class EventDetailsFragment extends Fragment {
             signupButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getContext(), "Signed up!", Toast.LENGTH_SHORT).show();
                     signup();
                 }
             });
