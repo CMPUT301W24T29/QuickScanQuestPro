@@ -255,7 +255,6 @@ public class EventDetailsFragment extends Fragment {
             signupListButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getContext(), "Signup List", Toast.LENGTH_SHORT).show();
                     signupList();
                 }
             });
@@ -425,14 +424,12 @@ public class EventDetailsFragment extends Fragment {
     private void signupList() {
         SignupListFragment signupListFragment = new SignupListFragment();
 
-        // If you have the event object or its ID, pass it here
         Bundle args = new Bundle();
-        args.putString("eventId", event.getId()); // Assuming 'event' is your Event object
+        args.putString("eventId", event.getId());
         signupListFragment.setArguments(args);
 
-        // Begin the transaction
         FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-        transaction.replace(R.id.content, signupListFragment); // 'R.id.content' should be your container ID
+        transaction.replace(R.id.content, signupListFragment);
         transaction.addToBackStack(null);
         transaction.commit();
     }

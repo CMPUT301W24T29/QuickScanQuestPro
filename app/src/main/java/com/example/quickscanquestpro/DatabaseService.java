@@ -588,7 +588,6 @@ public class DatabaseService {
     }
 
     public void userSignup(User user, Event event, SignupCallback callback) {
-        // Start a Firestore transaction
         db.runTransaction(transaction -> {
             DocumentReference userRef = usersRef.document(user.getUserId());
             DocumentReference eventRef = eventsRef.document(event.getId());
@@ -597,19 +596,16 @@ public class DatabaseService {
             List<String> currentSignups = (List<String>) eventSnapshot.get("signups");
             Number signupLimit = (Number) eventSnapshot.get("signupLimit");
 
-            // Check if the event has a signup limit and if it's been reached
+            // Check is event signups are filled
             if (signupLimit != null && currentSignups != null && currentSignups.size() >= signupLimit.intValue()) {
-                // Instead of throwing an exception, return a specific result indicating the signup limit was reached
                 return "Signup limit reached";
             }
 
             transaction.update(eventRef, "signups", FieldValue.arrayUnion(user.getUserId()));
             transaction.update(userRef, "signedUpEvents", FieldValue.arrayUnion(event.getId()));
 
-            // Return a success indicator
             return "Success";
         }).addOnSuccessListener(result -> {
-            // Use the result of the transaction to determine the outcome
             if ("Signup limit reached".equals(result)) {
                 callback.onSignupLimitReached();
             } else {
@@ -700,7 +696,7 @@ public class DatabaseService {
                 callback.onSignUpsLoaded(new ArrayList<>());
             }
         }).addOnFailureListener(e -> {
-            // In case of any failure, return an empty list
+            // In case of any failure
             callback.onSignUpsLoaded(new ArrayList<>());
         });
     }

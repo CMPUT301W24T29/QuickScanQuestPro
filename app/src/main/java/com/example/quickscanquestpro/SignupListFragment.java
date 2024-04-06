@@ -18,7 +18,7 @@ import java.util.List;
 public class SignupListFragment extends Fragment {
 
     private DatabaseService databaseService;
-    private String eventId; // Use String if you're only passing the ID
+    private String eventId;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,18 +40,17 @@ public class SignupListFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         ListView listView = view.findViewById(R.id.signup_list);
 
+        //back button
         view.findViewById(R.id.back_button).setOnClickListener(v -> {
-            // i want to go back to the prev fragment
             FragmentManager fragmentManager = getParentFragmentManager();
             fragmentManager.popBackStack();
         });
 
-        // Assuming DatabaseService has a method to fetch users who signed up for an event
         databaseService.getEventSignUps(eventId, new DatabaseService.OnEventSignUpsLoaded() {
             @Override
             public void onSignUpsLoaded(List<User> users) {
                 // Update your ListView adapter with the fetched users
-                ArrayAdapter<User> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, users); // Customize the adapter as needed
+                ArrayAdapter<User> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, users);
                 listView.setAdapter(adapter);
             }
         });

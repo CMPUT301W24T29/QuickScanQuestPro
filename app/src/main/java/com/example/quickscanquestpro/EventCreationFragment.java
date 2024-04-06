@@ -267,7 +267,7 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
             valid = false;
         }
 
-        // Checking signupLimit only if it's not empty
+        // Checks if signup limit is empty
         String signupLimitString = signupLimit.getText().toString();
         if (!signupLimitString.isEmpty()) {
             try {
@@ -276,15 +276,14 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
                     signupLimit.setError("Signup limit must be greater than 0!");
                     valid = false;
                 } else {
-                    // If it's a valid integer and it's positive then update the event
                     creatingEvent.setSignupLimit(signupLimitValue);
                 }
             } catch (NumberFormatException e) {
                 signupLimit.setError("Signup limit must be a number!");
                 valid = false;
             }
-        } else {
-            // If the field is empty
+        } //if field is empty
+        else {
             signupLimit.setError(null);
             creatingEvent.setSignupLimit(null);
         }
