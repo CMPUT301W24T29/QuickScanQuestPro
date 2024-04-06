@@ -9,6 +9,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -87,7 +88,6 @@ public class DatabaseService {
     }
 
     /**
-<<<<<<< HEAD
      * Callback interface for uploading event photos to Firebase Storage.
      * This interface is used to notify the caller of the progress, success, or failure of the upload operation.
      */
@@ -171,7 +171,7 @@ public class DatabaseService {
         userData.put("name", user.getName());
         userData.put("email", user.getEmail());
         userData.put("phone", user.getMobileNum());
-        userData.put("geoLocation", user.isGeolocation());
+        userData.put("geolocation", user.isGeolocation());
         userData.put("check-ins", user.getCheckins());
         userData.put("Homepage", user.getHomepage());
         userData.put("profilePictureUrl", user.getProfilePictureUrl());
@@ -205,8 +205,29 @@ public class DatabaseService {
                 event.setEndTime(LocalTime.parse(document.getString("End-time")));
                 event.setEventBannerUrl(document.getString("eventPictureUrl"));
                 event.setEventBannerPath(document.getString("eventPicturePath"));
+
+                // Retrieve check-ins for this event
+                ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) document.get("checkins");
+                Log.d(TAG, "Retrieved " + (checkInsArray != null ? checkInsArray.size() : 0) + " check-ins for event " + eventId);
+
+                if (checkInsArray != null) {
+                    // Process the check-ins array
+                    ArrayList<CheckIn> checkIns = new ArrayList<>();
+                    for (Map<String, Object> checkInMap : checkInsArray) {
+                        String userId = (String) checkInMap.get("userId");
+                        String location = (String) checkInMap.get("location");
+                        checkIns.add(new CheckIn(userId, location));
+                    }
+
+                    Log.d(TAG, "Created " + checkIns.size() + " check-ins for event " + eventId);
+                    event.setCheckIns(checkIns);
+                }
+
+                // Add the event to the list
                 events.add(event);
             }
+
+            // Call the callback with the list of events
             callback.onEventsLoaded(events);
         }).addOnFailureListener(e -> callback.onEventsLoaded(null));
     }
@@ -230,7 +251,7 @@ public class DatabaseService {
                 user.setEmail(document.getString("email"));
                 user.setMobileNum(document.getString("phone"));
                 user.setHomepage(document.getString("Homepage"));
-//                user.setGeolocation(document.getBoolean("geoLocation"));
+                user.setGeolocation(Boolean.TRUE.equals(document.getBoolean("geolocation")));
 //                user.setCheckins(document.getLong("check-ins").intValue());
                 user.setProfilePictureUrl(document.getString("profilePictureUrl"));
                 user.setProfilePicturePath(document.getString("profilePicturePath"));
@@ -260,11 +281,11 @@ public class DatabaseService {
             user.setEmail(queryDocumentSnapshot.getString("email"));
             user.setMobileNum(queryDocumentSnapshot.getString("phone"));
             user.setHomepage(queryDocumentSnapshot.getString("Homepage"));
-            user.setAdmin(queryDocumentSnapshot.getBoolean("admin"));
+            user.setAdmin(Boolean.TRUE.equals(queryDocumentSnapshot.getBoolean("admin")));
             user.setProfilePictureUrl(queryDocumentSnapshot.getString("profilePictureUrl"));
             user.setProfilePicturePath(queryDocumentSnapshot.getString("profilePicturePath"));
             user.setLastCheckIn(queryDocumentSnapshot.getString("lastCheckIn"));
-//            user.setGeolocation(queryDocumentSnapshot.getBoolean("geoLocation"));
+            user.setGeolocation(Boolean.TRUE.equals(queryDocumentSnapshot.getBoolean("geolocation")));
 //            user.setCheckins(queryDocumentSnapshot.getLong("check-ins").intValue());
 
             callback.onUserLoaded(user);
@@ -289,26 +310,31 @@ public class DatabaseService {
         event.setCustomCheckin(queryDocumentSnapshot.getString("customCheckin"));
         event.setCustomPromo(queryDocumentSnapshot.getString("customPromo"));
 
-        // This is supposed to load event picture, but unsure if it works properly
-        // To be implemented later
-                /*String eventPictureUrl = queryDocumentSnapshot.getString("eventPictureUrl");
-                if (eventPictureUrl != null) {
-                    Glide.with(mainActivity)
-                            .asBitmap()
-                            .load(eventPictureUrl)
-                            .into(new CustomTarget<Bitmap>() {
-                                @Override
-                                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                    event.setEventBanner(resource);
-                                }
-                                @Override
-                                public void onLoadCleared(@Nullable Drawable placeholder) {
-                                }
-                            });
-                }*/
+        // Retrieve check-ins for this event
+        ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) queryDocumentSnapshot.get("checkins");
+        Log.d(TAG, "Retrieved " + (checkInsArray != null ? checkInsArray.size() : 0) + " check-ins for event " + eventId);
+        if (checkInsArray != null) {
+            // Process the check-ins array
+            ArrayList<CheckIn> checkIns = new ArrayList<>();
+            for (Map<String, Object> checkInMap : checkInsArray) {
+                String userId = (String) checkInMap.get("userId");
+                String location = (String) checkInMap.get("location");
+                checkIns.add(new CheckIn(userId, location));
+            }
+
+            Log.d(TAG, "Created " + checkIns.size() + " check-ins for event " + eventId);
+            event.setCheckIns(checkIns);
+        }
         return event;
     }
 
+    /**
+     * This function searches the database for an existing event that either has an ID that is the same as the string being passed in
+     * Or that has a customCheckin or customPromo attribute that contains the string passed in. Then it returns the Event with details from
+     * the database for this found event, or null otherwise if no event was found.
+     * @param customQR The string to search the database for
+     * @param callback The function to call once the data is retrieved and the event is found/not found, passes in either Event or null
+     */
     public void getEventWithCustomQR(String customQR, OnEventDataLoaded callback) {
         if (customQR.startsWith("c") || customQR.startsWith("p")) {
             // may be attempting to get a "custom" qr that is just the ID of an existing event

@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -52,13 +53,15 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 /**
  * This fragment displays the details of an event, including the title, description, date, location,
  * announcements, and the event banner. It also allows the event organizer to upload a new event
- * banner and share the event QR code.
+ * banner and share the event QR code. It also allows the organizer to view the list of attendees and
+ * the number of check-ins for each attendee.
  */
 public class EventDetailsFragment extends Fragment {
 
@@ -66,6 +69,7 @@ public class EventDetailsFragment extends Fragment {
     private DatabaseService databaseService = new DatabaseService();
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private ImageView eventImage;
+    private ArrayList<ArrayList<Object>> checkInList;
 
     private User user;
 
@@ -137,9 +141,9 @@ public class EventDetailsFragment extends Fragment {
             FloatingActionButton backButton = view.findViewById(R.id.back_button);
             FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
             Button uploadImageButton = view.findViewById(R.id.edit_banner_button);
+            Button attendeesButton = view.findViewById(R.id.view_attendees_button);
 
             uploadImageButton.setVisibility(View.VISIBLE);
-
 
             // If there is no event passed in, create a test event
             if (this.event == null) {
@@ -177,6 +181,32 @@ public class EventDetailsFragment extends Fragment {
 
             });
 
+            // If clicked, this button brings the user to the attendees list fragment. If there
+            // is no attendees in the current event, it will instead show the user a message
+            attendeesButton.setOnClickListener(v -> {
+                databaseService.getEvent(event.getId(), event -> {
+                    if (event != null) {
+                        if (this.event.getCheckIns() != null) {
+                            this.event = event;
+                             AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.event);
+                             FragmentManager fragmentManager = getParentFragmentManager();
+                             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                             fragmentTransaction.replace(R.id.content, attendeesListFragment);
+                             fragmentTransaction.addToBackStack(null);
+                             fragmentTransaction.commit();
+                        }
+                        else {
+                            Toast.makeText(getContext(), "No attendees found", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    else {
+                        Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
+                        FragmentManager fragmentManager = getParentFragmentManager();
+                        fragmentManager.popBackStack();
+                    }
+                });
+            });
+
             // Enable these buttons if the user is the organizer of the event
             if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
                 uploadImageButton.setOnClickListener(v -> {
@@ -192,11 +222,8 @@ public class EventDetailsFragment extends Fragment {
             else {
                 uploadImageButton.setVisibility(View.GONE);
                 shareButton.setVisibility(View.GONE);
+                attendeesButton.setVisibility(View.GONE);
             }
-
-            // For now, the option to change the event banner is unavailable
-            // eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
-            //uploadImageButton.setOnClickListener(event.uploadPhoto(this, eventImage));
             setShareButton(shareButton);
 
 
