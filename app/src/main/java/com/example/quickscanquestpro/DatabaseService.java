@@ -147,6 +147,11 @@ public class DatabaseService {
         eventData.put("customCheckin", event.getCustomCheckin());
         eventData.put("customPromo", event.getCustomPromo());
 
+
+
+        eventData.put("signupLimit", event.getSignupLimit());
+
+
         // Combine all data into a single map
         Map<String, Object> combinedData = new HashMap<>();
         combinedData.putAll(eventData);
@@ -576,16 +581,36 @@ public class DatabaseService {
                     DocumentReference userRef = usersRef.document(user.getUserId());
                     DocumentReference eventRef = eventsRef.document(event.getId());
 
-                    // Atomically add the event ID to the user's "signedUpEvents" list
-                    transaction.update(userRef, "signedUpEvents", FieldValue.arrayUnion(event.getId()));
+                    // Get the current state of the event document
+                    DocumentSnapshot eventSnapshot = transaction.get(eventRef);
+                    List<String> currentSignups = (List<String>) eventSnapshot.get("signups");
+                    Number signupLimit = (Number) eventSnapshot.get("signupLimit"); // Make sure this field is correctly named as in your Firestore
+
+                    // Check if the event has a signup limit and if it's been reached
+                    if (signupLimit != null && currentSignups != null && currentSignups.size() >= signupLimit.intValue()) {
+                        // Throw an exception to abort the transaction
+                        throw new FirebaseFirestoreException("Signup limit reached",
+                                FirebaseFirestoreException.Code.ABORTED);
+                    }
+
                     // Atomically add the user ID to the event's "signups" list
                     transaction.update(eventRef, "signups", FieldValue.arrayUnion(user.getUserId()));
+                    // Atomically add the event ID to the user's "signedUpEvents" list
+                    transaction.update(userRef, "signedUpEvents", FieldValue.arrayUnion(event.getId()));
 
                     // This function must return a result, null in this case
                     return null;
                 }).addOnSuccessListener(aVoid -> Log.d(TAG, "User signup and event registration successful."))
-                .addOnFailureListener(e -> Log.e(TAG, "Error during user signup and event registration.", e));
+                .addOnFailureListener(e -> {
+                    if (e instanceof FirebaseFirestoreException &&
+                            ((FirebaseFirestoreException) e).getCode() == FirebaseFirestoreException.Code.ABORTED) {
+                        Log.d(TAG, "Could not sign up - signup limit reached.");
+                    } else {
+                        Log.e(TAG, "Error during user signup and event registration.", e);
+                    }
+                });
     }
+
 
     public interface OnSignedUpEventsLoaded {
         void onSignedUpEventsLoaded(List<Event> events);
