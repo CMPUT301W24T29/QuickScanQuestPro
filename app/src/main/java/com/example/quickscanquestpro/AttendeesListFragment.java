@@ -31,6 +31,7 @@ public class AttendeesListFragment extends Fragment {
     private Event event;
     private DatabaseService databaseService = new DatabaseService();
     private ArrayList<ArrayList<Object>> checkInList;
+    private ArrayList<String> UserId;
     private AttendeesListAdapter attendeesListAdapter;
     private Timer timer;
     private TextView attendeeTotal;
@@ -79,6 +80,17 @@ public class AttendeesListFragment extends Fragment {
         attendeesListView.setAdapter(attendeesListAdapter);
 
         startFetchingData();
+        FloatingActionButton alerts = view.findViewById(R.id.alert_button);
+        alerts.setOnClickListener(v -> {
+            // Create a new AttendeeAlertsFragment
+            AttendeeAlertsFragment attendeeAlertsFragment = new AttendeeAlertsFragment(UserId);
+            // Replace the current fragment with the new AttendeeAlertsFragment
+            FragmentManager fragmentManager = getParentFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.content, attendeeAlertsFragment);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
+        });
     }
 
     /**
@@ -94,7 +106,7 @@ public class AttendeesListFragment extends Fragment {
                 // Fetch data from the database (you need to implement this method)
                 fetchData();
             }
-        }, 0, 5000); // Schedule to run every 5 seconds (5000 milliseconds)
+        }, 0, 1000); // Schedule to run every 5 seconds (5000 milliseconds)
     }
 
     /**
@@ -126,12 +138,18 @@ public class AttendeesListFragment extends Fragment {
     private ArrayList<ArrayList<Object>> getAttendees() {
         ArrayList<ArrayList<Object>> newCheckInList = event.countAttendees();
         boolean dataChanged = !checkInList.equals(newCheckInList);
+        // take the first element of newcheckinList and add it to userId
+        for(ArrayList<Object> attendee: checkInList)
+        {
+            UserId.add((String) attendee.get(0));
+        }
 
         // Update only if data has changed
         if (dataChanged || firstrun) {
             checkInList = newCheckInList;
             AtomicInteger totalAttendees = new AtomicInteger(0);
             int size = checkInList.size(); // Size of checkInList to compare with the count
+            int unknownUserCount = 0;
 
             for (ArrayList<Object> attendee : checkInList) {
                 String userId = (String) attendee.get(0);

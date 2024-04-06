@@ -74,15 +74,15 @@ public class EventAttendeeFragment extends Fragment {
             fragmentManager.popBackStack();
         });
 
-        view.findViewById(R.id.alert_button).setOnClickListener(v -> {
-            Log.d("Alert", "Alert button clicked");
-            // Create an instance of the AttendeeAlertsFragment
-            AttendeeAlertsFragment attendeeAlertsFragment = new AttendeeAlertsFragment(uniqueAttendees);
-            FragmentTransaction fragmentTransaction = getParentFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.content, attendeeAlertsFragment);
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.commit();
-        });
+//        view.findViewById(R.id.alert_button).setOnClickListener(v -> {
+//            Log.d("Alert", "Alert button clicked");
+//            // Create an instance of the AttendeeAlertsFragment
+//            AttendeeAlertsFragment attendeeAlertsFragment = new AttendeeAlertsFragment(uniqueAttendees);
+//            FragmentTransaction fragmentTransaction = getParentFragmentManager().beginTransaction();
+//            fragmentTransaction.replace(R.id.content, attendeeAlertsFragment);
+//            fragmentTransaction.addToBackStack(null);
+//            fragmentTransaction.commit();
+//        });
 
         /**
          * This is where you should call your databaseService to get the event data and get the attendees

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".EventDashboardFragment">
+    tools:context=".AttendeesListFragment">
 
     <LinearLayout
         android:id="@+id/event_attendee_dashboard_title"
@@ -22,6 +22,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -32,16 +33,6 @@
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/alert_button"
-            android:layout_width="128dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="100dp"
-            android:src="@drawable/alerts"
-            app:layout_constraintEnd_toEndOf="parent">
-
-        </com.google.android.material.floatingactionbutton.FloatingActionButton>
 
 
     </LinearLayout>
@@ -84,5 +75,13 @@
         app:layout_constraintStart_toEndOf="@+id/live_count"></TextView>
 
 
+=======
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/alert_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/baseline_announcement_24"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -71,6 +72,9 @@ public class EventDetailsFragment extends Fragment {
     private ImageView eventImage;
     private User user;
     private FloatingActionButton shareButton;
+    private FloatingActionButton expandButton;
+    private FloatingActionButton uploadImageButton;
+    private FloatingActionButton attendeesButton;
 
     /**
      * This is the default constructor for the EventDetailsFragment class. If no event is passed in,
@@ -139,9 +143,14 @@ public class EventDetailsFragment extends Fragment {
             eventImage = view.findViewById(R.id.event_banner);
             FloatingActionButton backButton = view.findViewById(R.id.back_button);
             FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
-            FloatingActionButton uploadImageButton = view.findViewById(R.id.edit_banner_button);
-            FloatingActionButton attendeesButton = view.findViewById(R.id.view_attendees_button);
+            uploadImageButton = view.findViewById(R.id.edit_banner_button);
+            attendeesButton = view.findViewById(R.id.view_attendees_button);
+            expandButton = view.findViewById(R.id.expand_button);
 
+            // Hide the upload image button and the share button by default
+            uploadImageButton.setVisibility(View.GONE);
+            shareButton.setVisibility(View.GONE);
+            attendeesButton.setVisibility(View.GONE);
 
             // If there is no event passed in, create a test event
             if (this.event == null) {
@@ -221,9 +230,7 @@ public class EventDetailsFragment extends Fragment {
             }
             // Hide these buttons if user is not the organizer
             else {
-                uploadImageButton.setVisibility(View.GONE);
-                shareButton.setVisibility(View.GONE);
-               //attendeesButton.setVisibility(View.GONE);
+                expandButton.setVisibility(View.GONE);
             }
 
         } else {
@@ -246,6 +253,23 @@ public class EventDetailsFragment extends Fragment {
                 public void onClick(View v) {
                     Toast.makeText(getContext(), "Signup List", Toast.LENGTH_SHORT).show();
                     signupList();
+                }
+            });
+
+            expandButton.setOnClickListener(v -> {
+                if (expandButton.getTag() == "false") {
+                    expandButton.setImageResource(R.drawable.baseline_remove_24);
+                    uploadImageButton.setVisibility(View.VISIBLE);
+                    shareButton.setVisibility(View.VISIBLE);
+                    attendeesButton.setVisibility(View.VISIBLE);
+                    expandButton.setTag("true");
+
+                } else {
+                    expandButton.setImageResource(R.drawable.baseline_add_24);
+                    uploadImageButton.setVisibility(View.GONE);
+                    shareButton.setVisibility(View.GONE);
+                    attendeesButton.setVisibility(View.GONE);
+                    expandButton.setTag("false");
                 }
             });
         }

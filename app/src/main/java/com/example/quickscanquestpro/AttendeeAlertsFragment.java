@@ -38,13 +38,13 @@ public class AttendeeAlertsFragment extends DialogFragment {
     }
 
     private DatabaseService databaseService;
-    private ArrayList<User> uniqueAttendees;
+    private ArrayList<String> uniqueAttendees;
 
     /**
      *  this is the list of unique attendees attending the event
      * @param uniqueAttendees
      */
-    public AttendeeAlertsFragment(ArrayList<User> uniqueAttendees) {
+    public AttendeeAlertsFragment(ArrayList<String> uniqueAttendees) {
         this.uniqueAttendees = uniqueAttendees;
     }
 
@@ -86,9 +86,9 @@ public class AttendeeAlertsFragment extends DialogFragment {
     public void sendAlert(String title, String body) {
         try {
             // send to all users in uniqueAttendees
-            for (User user : uniqueAttendees) {
+            for (String userId : uniqueAttendees) {
                 // get specific user details form databaseService and use onUserLoaded to send notification
-                databaseService.getSpecificUserDetails(user.getUserId(), new DatabaseService.OnUserDataLoaded() {
+                databaseService.getSpecificUserDetails(userId, new DatabaseService.OnUserDataLoaded() {
                     @Override
                     public void onUserLoaded(User user) {
                         if(user == null)

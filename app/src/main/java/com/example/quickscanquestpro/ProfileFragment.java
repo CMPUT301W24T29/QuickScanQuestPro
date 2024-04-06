@@ -155,6 +155,10 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
                     if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){
                         notificationSwitch.setChecked(false);
                     }
+                    else
+                    {
+                        notificationSwitch.setChecked(true);
+                    }
                 }
                 else
                 {
