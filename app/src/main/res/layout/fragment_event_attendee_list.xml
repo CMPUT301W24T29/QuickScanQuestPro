@@ -43,11 +43,11 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="32dp"
-        android:background="#D6D6D6"
         app:layout_constraintBottom_toTopOf="@+id/live_count_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/event_attendee_dashboard_title" />
+        app:layout_constraintTop_toBottomOf="@+id/event_attendee_dashboard_title"
+        tools:listitem="@layout/list_attendees_view"/>
 
     <LinearLayout
         android:id="@+id/live_count_layout"
@@ -61,17 +61,35 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/live_count"
-            android:text="Live Count: "
-            android:textSize="30dp">
-        </TextView>
+            android:paddingLeft="10dp"
+            android:paddingBottom="10dp"
+            android:text="Check-ins: "
+            android:textSize="25dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
             android:id="@+id/live_count_number"
             android:text="0"
-            android:textSize="30dp">
-        </TextView>
+            android:textSize="25dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/attendee_count_total"
+            android:paddingLeft="30dp"
+            android:paddingBottom="10dp"
+            android:text="Attendees: "
+            android:textSize="25dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/attendee_count_number"
+            android:paddingBottom="10dp"
+            android:text="0"
+            android:textSize="25dp"/>
 
     </LinearLayout>
 
