@@ -206,6 +206,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         // gets the fragment currently loaded into the content view
         FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content, fragment, tag);
+        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
