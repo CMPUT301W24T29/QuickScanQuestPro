@@ -46,6 +46,7 @@ public class AttendeeAlertsFragment extends DialogFragment {
      */
     public AttendeeAlertsFragment(ArrayList<String> uniqueAttendees) {
         this.uniqueAttendees = uniqueAttendees;
+        Log.d("Notification", "Unique attendees: " + uniqueAttendees);
     }
 
     @Override
@@ -66,6 +67,7 @@ public class AttendeeAlertsFragment extends DialogFragment {
         view.findViewById(R.id.create_notification_confirm_button).setOnClickListener(v -> {
             // send the alert
             sendAlert(title.getText().toString(), body.getText().toString());
+            Log.d("Got till here", "Got till here");
             // go back to event attendees fragment
             FragmentManager fragmentManager = getParentFragmentManager();
             fragmentManager.popBackStack();
@@ -87,6 +89,7 @@ public class AttendeeAlertsFragment extends DialogFragment {
         try {
             // send to all users in uniqueAttendees
             for (String userId : uniqueAttendees) {
+                Log.d("Notification", "Sending notification to user: " + userId);
                 // get specific user details form databaseService and use onUserLoaded to send notification
                 databaseService.getSpecificUserDetails(userId, new DatabaseService.OnUserDataLoaded() {
                     @Override

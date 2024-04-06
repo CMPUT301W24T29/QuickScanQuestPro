@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -31,13 +32,14 @@ public class AttendeesListFragment extends Fragment {
     private Event event;
     private DatabaseService databaseService = new DatabaseService();
     private ArrayList<ArrayList<Object>> checkInList;
-    private ArrayList<String> UserId;
     private AttendeesListAdapter attendeesListAdapter;
     private Timer timer;
     private TextView attendeeTotal;
     private TextView checkInTotal;
     private ListView attendeesListView;
     private boolean firstrun = true;
+
+    private ArrayList<String> UserIds = new ArrayList<>();
 
     /**
      * This is the constructor for the AttendeesListFragment class.
@@ -66,7 +68,7 @@ public class AttendeesListFragment extends Fragment {
         FloatingActionButton backButton = view.findViewById(R.id.back_button);
         attendeesListView = view.findViewById(R.id.event_attendee_list);
         checkInTotal = view.findViewById(R.id.live_count_number);
-//        attendeeTotal = view.findViewById(R.id.attendee_count_number);
+        attendeeTotal = view.findViewById(R.id.attendee_count_number);
 
         backButton.setOnClickListener(v -> {
             // goes back to event details page
@@ -80,11 +82,11 @@ public class AttendeesListFragment extends Fragment {
         attendeesListView.setAdapter(attendeesListAdapter);
 
         startFetchingData();
-        FloatingActionButton alerts = view.findViewById(R.id.alert_button);
-        alerts.setOnClickListener(v -> {
+        FloatingActionButton alertButton = view.findViewById(R.id.announcement_button);
+        alertButton.setOnClickListener(v -> {
             // Create a new AttendeeAlertsFragment
-            AttendeeAlertsFragment attendeeAlertsFragment = new AttendeeAlertsFragment(UserId);
-            // Replace the current fragment with the new AttendeeAlertsFragment
+            firstrun = true;
+            AttendeeAlertsFragment attendeeAlertsFragment = new AttendeeAlertsFragment(UserIds);
             FragmentManager fragmentManager = getParentFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.replace(R.id.content, attendeeAlertsFragment);
@@ -138,11 +140,6 @@ public class AttendeesListFragment extends Fragment {
     private ArrayList<ArrayList<Object>> getAttendees() {
         ArrayList<ArrayList<Object>> newCheckInList = event.countAttendees();
         boolean dataChanged = !checkInList.equals(newCheckInList);
-        // take the first element of newcheckinList and add it to userId
-        for(ArrayList<Object> attendee: checkInList)
-        {
-            UserId.add((String) attendee.get(0));
-        }
 
         // Update only if data has changed
         if (dataChanged || firstrun) {
@@ -158,15 +155,15 @@ public class AttendeesListFragment extends Fragment {
                     public void onUserLoaded(User user) {
                         // Check if the activity is still running
                         if (getActivity() == null) {
-                            Log.e("AttendeeListFragment", "Activity is null. Skipping setup.");
+//                            Log.e("AttendeeListFragment", "Activity is null. Skipping setup.");
                             return;
                         }
                         // Update the user's name in the list
                         if (user == null) {
-                            Log.e("AttendeeListFragment", "User not found.");
+//                            Log.e("AttendeeListFragment", "User not found.");
                             attendee.set(0, "Unknown User");
                         } else {
-                            Log.d("AttendeeListFragment", user.getName() + " found!");
+//                            Log.d("AttendeeListFragment", user.getName() + " found!");
                             attendee.set(0, user.getName());
                         }
                         // Increment the totalAttendees count
@@ -193,6 +190,11 @@ public class AttendeesListFragment extends Fragment {
             }
         }
         firstrun = false;
+        for (ArrayList<Object> attendee : checkInList) {
+            String Id = (String) attendee.get(0);
+            if(!UserIds.contains(Id))
+                UserIds.add(Id);
+        }
         return checkInList;
     }
 }
