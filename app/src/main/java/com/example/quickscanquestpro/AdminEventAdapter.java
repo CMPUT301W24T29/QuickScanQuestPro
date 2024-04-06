@@ -1,102 +1,129 @@
 package com.example.quickscanquestpro;
 
+
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-
+import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import java.util.List;
 
-/**
- * Adapter for the AdminEventFragment
- */
-public class AdminEventAdapter extends ArrayAdapter<Event> implements DatabaseService.OnEventDataLoaded{
-    private int resourceLayout;
-    private Context mContext;
-
+public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.EventViewHolder> {
+    private Context context;
+    private List<Event> eventsList;
     private DatabaseService databaseService = new DatabaseService();
+    private boolean isAdmin;
 
-    /**
-     * Constructor for the AdminEventAdapter
-     * @param context
-     * @param resource
-     * @param items
-     */
-    public AdminEventAdapter(@NonNull Context context, int resource, List<Event> items) {
-        super(context, resource, items);
-        this.resourceLayout = resource;
-        this.mContext = context;
+    public AdminEventAdapter(Context context, List<Event> eventsList, boolean isAdmin) {
+        this.context = context;
+        this.eventsList = eventsList;
+        this.isAdmin = isAdmin;
+
     }
 
-    /**
-     * Method to get the view
-     * @param position
-     * @param convertView
-     * @param parent
-     * @return
-     */
+    public static class EventViewHolder extends RecyclerView.ViewHolder {
+        ImageView eventImage, deleteButton;
+        TextView eventTitle, eventLocation, eventDates, eventTimes;
+
+
+
+        public EventViewHolder(View itemView) {
+            super(itemView);
+            eventImage = itemView.findViewById(R.id.event_image);
+            eventTitle = itemView.findViewById(R.id.event_title);
+            eventLocation = itemView.findViewById(R.id.event_location);
+            eventDates = itemView.findViewById(R.id.event_dates);
+            eventTimes = itemView.findViewById(R.id.event_times);
+            deleteButton = itemView.findViewById(R.id.delete_button);
+        }
+    }
+
     @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        if (convertView == null) {
-            convertView = LayoutInflater.from(mContext).inflate(resourceLayout, parent, false);
-        }
-
-        Event event = getItem(position);
-        if (event != null) {
-            TextView textView = convertView.findViewById(R.id.profile_name_text_view);
-            // Set the title of the event
-            textView.setText(event.getTitle());
-            Button deleteButton = convertView.findViewById(R.id.admin_delete_button);
-            deleteButton.setOnClickListener(view -> {
-                databaseService.deleteEvent(getItem(position));
-                remove(getItem(position)); // Remove the user from the adapter
-                notifyDataSetChanged(); // Refresh the adapter
-            });
-            textView.setOnClickListener(view -> {
-                databaseService.getEvent(getItem(position).getId(), this);
-            });
-        }
-
-        return convertView;
+    public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View itemView = LayoutInflater.from(context).inflate(R.layout.item_event, parent, false);
+        return new EventViewHolder(itemView);
     }
 
-    /**
-     * Method to handle the event loaded
-     * @param event
-     */
     @Override
-    public void onEventLoaded(Event event) {
-        if (event != null) {
-            EventDetailsFragment eventDetailsFragment = new EventDetailsFragment(event);
+    public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
+        Event event = eventsList.get(position);
 
-            // Get the FragmentManager from the activity
-            FragmentManager fragmentManager = ((FragmentActivity) mContext).getSupportFragmentManager();
+        // Truncate title and location if longer than 30 characters
+        String title = event.getTitle().length() > 30 ? event.getTitle().substring(0, 20) + "..." : event.getTitle();
+        String location = event.getLocation().length() > 30 ? event.getLocation().substring(0, 20) + "..." : event.getLocation();
 
-            // Start a new FragmentTransaction
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        // Format the dates and times
+        String dates = event.getStartDate().toString() + " - " + event.getEndDate().toString();
+        String times = event.getStartTime().toString() + " - " + event.getEndTime().toString();
 
-            // Replace the current fragment with the eventDetailsFragment
-            fragmentTransaction.replace(R.id.content, eventDetailsFragment);
+        holder.eventTitle.setText(title);
+        holder.eventLocation.setText(location);
+        holder.eventDates.setText(dates);
+        holder.eventTimes.setText(times);
+        holder.deleteButton.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
 
-            // Add the transaction to the back stack (optional)
-            fragmentTransaction.addToBackStack(null);
 
-            // Commit the transaction
-            fragmentTransaction.commit();
+        String imageUrl = event.getEventBannerUrl();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(context)
+                    .load(imageUrl)
+                    .placeholder(R.color.white)
+                    .fitCenter()
+                    .into(holder.eventImage);
         } else {
-            Log.e("AdminEventAdapter", "Event is null. Cannot display details.");
-                // open the event details fragment
-            }
+            holder.eventImage.setImageResource(R.drawable.ic_launcher_background);
         }
+
+
+
+        holder.itemView.setOnClickListener(v -> {
+            if (context instanceof FragmentActivity) {
+                databaseService.getEvent(event.getId(), event1 -> {
+                    if (event1 != null) {
+                        EventDetailsFragment eventDetailsFragment = new EventDetailsFragment(event1);
+
+                        FragmentManager fragmentManager = ((FragmentActivity) context).getSupportFragmentManager();
+
+                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+                        fragmentTransaction.replace(R.id.content, eventDetailsFragment);
+
+                        fragmentTransaction.addToBackStack(null);
+
+                        fragmentTransaction.commit();
+                    } else {
+                        Log.e("EventListAdapter", "Event is null. Cannot display details.");
+                    }
+                });
+            }
+        });
+
+        holder.deleteButton.setOnClickListener(v ->{
+            databaseService.deleteEvent(event);
+            eventsList.remove(position);
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position, eventsList.size());
+        });
     }
+
+    @Override
+    public int getItemCount() {
+        return eventsList.size();
+    }
+
+    public void updateEvents(List<Event> events) {
+        this.eventsList.clear();
+        this.eventsList.addAll(events);
+        notifyDataSetChanged();
+    }
+}
