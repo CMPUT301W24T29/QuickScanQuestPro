@@ -50,6 +50,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -168,6 +169,7 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
         EditText emailAddressInput = view.findViewById(R.id.emailAddressInput);
         geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
 
+
         //Get User from Main activity
 
         if(user==null)
@@ -239,6 +241,12 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
             }
         });
 
+
+
+
+
+
+
         geolocationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked && !ignoreGeolocSwitch) {
                 // disable it before attempting to get location, because this could take a while
@@ -274,10 +282,14 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
         databaseService.uploadProfilePicture(file, user, new DatabaseService.OnProfilePictureUpload() {
             @Override
             public void onSuccess(String imageUrl, String imagePath) {
+
+
                 Glide.with(ProfileFragment.this).load(imageUrl).into(profilePicturePlaceholder);
                 deleteProfilePictureButton.setVisibility(View.VISIBLE);
                 Toast.makeText(getContext(), "Profile Picture Uploaded", Toast.LENGTH_SHORT).show();
                 progressIndicator.setVisibility(View.GONE);
+
+
             }
 
             @Override

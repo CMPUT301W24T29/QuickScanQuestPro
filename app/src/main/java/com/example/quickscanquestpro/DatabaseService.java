@@ -478,6 +478,9 @@ public class DatabaseService {
                     User user = new User(userId);
                     // Assuming you have a method in User class to set the name directly from Firestore document
                     user.setName(doc.getString("name")); // Ensure field name matches your Firestore structure
+                    user.setProfilePictureUrl(doc.getString("profilePictureUrl"));
+                    user.setProfilePicturePath(doc.getString("profilePicturePath"));
+
                     userList.add(user);
                 }
                 callback.onUsersLoaded(userList);
@@ -643,6 +646,10 @@ public class DatabaseService {
                 .addOnSuccessListener(aVoid -> callback.onSuccess())
                 .addOnFailureListener(e -> callback.onFailure(e));
     }
+
+
+
+
 
 }
 
