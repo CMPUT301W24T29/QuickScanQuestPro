@@ -169,9 +169,9 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     public void transitionFragment(Fragment fragment, String tag) {
         FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content, fragment, tag);
-        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
+
 
     public void addFragment(Fragment fragment, String tag) {
         FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
@@ -191,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         fragmentTransaction.hide(fragment);
         fragmentTransaction.commit();
     }
+
 
     @Override
     public void onUsersLoaded(List<User> users)
