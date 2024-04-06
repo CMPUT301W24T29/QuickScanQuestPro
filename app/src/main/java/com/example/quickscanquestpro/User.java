@@ -1,5 +1,12 @@
 package com.example.quickscanquestpro;
 
+import android.content.pm.PackageManager;
+
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -30,6 +37,11 @@ public class User {
 
     private String profilePicturePath;
     private String lastCheckIn;
+
+    private String notificationToken;
+
+    private Boolean getNotification;
+
 
     /*
      * user preference
@@ -96,6 +108,14 @@ public class User {
         this.geolocation = geolocation;
     }
 
+    public void setGetNotification(Boolean getNotification) {
+        this.getNotification = getNotification;
+    }
+
+    public Boolean getGetNotification() {
+        return getNotification;
+    }
+
     public boolean isAdmin() {
         return admin;
     }
@@ -139,6 +159,14 @@ public class User {
 
     public void setAdmin(boolean admin){
         this.admin = admin;
+    }
+
+     public void setNotificationToken(String notificationToken) {
+        this.notificationToken = notificationToken;
+    }
+
+    public String getNotificationToken() {
+        return notificationToken;
     }
 
     /**

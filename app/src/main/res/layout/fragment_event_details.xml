@@ -23,6 +23,7 @@
             app:layout_constraintTop_toTopOf="parent"
             android:src="@drawable/pork_ribs"/>
 
+
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/back_button"
             android:layout_width="wrap_content"
@@ -34,6 +35,17 @@
             />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/expand_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="Expand options button"
+            android:src="@drawable/baseline_menu_24"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/share_event_button"
+            android:layout_marginTop="8dp"
+            android:tag="false"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/share_event_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -43,51 +55,40 @@
             app:layout_constraintTop_toTopOf="parent"
             />
 
-        <Button
-            android:id="@+id/edit_banner_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/event_banner"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="16dp"
-            android:layout_marginStart="130dp"
-            android:text=" Upload Image "/>
-
-        <Button
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/view_attendees_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@+id/edit_banner_button"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="130dp"
-            android:text="View Attendees"/>
+            android:contentDescription="View attendees button"
+            android:src="@drawable/baseline_person_search_24"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/expand_button"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/edit_banner_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="Edit banner button"
+            android:src="@drawable/baseline_image_24"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/view_attendees_button"
+            android:layout_marginTop="8dp"
+            />
 
         <TextView
             android:id="@+id/event_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginTop="16dp"
-            android:text="@string/event_title"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/view_attendees_button"
-            app:layout_constraintEnd_toEndOf="parent"/>
-
-        <TextView
-            android:id="@+id/what_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
-            android:text="@string/what_text"
-            android:textSize="20sp"
+            android:text="@string/event_title"
+            android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/event_title" />
+            app:layout_constraintTop_toBottomOf="@id/event_banner" />
 
         <TextView
             android:id="@+id/event_description"
@@ -97,8 +98,9 @@
             android:layout_marginTop="16dp"
             android:ems="20"
             android:text="@string/event_description"
+            android:textSize="15sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/what_text" />
+            app:layout_constraintTop_toBottomOf="@id/event_title" />
 
         <TextView
             android:id="@+id/when_text"
@@ -107,7 +109,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:text="@string/when_text"
-            android:textSize="20sp"
+            android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/event_description" />
@@ -120,6 +122,7 @@
             android:layout_marginTop="16dp"
             android:ems="20"
             android:text="@string/event_date"
+            android:textSize="15sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/when_text" />
 
@@ -130,7 +133,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:text="@string/where_text"
-            android:textSize="20sp"
+            android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/event_date" />
@@ -143,8 +146,32 @@
             android:layout_marginTop="16dp"
             android:ems="20"
             android:text="@string/event_location"
+            android:textSize="15sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/where_text" />
+
+        <TextView
+            android:id="@+id/signup_limit_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="Sign Up Limit"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/event_location" />
+
+        <TextView
+            android:id="@+id/signup_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="16dp"
+            android:ems="20"
+            android:text="This will be the maximum number of signups"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/signup_limit_text" />
 
         <TextView
             android:id="@+id/event_announcements_text"
@@ -153,10 +180,10 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:text="@string/event_announcements_text"
-            android:textSize="22sp"
+            android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/event_location" />
+            app:layout_constraintTop_toBottomOf="@id/signup_number" />
 
         <ListView
             android:id="@+id/event_announcements_list"
@@ -188,6 +215,7 @@
             app:layout_constraintTop_toBottomOf="@id/event_announcements_list"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/signup_button" />
+
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,14 +4,11 @@ import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.pressKey;
-import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
-import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
@@ -21,7 +18,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withSubstring;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.allOf;
@@ -32,6 +28,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import android.Manifest;
+<<<<<<< HEAD
+=======
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
@@ -40,25 +38,22 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
+>>>>>>> 76b712d9276fb433355952910e2ebf955be1679a
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.DatePicker;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.ListView;
 import android.widget.TimePicker;
 
+<<<<<<< HEAD
+=======
 import androidx.annotation.IdRes;
 import androidx.fragment.app.Fragment;
+>>>>>>> 76b712d9276fb433355952910e2ebf955be1679a
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.contrib.PickerActions;
-
-import androidx.test.espresso.contrib.RecyclerViewActions;
-import androidx.test.espresso.intent.Intents;
-import androidx.test.espresso.matcher.ViewMatchers;
 
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -71,8 +66,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -97,7 +90,7 @@ public class MainActivityTest {
 
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
 
-        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("My Event Title"));
+        onView(withId(R.id.edit_notification_title)).perform(ViewActions.typeText("My Event Title"));
         onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
         onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
         Espresso.closeSoftKeyboard();
@@ -196,7 +189,7 @@ public class MainActivityTest {
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
 
         String eventTitle = UUID.randomUUID().toString();
-        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText(eventTitle));
+        onView(withId(R.id.edit_notification_title)).perform(ViewActions.typeText(eventTitle));
         onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
         onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
         Espresso.closeSoftKeyboard();
@@ -212,9 +205,10 @@ public class MainActivityTest {
         Espresso.closeSoftKeyboard();
 
         onView(withId(R.id.create_event_confirm_button)).perform(click());
-        onView(isRoot()).perform(waitFor(1000));
+        onView(isRoot()).perform(waitFor(2000));
 
         onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
         onView(withId(R.id.admin_button_manage_events)).perform(click());
         onView(isRoot()).perform(waitFor(2000));
 
@@ -296,7 +290,7 @@ public class MainActivityTest {
     }
 
     @Test
-    public void testUS_04_06_01AdminBrowseProfile () {
+    public void testUS_04_06_01AdminBrowseProfile() {
         onView(isRoot()).perform(waitFor(5000)); // Wait to ensure the app is ready
 
         // Navigate to the Admin Dashboard
@@ -352,7 +346,7 @@ public class MainActivityTest {
 
 
     @Test
-    public void testUS_04_03_01AdminRemoveUserImage(){
+    public void testUS_04_03_01AdminRemoveUserImage() {
         onView(isRoot()).perform(waitFor(5000));
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
@@ -368,12 +362,11 @@ public class MainActivityTest {
         onView(withId(R.id.delete_button)).perform(click());
 
 
-
     }
 
 
     @Test
-    public void testUS_04_03_01AdminRemoveEventImage(){
+    public void testUS_04_03_01AdminRemoveEventImage() {
         onView(isRoot()).perform(waitFor(5000));
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
@@ -389,11 +382,10 @@ public class MainActivityTest {
         onView(withId(R.id.delete_button)).perform(click());
 
 
-
     }
 
     @Test
-    public void testUS_04_05_01AdminBrowseImage(){
+    public void testUS_04_05_01AdminBrowseImage() {
         onView(isRoot()).perform(waitFor(5000));
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
@@ -409,6 +401,7 @@ public class MainActivityTest {
     /**
      * This gets an activity reference from a running test, but you should not hold onto this reference as it may change
      * or be recreated. Try to call this every time you need something out of the activity.
+     *
      * @param activityScenarioRule the scenario from the scenarioTestRule
      * @return returns the Activity from the scenario, which can then be cast to (MainActivity) if needed
      */
@@ -422,7 +415,7 @@ public class MainActivityTest {
      * This test requires a custom QR code that is loaded into the virtual camera that isnt used by an event yet, or it will fail.
      */
     @Test
-    public void testUS01_01_02ReuseQR(){
+    public void testUS01_01_02ReuseQR() {
         // begin event creation
         // fill all the boxes
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
@@ -495,8 +488,127 @@ public class MainActivityTest {
         }
 
 
+    }
 
+    @Test
+    public void testUS01_02_01ViewAttendees() {
+        // begin event creation
+        // fill all the boxes
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
 
+        onView(withId(R.id.event_dashboard_create_button)).perform(click());
+
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("Test US01_02_01ViewAttendees"));
+        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
+        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
+        Espresso.closeSoftKeyboard();
+
+        setDate(R.id.text_event_start_date, 2024, 8, 18);
+        Espresso.closeSoftKeyboard();
+        setDate(R.id.text_event_end_date, 2024, 8, 19);
+        Espresso.closeSoftKeyboard();
+
+        setTime(R.id.text_event_start_time, 12, 30);
+        Espresso.closeSoftKeyboard();
+        setTime(R.id.text_event_end_time, 19, 36);
+        Espresso.closeSoftKeyboard();
+
+        onView(withId(R.id.create_event_confirm_button)).perform(click());
+        onView(isRoot()).perform(waitFor(3000));
+
+        // look at organized events to find newly created event
+        onView(withId(R.id.event_dashboard_list)).perform(actionOnItemAtPosition(1, click()));
+        onView(isRoot()).perform(waitFor(2000));
+
+        // click on newly made event
+        onView(allOf(withId(R.id.events_rv), hasDescendant(withText("Test US01_02_01ViewAttendees")))).perform(click());
+        onView(isRoot()).perform(waitFor(4000));
+
+        DatabaseService databaseService = new DatabaseService();
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        EventDetailsFragment fragment = (EventDetailsFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventDetailsFragment");
+        Event event = fragment.event;
+        String eventId = event.getId();
+        // check in an attendee
+        databaseService.recordCheckIn(eventId, "9b4dd42c-7de3-4d76-a96d-fde4958e7104", "location");
+        onView(isRoot()).perform(waitFor(4000));
+        // click on view attendees
+        onView(withId(R.id.view_attendees_button)).perform(click());
+        onView(isRoot()).perform(waitFor(4000));
+
+        // check if the attendee is displayed, then delete the event
+        try {
+            onView(withText("Attendee test user")).check(matches(isDisplayed()));
+        } finally {
+            databaseService.deleteEvent(event);
+        }
+    }
+
+    @Test
+    public void testUS01_09_01ViewAttendeeCheckInCount() {
+        // begin event creation
+        // fill all the boxes
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+
+        onView(withId(R.id.event_dashboard_create_button)).perform(click());
+
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("Test US01_09_01AttendeeCount"));
+        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
+        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
+        Espresso.closeSoftKeyboard();
+
+        setDate(R.id.text_event_start_date, 2024, 8, 18);
+        Espresso.closeSoftKeyboard();
+        setDate(R.id.text_event_end_date, 2024, 8, 19);
+        Espresso.closeSoftKeyboard();
+
+        setTime(R.id.text_event_start_time, 12, 30);
+        Espresso.closeSoftKeyboard();
+        setTime(R.id.text_event_end_time, 19, 36);
+        Espresso.closeSoftKeyboard();
+
+        onView(withId(R.id.create_event_confirm_button)).perform(click());
+        onView(isRoot()).perform(waitFor(3000));
+
+        // look at organized events to find newly created event
+        onView(withId(R.id.event_dashboard_list)).perform(actionOnItemAtPosition(1, click()));
+        onView(isRoot()).perform(waitFor(2000));
+
+        // click on newly made event
+        onView(allOf(withId(R.id.events_rv), hasDescendant(withText("Test US01_09_01AttendeeCount")))).perform(click());
+        onView(isRoot()).perform(waitFor(4000));
+
+        DatabaseService databaseService = new DatabaseService();
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        EventDetailsFragment fragment = (EventDetailsFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventDetailsFragment");
+        Event event = fragment.event;
+        String eventId = event.getId();
+        // check in an attendee
+        databaseService.recordCheckIn(eventId, "9b4dd42c-7de3-4d76-a96d-fde4958e7104", "location");
+        onView(isRoot()).perform(waitFor(1000));
+        databaseService.recordCheckIn(eventId, "9b4dd42c-7de3-4d76-a96d-fde4958e7104", "location");
+        onView(isRoot()).perform(waitFor(4000));
+        // click on view attendees
+        onView(withId(R.id.view_attendees_button)).perform(click());
+        onView(isRoot()).perform(waitFor(4000));
+
+        // check if the attendee is displayed, then delete the event
+        try {
+            onView(withText("Attendee test user")).check(matches(isDisplayed()));
+            onView(withText("Check-ins: 2")).check(matches(isDisplayed()));
+        } finally {
+            databaseService.deleteEvent(event);
+        }
     }
 
 }

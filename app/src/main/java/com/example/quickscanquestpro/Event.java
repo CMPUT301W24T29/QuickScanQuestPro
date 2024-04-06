@@ -78,6 +78,8 @@ public class Event {
 
     private ArrayList<User> signUps = new ArrayList<>();
 
+    private Integer signupLimit;
+
 
     /**
      * Constructor for the event that just takes an id, used when constructing the object during event creation.
@@ -245,6 +247,10 @@ public class Event {
 
     public ArrayList<User> getAttendees() {
         return attendees;
+    }
+
+    public void setAttendees(ArrayList<User> attendees) {
+        this.attendees = attendees;
     }
 
     public Bitmap getEventBanner() {
@@ -445,5 +451,13 @@ public class Event {
             }
         }
         return outputList;
+    }
+
+    public Integer getSignupLimit() {
+        return signupLimit;
+    }
+
+    public void setSignupLimit(Integer signupLimit) {
+        this.signupLimit = signupLimit;
     }
 }

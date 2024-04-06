@@ -103,7 +103,7 @@ public class OrganizerIntentTests {
 
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
 
-        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("My Event Title"));
+        onView(withId(R.id.edit_notification_title)).perform(ViewActions.typeText("My Event Title"));
         onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
         onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
         Espresso.closeSoftKeyboard();
@@ -157,7 +157,7 @@ public class OrganizerIntentTests {
 
         String eventTitle = UUID.randomUUID().toString();
         onView(isRoot()).perform(waitFor(4000));
-        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText(eventTitle), ViewActions.closeSoftKeyboard());
+        onView(withId(R.id.edit_notification_title)).perform(ViewActions.typeText(eventTitle), ViewActions.closeSoftKeyboard());
         onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"), ViewActions.closeSoftKeyboard());
         onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"), ViewActions.closeSoftKeyboard());
 
@@ -168,14 +168,18 @@ public class OrganizerIntentTests {
         setTime(R.id.text_event_end_time, 19, 36);
 
         onView(withId(R.id.create_event_confirm_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
 
         onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
         onView(withId(R.id.admin_button_manage_events)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
 
         // Scroll to the event with the specific title and click on it
         // Replace this scrolling mechanism with a more reliable way if available
         onView(allOf(withText(eventTitle), isDescendantOfA(withId(R.id.admin_event_dashboard_list))))
                 .perform(click());
+        onView(isRoot()).perform(waitFor(2000));
 
         // Assert that the sharing intent is triggered
         onView(withId(R.id.share_event_button)).perform(click());
