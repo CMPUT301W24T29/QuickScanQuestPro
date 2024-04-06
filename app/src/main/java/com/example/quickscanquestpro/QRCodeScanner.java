@@ -294,6 +294,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
                     databaseService.recordCheckIn(event.getId(), currentUser.getUserId(), "");
                     databaseService.updateLastCheckIn(currentUser.getUserId(), event.getId());
                     event.checkIn();
+                    Toast.makeText(mainActivity.getApplicationContext(), "Checked in!", Toast.LENGTH_SHORT).show();
                 }
             } else {
                 Toast.makeText(mainActivity.getApplicationContext(), "Promotion code scanned!", Toast.LENGTH_SHORT).show();
