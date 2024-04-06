@@ -70,14 +70,17 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
     private Button deleteProfilePictureButton;
     LinearProgressIndicator progressIndicator;
     private DatabaseService databaseService = new DatabaseService();
+    private Switch notificationSwitch;
     private User user;
     private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
         @Override
         public void onActivityResult(Boolean o) {
             if (o) {
+                notificationSwitch.setChecked(true);
                 Toast.makeText(getContext(), "Notifications Permission granted", Toast.LENGTH_LONG).show();
             }
             else {
+                notificationSwitch.setChecked(false);
                 Toast.makeText(getContext(), "Notifications Permission denied", Toast.LENGTH_LONG).show();
             }
         }
@@ -146,19 +149,12 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
             fragmentManager.popBackStack();
         });
 
-        Switch notificationSwitch = view.findViewById(R.id.alert_switch);
+        notificationSwitch = view.findViewById(R.id.alert_switch);
         notificationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){
                     requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
                     // check if user has accepted the permission, if not turn the switch off
-                    if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){
-                        notificationSwitch.setChecked(false);
-                    }
-                    else
-                    {
-                        notificationSwitch.setChecked(true);
-                    }
                 }
                 else
                 {
