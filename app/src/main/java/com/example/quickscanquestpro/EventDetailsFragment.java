@@ -143,16 +143,15 @@ public class EventDetailsFragment extends Fragment {
             eventImage = view.findViewById(R.id.event_banner);
             FloatingActionButton backButton = view.findViewById(R.id.back_button);
             FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
-            uploadImageButton = view.findViewById(R.id.edit_banner_button);
-            attendeesButton = view.findViewById(R.id.view_attendees_button);
-            expandButton = view.findViewById(R.id.expand_button);
+            FloatingActionButton uploadImageButton = view.findViewById(R.id.edit_banner_button);
+            FloatingActionButton attendeesButton = view.findViewById(R.id.view_attendees_button);
+            FloatingActionButton expandButton = view.findViewById(R.id.expand_button);
 
             // Set the tag of the expand button to false
             expandButton.setTag("false");
 
             // Hide the upload image button and the share button by default
             uploadImageButton.setVisibility(View.GONE);
-            shareButton.setVisibility(View.GONE);
             attendeesButton.setVisibility(View.GONE);
 
             // If there is no event passed in, create a test event
@@ -188,7 +187,7 @@ public class EventDetailsFragment extends Fragment {
                 fragmentManager.popBackStack();
             });
             // Enable these buttons if the user is the organizer of the event
-            if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
+            if (!event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
                 uploadImageButton.setOnClickListener(v -> {
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("image/*");
@@ -226,14 +225,12 @@ public class EventDetailsFragment extends Fragment {
                     if (expandButton.getTag() == "false") {
                         expandButton.setImageResource(R.drawable.baseline_close_24);
                         uploadImageButton.setVisibility(View.VISIBLE);
-                        shareButton.setVisibility(View.VISIBLE);
                         attendeesButton.setVisibility(View.VISIBLE);
                         expandButton.setTag("true");
 
                     } else {
                         expandButton.setImageResource(R.drawable.baseline_menu_24);
                         uploadImageButton.setVisibility(View.GONE);
-                        shareButton.setVisibility(View.GONE);
                         attendeesButton.setVisibility(View.GONE);
                         expandButton.setTag("false");
                     }
@@ -242,9 +239,8 @@ public class EventDetailsFragment extends Fragment {
             // Hide expand button if user is not the organizer
             else {
                 expandButton.setVisibility(View.GONE);
+                shareButton.setVisibility(View.GONE);
             }
-
-        } else {
             setShareButton(shareButton);
 
             // Signup and Signup List buttons
@@ -267,7 +263,9 @@ public class EventDetailsFragment extends Fragment {
                 }
             });
         }
-
+        else {
+            Log.e(TAG, "User or MainActivity is null");
+        }
     }
 
     @Override

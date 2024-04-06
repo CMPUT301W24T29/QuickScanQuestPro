@@ -17,7 +17,6 @@ import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -38,8 +37,8 @@ public class AttendeesListFragment extends Fragment {
     private TextView checkInTotal;
     private ListView attendeesListView;
     private boolean firstrun = true;
-
     private ArrayList<String> UserIds = new ArrayList<>();
+
 
     /**
      * This is the constructor for the AttendeesListFragment class.
@@ -130,7 +129,6 @@ public class AttendeesListFragment extends Fragment {
         });
     }
 
-
     /**
      * This method fetches the list of attendees for the event from the database.
      * It updates the attendeesListAdapter with the new data and updates the total attendee count.
@@ -143,27 +141,25 @@ public class AttendeesListFragment extends Fragment {
 
         // Update only if data has changed
         if (dataChanged || firstrun) {
-            checkInList = newCheckInList;
+            //checkInList = newCheckInList;
             AtomicInteger totalAttendees = new AtomicInteger(0);
-            int size = checkInList.size(); // Size of checkInList to compare with the count
+            int size = newCheckInList.size(); // Size of checkInList to compare with the count
             int unknownUserCount = 0;
 
-            for (ArrayList<Object> attendee : checkInList) {
+            for (ArrayList<Object> attendee : newCheckInList) {
                 String userId = (String) attendee.get(0);
                 databaseService.getSpecificUserDetails(userId, new DatabaseService.OnUserDataLoaded() {
                     @Override
                     public void onUserLoaded(User user) {
                         // Check if the activity is still running
                         if (getActivity() == null) {
-//                            Log.e("AttendeeListFragment", "Activity is null. Skipping setup.");
+                            Log.e("AttendeeListFragment", "Activity is null. Skipping setup.");
                             return;
                         }
                         // Update the user's name in the list
                         if (user == null) {
-//                            Log.e("AttendeeListFragment", "User not found.");
                             attendee.set(0, "Unknown User");
                         } else {
-//                            Log.d("AttendeeListFragment", user.getName() + " found!");
                             attendee.set(0, user.getName());
                         }
                         // Increment the totalAttendees count
@@ -172,13 +168,13 @@ public class AttendeesListFragment extends Fragment {
                                 @Override
                                 // Update the UI on the main thread
                                 public void run() {
-                                    attendeesListAdapter.updateAttendeesList(checkInList);
+                                    attendeesListAdapter.updateAttendeesList(newCheckInList);
                                     if (attendeesListView.getVisibility() == View.GONE) {
                                         attendeesListView.setVisibility(View.VISIBLE);
                                     }
-                                    attendeeTotal.setText(String.valueOf(checkInList.size()));
+                                    attendeeTotal.setText(String.valueOf(newCheckInList.size()));
                                     int totalAttendees = 0;
-                                    for (ArrayList<Object> checkIn : checkInList) {
+                                    for (ArrayList<Object> checkIn : newCheckInList) {
                                         totalAttendees += (int) checkIn.get(1);
                                     }
                                     checkInTotal.setText(String.valueOf(totalAttendees));
@@ -190,11 +186,11 @@ public class AttendeesListFragment extends Fragment {
             }
         }
         firstrun = false;
-        for (ArrayList<Object> attendee : checkInList) {
+        for (ArrayList<Object> attendee : newCheckInList) {
             String Id = (String) attendee.get(0);
             if(!UserIds.contains(Id))
                 UserIds.add(Id);
         }
-        return checkInList;
+        return newCheckInList;
     }
 }
