@@ -1,9 +1,11 @@
 package com.example.quickscanquestpro;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,9 +21,12 @@ import android.widget.Toast;
 /**
  * This class starts the home view of the app, initializes the camera to start scanning QR code
  */
-public class HomeViewFragment extends Fragment {
+public class HomeViewFragment extends Fragment implements GeolocationService.GeolocationRegisteredFragment  {
     private QRCodeScanner qrCodeScanner;
     private QRCodeScanner.OnQRScanned callback;
+    private GeolocationService geolocationService = new GeolocationService(this, this);
+    private ActivityResultLauncher<String[]> locPermLauncher;
+    private ActivityResultLauncher<IntentSenderRequest> locResolutionIntentSender;
 
     // Invokes the user to allow runtime permission for Camera Access
     private ActivityResultLauncher<String> requestCameraPermissionLauncher =
@@ -45,6 +50,11 @@ public class HomeViewFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // launcher to deal with permission results
+        locPermLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), geolocationService::locationPermissionResultHandler);
+
+        // launcher to deal with user's not having location enabled, but having geolocation permissions granted and toggled on in profile
+        locResolutionIntentSender = registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(), geolocationService::locationEnabledResolutionHandler);
     }
 
     @Override
@@ -77,9 +87,9 @@ public class HomeViewFragment extends Fragment {
         if (view != null) {
             PreviewView previewView = view.findViewById(R.id.cameraFeed);
             if (callback != null) {
-                qrCodeScanner = new QRCodeScanner(getContext(), previewView, this, (MainActivity) this.getActivity(), callback);
+                qrCodeScanner = new QRCodeScanner(getContext(), previewView, this, (MainActivity) this.getActivity(), geolocationService, callback);
             } else {
-                qrCodeScanner = new QRCodeScanner(getContext(), previewView, this, (MainActivity) this.getActivity());
+                qrCodeScanner = new QRCodeScanner(getContext(), previewView, this, (MainActivity) this.getActivity(), geolocationService);
             }
             qrCodeScanner.startCamera();
         }
@@ -113,5 +123,21 @@ public class HomeViewFragment extends Fragment {
         if (qrCodeScanner != null) {
             qrCodeScanner.shutdown();
         }
+    }
+
+    @Override
+    public void geolocationRequestComplete(boolean success, String result) {
+        // pass it along to the scanner
+        qrCodeScanner.geolocationRequestComplete(success, result);
+    }
+
+    @Override
+    public ActivityResultLauncher<String[]> getLocPermLauncher() {
+        return locPermLauncher;
+    }
+
+    @Override
+    public ActivityResultLauncher<IntentSenderRequest> getLocResolutionIntentSender() {
+        return locResolutionIntentSender;
     }
 }
