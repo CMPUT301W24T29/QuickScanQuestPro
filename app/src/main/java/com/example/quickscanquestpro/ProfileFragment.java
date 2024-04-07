@@ -9,16 +9,19 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -64,7 +67,7 @@ public class ProfileFragment extends Fragment {
     private ImageView profilePicturePlaceholder;
 
     private ActivityResultLauncher<Intent> pickImageLauncher;
-    private Button deleteProfilePictureButton;
+    private ImageView deleteProfilePictureButton;
 
     LinearProgressIndicator progressIndicator;
 
@@ -151,6 +154,8 @@ public class ProfileFragment extends Fragment {
             intent.setType("image/*");
             pickImageLauncher.launch(intent);
         });
+
+
 
 
         //For updating profile information

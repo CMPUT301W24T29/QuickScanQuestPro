@@ -106,7 +106,7 @@ public class AdminManageEventsFragment extends Fragment {
                         filteredEvents.add(event);
                     }
                 }
-                eventsAdapter.updateEvents(filteredEvents);
+                eventsAdapter.updateEvents(updatedEvents);
             }
         });
 
