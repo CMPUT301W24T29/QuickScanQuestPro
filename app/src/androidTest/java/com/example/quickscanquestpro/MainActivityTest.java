@@ -5,6 +5,7 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.pressKey;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
@@ -28,8 +29,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import android.Manifest;
-<<<<<<< HEAD
-=======
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
@@ -38,23 +37,19 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
->>>>>>> 76b712d9276fb433355952910e2ebf955be1679a
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.TimePicker;
-
-<<<<<<< HEAD
-=======
 import androidx.annotation.IdRes;
 import androidx.fragment.app.Fragment;
->>>>>>> 76b712d9276fb433355952910e2ebf955be1679a
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.contrib.PickerActions;
 
+import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;

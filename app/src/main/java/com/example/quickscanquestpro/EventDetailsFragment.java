@@ -71,10 +71,6 @@ public class EventDetailsFragment extends Fragment {
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private ImageView eventImage;
     private User user;
-    private FloatingActionButton shareButton;
-    private FloatingActionButton expandButton;
-    private FloatingActionButton uploadImageButton;
-    private FloatingActionButton attendeesButton;
 
     /**
      * This is the default constructor for the EventDetailsFragment class. If no event is passed in,
@@ -147,12 +143,17 @@ public class EventDetailsFragment extends Fragment {
             FloatingActionButton attendeesButton = view.findViewById(R.id.view_attendees_button);
             FloatingActionButton expandButton = view.findViewById(R.id.expand_button);
 
+            // Signup and Signup List buttons
+            Button signupButton = view.findViewById(R.id.signup_button);
+            FloatingActionButton signupListButton = view.findViewById(R.id.signup_list);
+
             // Set the tag of the expand button to false
             expandButton.setTag("false");
 
             // Hide the upload image button and the share button by default
             uploadImageButton.setVisibility(View.GONE);
             attendeesButton.setVisibility(View.GONE);
+            signupListButton.setVisibility(View.GONE);
 
             // If there is no event passed in, create a test event
             if (this.event == null) {
@@ -226,12 +227,14 @@ public class EventDetailsFragment extends Fragment {
                         expandButton.setImageResource(R.drawable.baseline_close_24);
                         uploadImageButton.setVisibility(View.VISIBLE);
                         attendeesButton.setVisibility(View.VISIBLE);
+                        signupListButton.setVisibility(View.VISIBLE);
                         expandButton.setTag("true");
 
                     } else {
                         expandButton.setImageResource(R.drawable.baseline_menu_24);
                         uploadImageButton.setVisibility(View.GONE);
                         attendeesButton.setVisibility(View.GONE);
+                        signupListButton.setVisibility(View.GONE);
                         expandButton.setTag("false");
                     }
                 });
@@ -242,10 +245,6 @@ public class EventDetailsFragment extends Fragment {
                 shareButton.setVisibility(View.GONE);
             }
             setShareButton(shareButton);
-
-            // Signup and Signup List buttons
-            Button signupButton = view.findViewById(R.id.signup_button);
-            Button signupListButton = view.findViewById(R.id.signup_list);
 
             signupButton.setOnClickListener(new View.OnClickListener() {
                 @Override

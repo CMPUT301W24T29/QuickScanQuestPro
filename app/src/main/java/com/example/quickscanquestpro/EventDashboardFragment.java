@@ -26,6 +26,8 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -120,6 +122,7 @@ public class EventDashboardFragment extends Fragment {
 
                 // Signed up events
                 user = mainActivity.getUser();
+
                 databaseService.getUserSignedupEvents(user, signedUpEvents -> {
                     if (isAdded() && getActivity() != null) {
                         modelList.add(new EventDashboardModel(signedUpEvents, "Signed Up Events"));
@@ -157,6 +160,77 @@ public class EventDashboardFragment extends Fragment {
             transaction.replace(R.id.content, new BrowseEventsFragment()); // Ensure that 'R.id.content' is your container ID in the layout.
             transaction.addToBackStack(null);
             transaction.commit();
+        });
+
+        FloatingActionButton manageEventsButton = view.findViewById(R.id.event_dashboard_admin_event_search_button);
+        manageEventsButton.setVisibility(View.GONE);
+        manageEventsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AdminManageEventsFragment adminManageEventsFragment = new AdminManageEventsFragment();
+
+                if (isAdded() && getActivity() != null) {
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.content, adminManageEventsFragment)
+                            .addToBackStack(null)
+                            .commit();
+                }
+            }
+        });
+
+        FloatingActionButton manageProfileButton = view.findViewById(R.id.event_dashboard_admin_user_search_button);
+        manageProfileButton.setVisibility(View.GONE);
+        manageProfileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AdminManageProfileFragment adminManageProfileFragment = new AdminManageProfileFragment();
+
+                if (isAdded() && getActivity() != null) {
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.content, adminManageProfileFragment)
+                            .addToBackStack(null)
+                            .commit();
+                }
+            }
+        });
+
+        FloatingActionButton viewImagesButton = view.findViewById(R.id.event_dashboard_admin_image_search_button);
+        viewImagesButton.setVisibility(View.GONE);
+
+        viewImagesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AdminManageImagesFragment adminManageImagesFragment = new AdminManageImagesFragment();
+
+                if (isAdded() && getActivity() != null) {
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.content, adminManageImagesFragment)
+                            .addToBackStack(null)
+                            .commit();
+                }
+            }
+        });
+
+        FloatingActionButton expandButton = view.findViewById(R.id.event_dashboard_admin_expand_button);
+        if (!mainActivity.getUser().isAdmin()) {
+            expandButton.setVisibility(View.GONE);
+        }
+        expandButton.setTag("false");
+        expandButton.setOnClickListener(v -> {
+            if (expandButton.getTag() == "false") {
+                expandButton.setImageResource(R.drawable.baseline_close_24);
+                manageEventsButton.setVisibility(View.VISIBLE);
+                manageProfileButton.setVisibility(View.VISIBLE);
+                viewImagesButton.setVisibility(View.VISIBLE);
+                expandButton.setTag("true");
+
+            } else {
+                expandButton.setImageResource(R.drawable.baseline_menu_24);
+                manageEventsButton.setVisibility(View.GONE);
+                manageProfileButton.setVisibility(View.GONE);
+                viewImagesButton.setVisibility(View.GONE);
+                expandButton.setTag("false");
+            }
         });
     }
 

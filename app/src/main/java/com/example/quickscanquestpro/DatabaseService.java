@@ -113,13 +113,12 @@ public class DatabaseService {
      * @param userId The ID of the user checking in.
      * @param location The location associated with the check-in.
      */
-    public void recordCheckIn(String eventId, String userId, String userName, String location) {
+    public void recordCheckIn(String eventId, String userId, String location) {
         DocumentReference eventRef = db.collection("events").document(eventId);
 
         // Create a new check-in map to append to the 'checkins' array
         Map<String, Object> checkInMap = new HashMap<>();
         checkInMap.put("userId", userId);
-        checkInMap.put("name", userName);
         checkInMap.put("location", location);
         checkInMap.put("timestamp", new Date());
 
