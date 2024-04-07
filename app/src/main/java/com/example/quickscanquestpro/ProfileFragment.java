@@ -9,10 +9,12 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
@@ -67,7 +70,8 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private ActivityResultLauncher<String[]> locPermLauncher;
     private ActivityResultLauncher<IntentSenderRequest> locResolutionIntentSender;
-    private Button deleteProfilePictureButton;
+    private ImageView deleteProfilePictureButton;
+
     LinearProgressIndicator progressIndicator;
     private DatabaseService databaseService = new DatabaseService();
     private Switch notificationSwitch;
@@ -194,6 +198,8 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
             intent.setType("image/*");
             pickImageLauncher.launch(intent);
         });
+
+
 
 
         //For updating profile information
