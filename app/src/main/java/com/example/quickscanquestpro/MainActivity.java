@@ -283,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
                     fragment1 = new ProfileFragment();
                 }
                 else{
-                    fragment1 = null;
+                    fragment1 = new ProfileFragment();
                 }
 
             } else {
