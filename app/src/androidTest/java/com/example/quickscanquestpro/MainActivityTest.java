@@ -4,12 +4,14 @@ import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.pressKey;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
+import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
@@ -19,6 +21,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withSubstring;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.allOf;
@@ -40,7 +43,11 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.DatePicker;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ListView;
 import android.widget.TimePicker;
+
 import androidx.annotation.IdRes;
 import androidx.fragment.app.Fragment;
 import androidx.test.espresso.Espresso;
@@ -48,6 +55,10 @@ import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.contrib.PickerActions;
+
+import androidx.test.espresso.contrib.RecyclerViewActions;
+import androidx.test.espresso.intent.Intents;
+import androidx.test.espresso.matcher.ViewMatchers;
 
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
@@ -61,6 +72,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.File;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -85,7 +98,7 @@ public class MainActivityTest {
 
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
 
-        onView(withId(R.id.edit_notification_title)).perform(ViewActions.typeText("My Event Title"));
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("My Event Title"));
         onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
         onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
         Espresso.closeSoftKeyboard();
@@ -210,11 +223,11 @@ public class MainActivityTest {
         while (true) {
             onView(isRoot()).perform(waitFor(3000));
             try {
-                onView(allOf(withText(eventTitle), isDescendantOfA(withId(R.id.admin_event_dashboard_list))))
+                onView(allOf(withText(eventTitle), isDescendantOfA(withId(R.id.browse_events_dashboard_list))))
                         .perform(click());
                 break;
             } catch (Exception e) {
-                onView(withId(R.id.admin_event_dashboard_list)).perform(ViewActions.swipeUp());
+                onView(withId(R.id.browse_events_dashboard_list)).perform(ViewActions.swipeUp());
             }
         }
 
@@ -285,7 +298,7 @@ public class MainActivityTest {
     }
 
     @Test
-    public void testUS_04_06_01AdminBrowseProfile() {
+    public void testUS_04_06_01AdminBrowseProfile () {
         onView(isRoot()).perform(waitFor(5000)); // Wait to ensure the app is ready
 
         // Navigate to the Admin Dashboard
@@ -312,7 +325,7 @@ public class MainActivityTest {
         // Go to Manage Events
         onView(withId(R.id.admin_button_manage_events)).perform(click());
         onView(isRoot()).perform(waitFor(5000)); // Wait for the event list to load
-        onView(withId(R.id.admin_event_dashboard_list)).check(matches(isDisplayed()));
+        onView(withId(R.id.browse_events_dashboard_list)).check(matches(isDisplayed()));
     }
 
     @Test
@@ -331,17 +344,17 @@ public class MainActivityTest {
 
         String firstItemIdentifier = "unique_text_of_first_item";
 
-        onData(anything()).inAdapterView(withId(R.id.admin_event_dashboard_list)).atPosition(0).onChildView(withId(R.id.admin_delete_button)).perform(click());
+        onData(anything()).inAdapterView(withId(R.id.browse_events_dashboard_list)).atPosition(0).onChildView(withId(R.id.admin_delete_button)).perform(click());
 
         onView(isRoot()).perform(waitFor(2000));
 
-        onView(withId(R.id.admin_event_dashboard_list))
+        onView(withId(R.id.browse_events_dashboard_list))
                 .check(matches(not(hasDescendant(withText(firstItemIdentifier)))));
     }
 
 
     @Test
-    public void testUS_04_03_01AdminRemoveUserImage() {
+    public void testUS_04_03_01AdminRemoveUserImage(){
         onView(isRoot()).perform(waitFor(5000));
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
@@ -357,11 +370,12 @@ public class MainActivityTest {
         onView(withId(R.id.delete_button)).perform(click());
 
 
+
     }
 
 
     @Test
-    public void testUS_04_03_01AdminRemoveEventImage() {
+    public void testUS_04_03_01AdminRemoveEventImage(){
         onView(isRoot()).perform(waitFor(5000));
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
@@ -377,10 +391,11 @@ public class MainActivityTest {
         onView(withId(R.id.delete_button)).perform(click());
 
 
+
     }
 
     @Test
-    public void testUS_04_05_01AdminBrowseImage() {
+    public void testUS_04_05_01AdminBrowseImage(){
         onView(isRoot()).perform(waitFor(5000));
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
@@ -410,7 +425,7 @@ public class MainActivityTest {
      * This test requires a custom QR code that is loaded into the virtual camera that isnt used by an event yet, or it will fail.
      */
     @Test
-    public void testUS01_01_02ReuseQR() {
+    public void testUS01_01_02ReuseQR(){
         // begin event creation
         // fill all the boxes
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation

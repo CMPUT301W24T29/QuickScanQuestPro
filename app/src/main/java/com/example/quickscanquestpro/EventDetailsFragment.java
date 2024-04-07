@@ -41,6 +41,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -70,8 +71,9 @@ public class EventDetailsFragment extends Fragment {
     private DatabaseService databaseService = new DatabaseService();
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private ImageView eventImage;
-    private User user;
 
+    private User user;
+    LinearProgressIndicator progressIndicator;
     /**
      * This is the default constructor for the EventDetailsFragment class. If no event is passed in,
      * a test event is created.
@@ -136,12 +138,14 @@ public class EventDetailsFragment extends Fragment {
             TextView eventDescription = view.findViewById(R.id.event_description);
             TextView eventDate = view.findViewById(R.id.event_date);
             TextView eventLocation = view.findViewById(R.id.event_location);
+            TextView signupLimit = view.findViewById(R.id.signup_number);
             eventImage = view.findViewById(R.id.event_banner);
             FloatingActionButton backButton = view.findViewById(R.id.back_button);
             FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
             FloatingActionButton uploadImageButton = view.findViewById(R.id.edit_banner_button);
             FloatingActionButton attendeesButton = view.findViewById(R.id.view_attendees_button);
             FloatingActionButton expandButton = view.findViewById(R.id.expand_button);
+            progressIndicator = view.findViewById(R.id.event_banner_progress_indicator);
 
             // Signup and Signup List buttons
             Button signupButton = view.findViewById(R.id.signup_button);
@@ -175,6 +179,15 @@ public class EventDetailsFragment extends Fragment {
             eventLocation.setText(event.getLocation());
             ArrayList<String> announcementList = event.getAnnouncements();
 
+
+
+            if (event.getSignupLimit() != null) {
+                signupLimit.setText(event.getSignupLimit().toString());
+            } else {
+                signupLimit.setText("No limit");
+            }
+
+
             // Set the listview of announcements to the announcements of the event and set the height of the listview
             ArrayAdapter<String> announcementAdapter =
                     new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, announcementList);
@@ -184,11 +197,14 @@ public class EventDetailsFragment extends Fragment {
 
             // Set an on click listener for the back button
             backButton.setOnClickListener(v -> {
+
+                // if the user is organiser, i want to go back to admin event dashboard
                 FragmentManager fragmentManager = getParentFragmentManager();
                 fragmentManager.popBackStack();
+
             });
             // Enable these buttons if the user is the organizer of the event
-            if (!event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
+            if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
                 uploadImageButton.setOnClickListener(v -> {
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("image/*");
@@ -249,7 +265,6 @@ public class EventDetailsFragment extends Fragment {
             signupButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getContext(), "Signed up!", Toast.LENGTH_SHORT).show();
                     signup();
                 }
             });
@@ -257,13 +272,13 @@ public class EventDetailsFragment extends Fragment {
             signupListButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getContext(), "Signup List", Toast.LENGTH_SHORT).show();
                     signupList();
                 }
             });
         }
         else {
             Log.e(TAG, "User or MainActivity is null");
+
         }
     }
 
@@ -366,6 +381,8 @@ public class EventDetailsFragment extends Fragment {
      * @param file A URI of the image file to be uploaded
      */
     private void uploadImage(Uri file) {
+        progressIndicator.setVisibility(View.VISIBLE);
+        progressIndicator.setIndeterminate(true);
         databaseService.uploadEventPhoto(file, event, new DatabaseService.OnEventPhotoUpload() {
             @Override
             public void onSuccess(String imageUrl, String imagePath) {
@@ -377,6 +394,7 @@ public class EventDetailsFragment extends Fragment {
 
                         eventImage.setVisibility(View.VISIBLE);
                         Toast.makeText(getContext(), "Event Banner Uploaded", Toast.LENGTH_SHORT).show();
+                        progressIndicator.setVisibility(View.GONE);
                     });
                 } else {
                     Log.d(TAG, "Fragment is not attached to an activity.");
@@ -387,8 +405,15 @@ public class EventDetailsFragment extends Fragment {
             public void onFailure(Exception e) {
                 if (isAdded()) {
                     getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Upload Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    progressIndicator.setVisibility(View.GONE);
                 }
                 Log.d(TAG, "onFailure: " + e.getMessage());
+            }
+
+            @Override
+            public void onProgress(double progress) {
+                // Update the UI with the progress
+                progressIndicator.setProgress((int) progress);
             }
         });
     }
@@ -397,10 +422,41 @@ public class EventDetailsFragment extends Fragment {
         MainActivity mainActivity = (MainActivity) getActivity();
         user = mainActivity.getUser();
 
-        databaseService.userSignup(user, event);
+        databaseService.userSignup(user, event, new DatabaseService.SignupCallback() {
+            @Override
+            public void onSuccess() {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getActivity(), "Signed up!", Toast.LENGTH_SHORT).show());
+                }
+            }
+
+            @Override
+            public void onSignupLimitReached() {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getActivity(), "User signup limit reached.", Toast.LENGTH_SHORT).show());
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getActivity(), "Failed to sign up. Please try again later.", Toast.LENGTH_SHORT).show());
+                }
+            }
+        });
     }
 
-    private void signupList(){
+    private void signupList() {
+        SignupListFragment signupListFragment = new SignupListFragment();
 
+        Bundle args = new Bundle();
+        args.putString("eventId", event.getId());
+        signupListFragment.setArguments(args);
+
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+        transaction.replace(R.id.content, signupListFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
+
 }

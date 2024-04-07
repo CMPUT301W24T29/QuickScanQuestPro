@@ -9,17 +9,21 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
@@ -42,6 +46,7 @@ import android.widget.EditText;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -67,17 +72,21 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private ActivityResultLauncher<String[]> locPermLauncher;
     private ActivityResultLauncher<IntentSenderRequest> locResolutionIntentSender;
-    private Button deleteProfilePictureButton;
+    private ImageView deleteProfilePictureButton;
+
     LinearProgressIndicator progressIndicator;
     private DatabaseService databaseService = new DatabaseService();
+    private Switch notificationSwitch;
     private User user;
     private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
         @Override
         public void onActivityResult(Boolean o) {
             if (o) {
+                notificationSwitch.setChecked(true);
                 Toast.makeText(getContext(), "Notifications Permission granted", Toast.LENGTH_LONG).show();
             }
             else {
+                notificationSwitch.setChecked(false);
                 Toast.makeText(getContext(), "Notifications Permission denied", Toast.LENGTH_LONG).show();
             }
         }
@@ -127,6 +136,9 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
 
     }
 
+
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -136,9 +148,14 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        MainActivity mainActivity = (MainActivity) getActivity();
         super.onViewCreated(view, savedInstanceState);
         initializeViews(view);
 
+        NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
+        // Sets navbar selection to the profile dashboard
+        MenuItem item = navBarView.getMenu().findItem(R.id.navigation_profile);
+        item.setChecked(true);
 
         // when user clicks the back button
         view.findViewById(R.id.backButton).setOnClickListener(v -> {
@@ -146,19 +163,13 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
             fragmentManager.popBackStack();
         });
 
-        Switch notificationSwitch = view.findViewById(R.id.alert_switch);
+
+        notificationSwitch = view.findViewById(R.id.alert_switch);
         notificationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){
                     requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
                     // check if user has accepted the permission, if not turn the switch off
-                    if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){
-                        notificationSwitch.setChecked(false);
-                    }
-                    else
-                    {
-                        notificationSwitch.setChecked(true);
-                    }
                 }
                 else
                 {
@@ -196,13 +207,14 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
         });
 
 
+
+
         //For updating profile information
         EditText fullNameInput = view.findViewById(R.id.fullNameInput);
         EditText homepageInput = view.findViewById(R.id.homepageInput);
         EditText mobileNumberInput = view.findViewById(R.id.mobileNumberInput);
         EditText emailAddressInput = view.findViewById(R.id.emailAddressInput);
-        SwitchMaterial geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
-//        geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
+        geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
 
         //Get User from Main activity
 
@@ -506,7 +518,11 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
         }
     }
 
-
+    /**
+     * function that is called when the result for a users location (enabling location) is done
+     * @param success true if the location was set, false if it failed
+     * @param result the latitude and longitude as a "lat,long" string, or error string if it failed
+     */
     @Override
     public void geolocationRequestComplete(boolean success, String result) {
         if (success) {
@@ -521,10 +537,18 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
         }
     }
 
+    /**
+     * Returns the registered handler for permission activity results
+     * @return result launcher handler for using .launch()
+     */
     public ActivityResultLauncher<String[]> getLocPermLauncher() {
         return locPermLauncher;
     }
 
+    /**
+     * Returns the registered handler for settings activity results
+     * @return result launcher handler for using .launch()
+     */
     public ActivityResultLauncher<IntentSenderRequest> getLocResolutionIntentSender() {
         return locResolutionIntentSender;
     }

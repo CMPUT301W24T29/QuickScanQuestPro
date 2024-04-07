@@ -29,8 +29,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 
 /**
-* create an alert to send to all attendees of an event if they have notifications turned on
-*/
+ * create an alert to send to all attendees of an event if they have notifications turned on
+ */
 public class AttendeeAlertsFragment extends DialogFragment {
 
     public AttendeeAlertsFragment() {
@@ -165,4 +165,3 @@ public class AttendeeAlertsFragment extends DialogFragment {
         });
     }
 }
-

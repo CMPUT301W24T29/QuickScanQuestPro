@@ -41,8 +41,6 @@ public class User {
     private String notificationToken;
 
     private Boolean getNotification;
-
-
     /*
      * user preference
      * text file storing ID
@@ -52,7 +50,7 @@ public class User {
         this.userId = userId;
     }
 
-    public void updateUser(String name, int checkins, String mobileNum, String email, String homepage, boolean geolocation, String profilePictureUrl, String lastCheckiIn) {
+    public void updateUser(String name, int checkins, String mobileNum, String email, String homepage, boolean geolocation, String profilePictureUrl, String lastCheckIn) {
         this.name = name;
         this.checkins = checkins;
         this.mobileNum = mobileNum;
@@ -60,7 +58,7 @@ public class User {
         this.homepage = homepage;
         this.geolocation = geolocation;
         this.profilePictureUrl = profilePictureUrl;
-        this.lastCheckIn = lastCheckiIn;
+        this.lastCheckIn = lastCheckIn;
     }
 
     public String getName() {
@@ -115,7 +113,6 @@ public class User {
     public Boolean getGetNotification() {
         return getNotification;
     }
-
     public boolean isAdmin() {
         return admin;
     }
@@ -168,7 +165,6 @@ public class User {
     public String getNotificationToken() {
         return notificationToken;
     }
-
     /**
      * Gets the initials of the user's name.
      * @return A string containing the initials of the user.

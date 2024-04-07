@@ -1,13 +1,18 @@
 package com.example.quickscanquestpro;
 
+import static android.content.ContentValues.TAG;
+
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,7 +21,10 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
 
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -30,6 +38,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.zxing.MultiFormatWriter;
+
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -58,8 +72,11 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
     private Button reusePromoButton;
     private Integer originalRightPadding;
     private String reuseType;
+    LinearProgressIndicator progressIndicator;
 
     private ActivityResultLauncher<Intent> pickImageLauncher;
+
+    private EditText signupLimit;
 
     public EventCreationFragment() {
         // Required empty public constructor
@@ -109,6 +126,7 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
         mainActivity = (MainActivity) this.getActivity();
 
         posterImageView = view.findViewById(R.id.create_event_poster);
+        progressIndicator = view.findViewById(R.id.banner_progress_indicator);
 
         Button uploadImageButton = view.findViewById(R.id.banner_upload_button);
 
@@ -119,13 +137,15 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
         });
 
         // adds textwatchers that update the Event whenever text is changed
-        titleEditText = view.findViewById(R.id.edit_notification_title);
+        titleEditText = view.findViewById(R.id.edit_text_event_title);
         descriptionEditText = view.findViewById(R.id.edit_text_event_description);
         locationEditText = view.findViewById(R.id.edit_text_event_address);
+        signupLimit = view.findViewById(R.id.edit_text_signups);
 
         titleEditText.addTextChangedListener(getTextWatcher(titleEditText));
         descriptionEditText.addTextChangedListener(getTextWatcher(descriptionEditText));
         locationEditText.addTextChangedListener(getTextWatcher(locationEditText));
+        signupLimit.addTextChangedListener(getTextWatcher(signupLimit));
 
         // setting time pickers for start / end times
         startTimeText = view.findViewById(R.id.text_event_start_time);
@@ -205,12 +225,23 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
             @Override
             public void afterTextChanged(Editable editable) {
                 int editId = editText.getId();
-                if (editId == R.id.edit_notification_title) {
+                if (editId == R.id.edit_text_event_title) {
                     creatingEvent.setTitle(editable.toString());
                 } else if (editId == R.id.edit_text_event_description) {
                     creatingEvent.setDescription(editable.toString());
                 } else if (editId == R.id.edit_text_event_address) {
                     creatingEvent.setLocation(editable.toString());
+                } else if (editId == R.id.edit_text_signups) {
+                    String signupLimitString = editable.toString();
+                    Integer signupLimitValue = null; // Initialize to null for an empty case
+                    if (!signupLimitString.isEmpty()) {
+                        try {
+                            signupLimitValue = Integer.parseInt(signupLimitString);
+                        } catch (NumberFormatException e) {
+                            // Log the exception or handle the error state as required
+                        }
+                    }
+                    creatingEvent.setSignupLimit(signupLimitValue); // Could be null or a number
                 }
                 validateEntryFields();
             }
@@ -237,6 +268,27 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
         if (locationEditText.getText().toString().length() <= 0) {
             locationEditText.setError("Must enter an address!");
             valid = false;
+        }
+
+        // Checks if signup limit is empty
+        String signupLimitString = signupLimit.getText().toString();
+        if (!signupLimitString.isEmpty()) {
+            try {
+                int signupLimitValue = Integer.parseInt(signupLimitString);
+                if (signupLimitValue <= 0) {
+                    signupLimit.setError("Signup limit must be greater than 0!");
+                    valid = false;
+                } else {
+                    creatingEvent.setSignupLimit(signupLimitValue);
+                }
+            } catch (NumberFormatException e) {
+                signupLimit.setError("Signup limit must be a number!");
+                valid = false;
+            }
+        } //if field is empty
+        else {
+            signupLimit.setError(null);
+            creatingEvent.setSignupLimit(null);
         }
 
         if (startDateText.getText().toString().length() <= 0) {
@@ -267,6 +319,13 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
             endTimeText.setError(null);
         }
 
+//        if (progressIndicator.getVisibility()==View.VISIBLE) {
+//            if (progressIndicator.getProgress()!=100) {
+//                Toast.makeText(getContext(), "Please wait until the event banner is uploaded and try again", Toast.LENGTH_SHORT).show();
+//                valid = false;
+//            }
+//        }
+
         if (!valid) {
             createButton.setEnabled(false);
         } else {
@@ -284,6 +343,8 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
      * @param file The URI of the image file to be uploaded.
      */
     private void uploadImage(Uri file) {
+        progressIndicator.setVisibility(View.VISIBLE);
+        progressIndicator.setIndeterminate(true);
         // Implementation of uploadImage method, similar to the provided new code
         databaseService.uploadEventPhoto(file, null, new DatabaseService.OnEventPhotoUpload() {
             @Override
@@ -293,12 +354,19 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
                 posterImageView.setVisibility(View.VISIBLE);
                 Glide.with(EventCreationFragment.this).load(imageUrl).into(posterImageView);
                 Toast.makeText(getContext(), "Event Banner Uploaded", Toast.LENGTH_SHORT).show();
-
+                progressIndicator.setVisibility(View.GONE);
             }
 
             @Override
             public void onFailure(Exception e) {
                 Toast.makeText(getContext(), "Failed To Upload Profile Picture: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                progressIndicator.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onProgress(double progress) {
+                // Update the UI with the progress
+                progressIndicator.setProgress((int) progress);
             }
         });
     }
