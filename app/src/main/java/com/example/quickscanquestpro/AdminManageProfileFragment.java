@@ -5,13 +5,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,55 +22,78 @@ import java.util.List;
  * reviewing profile details, and potentially editing or deleting profiles directly from the list.
  */
 public class AdminManageProfileFragment extends Fragment {
+    private RecyclerView profileRecyclerView;
+    private AdminProfileAdapter profileAdapter;
     private DatabaseService databaseService;
-    // Assuming MainActivity is properly handling context for Toasts if needed.
+    private List<User> usersList = new ArrayList<>();
 
+    /**
+     * Default constructor for the fragment.
+     */
     public AdminManageProfileFragment() {
         // Required empty public constructor
     }
+
+
     /**
-     * Creates a new instance of {@link AdminManageProfileFragment}.
-     * This can be used to create instances of this fragment with any required initialization parameters.
-     *
+     * Factory method to create a new instance of this fragment.
      * @return A new instance of fragment AdminManageProfileFragment.
      */
     public static AdminManageProfileFragment newInstance() {
         return new AdminManageProfileFragment();
     }
+
+
     /**
-     * Inflates the fragment layout and initializes fragment view components.
+     * Called to have the fragment instantiate its user interface view.
      *
-     * @param inflater           The LayoutInflater object that can be used to inflate any views in the fragment.
-     * @param container          If non-null, this is the parent view that the fragment's UI should be attached to.
-     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here.
-     * @return Returns the View for the fragment's UI.
+     * @param inflater The LayoutInflater object that can be used to inflate any views in the fragment.
+     * @param container If non-null, this is the parent view that the fragment's UI should be attached to.
+     *                  The fragment should not add the view itself, but this can be used to generate the
+     *                  LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state
+     *                           as given here.
+     * @return Return the View for the fragment's UI, or null.
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Initialize DatabaseService here or in onViewCreated depending on when you need it.
         return inflater.inflate(R.layout.fragment_admin_profile_manage, container, false);
     }
+
+
+
     /**
-     * Once the view is created, this method is called to set up the ListView with the adapter
-     * and fetch the list of user profiles from the database. It also initializes the DatabaseService
-     * and sets a click listener on the back button to allow navigation back to the previous screen.
-     *
-     * @param view               The View returned by onCreateView method.
-     * @param savedInstanceState If non-null, the fragment is being re-constructed from a previous saved state.
+     * Called immediately after onCreateView(LayoutInflater, ViewGroup, Bundle) has returned, but before
+     * any saved state has been restored into the view
+     * @param view The View returned by onCreateView(LayoutInflater, ViewGroup, Bundle).
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state
+     *                           as given here.
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        databaseService = new DatabaseService(); // Initialize your DatabaseService
-        ListView profileListView = view.findViewById(R.id.admin_profile_dashboard_list);
+        databaseService = new DatabaseService();
+        profileRecyclerView = view.findViewById(R.id.admin_profile_dashboard_list);
+        profileRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        setupRecyclerView();
+
+        fetchData();
 
         view.findViewById(R.id.back_button).setOnClickListener(v -> {
             if (getFragmentManager() != null) {
                 getFragmentManager().popBackStack();
             }
         });
+    }
 
-        databaseService.listenForUsersUpdates(new DatabaseService.OnUsersDataLoaded() {
+    private void setupRecyclerView() {
+        profileAdapter = new AdminProfileAdapter(getContext(), usersList, true);
+        profileRecyclerView.setAdapter(profileAdapter);
+    }
+
+    private void fetchData() {
+        databaseService.getUsers(new DatabaseService.OnUsersDataLoaded() {
             @Override
             public void onUsersLoaded(List<User> users) {
                 if (getActivity() == null) {
@@ -79,9 +104,9 @@ public class AdminManageProfileFragment extends Fragment {
                 if (users.isEmpty()) {
                     Toast.makeText(getActivity(), "No users found!", Toast.LENGTH_SHORT).show();
                 } else {
-                    // Use AdminProfileAdapter to display the users in the ListView
-                    AdminProfileAdapter adapter = new AdminProfileAdapter(getActivity(), R.layout.list_admin_view, users);
-                    profileListView.setAdapter(adapter);
+                    usersList.clear();
+                    usersList.addAll(users);
+                    profileAdapter.notifyDataSetChanged();
                 }
             }
         });

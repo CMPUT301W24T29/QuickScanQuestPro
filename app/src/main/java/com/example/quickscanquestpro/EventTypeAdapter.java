@@ -16,7 +16,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+/**
+ * This is the adapter class for the event headers displayed on the event dashboard
+ */
 public class EventTypeAdapter extends RecyclerView.Adapter<EventTypeAdapter.EventTypeViewHolder>{
 
     private Context context;
@@ -34,6 +38,7 @@ public class EventTypeAdapter extends RecyclerView.Adapter<EventTypeAdapter.Even
         private TextView textView;
         private ImageView arrowImage;
         private RecyclerView nestedRecyclerView;
+        private TextView defaultEventText;
 
 
         public EventTypeViewHolder(@NonNull View itemView) {
@@ -44,6 +49,7 @@ public class EventTypeAdapter extends RecyclerView.Adapter<EventTypeAdapter.Even
             textView = itemView.findViewById(R.id.event_header_title);
             arrowImage = itemView.findViewById(R.id.arrow_imageview);
             nestedRecyclerView = itemView.findViewById(R.id.events_rv);
+            defaultEventText = itemView.findViewById(R.id.default_event_text);
         }
     }
 
@@ -57,7 +63,9 @@ public class EventTypeAdapter extends RecyclerView.Adapter<EventTypeAdapter.Even
     public void onBindViewHolder(@NonNull EventTypeViewHolder holder, int position) {
 
         EventDashboardModel model = modelList.get(position);
+        list = model.getEventList();
         holder.textView.setText(model.getEventType());
+        holder.defaultEventText.setText("You have no "+model.getEventType()+" at this time");
 
         boolean isExpandable = model.isExpandable();
         holder.expandableLayout.setVisibility(isExpandable ? View.VISIBLE : View.GONE);
@@ -68,6 +76,15 @@ public class EventTypeAdapter extends RecyclerView.Adapter<EventTypeAdapter.Even
             holder.arrowImage.setImageResource(R.drawable.baseline_arrow_drop_down_24);
         }
 
+        // Sets default text to be displayed if there are no events in the list
+        if(list.size()==0) {
+            holder.nestedRecyclerView.setVisibility(View.GONE);
+            holder.defaultEventText.setVisibility(View.VISIBLE);
+        } else {
+            holder.nestedRecyclerView.setVisibility(View.VISIBLE);
+            holder.defaultEventText.setVisibility(View.GONE);
+        }
+
         EventListAdapter adapter = new EventListAdapter(context, list);
         holder.nestedRecyclerView.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext()));
         holder.nestedRecyclerView.setAdapter(adapter);
@@ -75,7 +92,6 @@ public class EventTypeAdapter extends RecyclerView.Adapter<EventTypeAdapter.Even
             @Override
             public void onClick(View v) {
                 model.setExpandable(!model.isExpandable());
-                list = model.getEventList();
                 notifyItemChanged(holder.getAbsoluteAdapterPosition());
             }
         });

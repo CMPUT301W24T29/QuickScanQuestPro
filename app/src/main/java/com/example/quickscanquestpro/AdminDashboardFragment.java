@@ -4,6 +4,7 @@ package com.example.quickscanquestpro;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -11,6 +12,8 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import com.google.android.material.navigation.NavigationBarView;
 
 /**
  * A {@link Fragment} subclass that represents the admin dashboard within the application.
@@ -43,8 +46,13 @@ public class AdminDashboardFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        MainActivity mainActivity = (MainActivity) getActivity();
         super.onViewCreated(view, savedInstanceState);
 
+        NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
+        // Sets navbar selection to the profile dashboard
+        MenuItem item = navBarView.getMenu().findItem(R.id.navigation_profile);
+        item.setChecked(true);
         // Find the "Manage Events" button and set up the click listener
         Button manageEventsButton = view.findViewById(R.id.admin_button_manage_events);
         manageEventsButton.setOnClickListener(new View.OnClickListener() {

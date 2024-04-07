@@ -22,6 +22,10 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A simple {@link Fragment} subclass.
+ * Allows users to browse events that have not yet ended
+ */
 public class BrowseEventsFragment extends Fragment {
     private ArrayList<String> eventDataList;
 
@@ -47,8 +51,8 @@ public class BrowseEventsFragment extends Fragment {
     }
 
     /**
-     * Runs when view is created and displayed. Currently adds a test event to the list if none exist, or otherwise displays attributes of the event stored in main activity.
-     * This should display a list of the users events they have created as organizer or are actively attending.
+     * Runs when view is created and displayed.
+     * Displays a list of events that have not yet ended
      * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
      * @param savedInstanceState If non-null, this fragment is being re-constructed
      * from a previous saved state as given here.
@@ -62,7 +66,7 @@ public class BrowseEventsFragment extends Fragment {
         FloatingActionButton backButton = view.findViewById(R.id.back_button);
 
         // Initialize with an empty list; we will update the list when data is loaded
-        BrowseEventsListAdapter eventAdapter = new BrowseEventsListAdapter(getContext(), new ArrayList<>());
+        EventListAdapter eventAdapter = new EventListAdapter(getContext(), new ArrayList<>());
         eventRecyclerView.setAdapter(eventAdapter);
 
         LocalDateTime currentDateTime = LocalDateTime.now();
