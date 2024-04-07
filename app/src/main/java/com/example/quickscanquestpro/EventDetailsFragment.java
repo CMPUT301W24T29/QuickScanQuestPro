@@ -10,7 +10,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -66,10 +65,12 @@ import java.util.UUID;
  */
 public class EventDetailsFragment extends Fragment {
 
-    Event event;
+    private Event event;
     private DatabaseService databaseService = new DatabaseService();
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private ImageView eventImage;
+    private ArrayList<ArrayList<Object>> checkInList;
+
     private User user;
 
     /**
@@ -136,20 +137,14 @@ public class EventDetailsFragment extends Fragment {
             TextView eventDescription = view.findViewById(R.id.event_description);
             TextView eventDate = view.findViewById(R.id.event_date);
             TextView eventLocation = view.findViewById(R.id.event_location);
+            TextView signupLimit = view.findViewById(R.id.signup_number);
             eventImage = view.findViewById(R.id.event_banner);
             FloatingActionButton backButton = view.findViewById(R.id.back_button);
             FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
-            FloatingActionButton uploadImageButton = view.findViewById(R.id.edit_banner_button);
-            FloatingActionButton attendeesButton = view.findViewById(R.id.view_attendees_button);
-            FloatingActionButton expandButton = view.findViewById(R.id.expand_button);
+            Button uploadImageButton = view.findViewById(R.id.edit_banner_button);
+            Button attendeesButton = view.findViewById(R.id.view_attendees_button);
 
-            // Set the tag of the expand button to false
-            expandButton.setTag("false");
-
-            // Hide the upload image button and the share button by default
-            uploadImageButton.setVisibility(View.GONE);
-            shareButton.setVisibility(View.GONE);
-            attendeesButton.setVisibility(View.GONE);
+            uploadImageButton.setVisibility(View.VISIBLE);
 
             // If there is no event passed in, create a test event
             if (this.event == null) {
@@ -171,6 +166,15 @@ public class EventDetailsFragment extends Fragment {
             eventLocation.setText(event.getLocation());
             ArrayList<String> announcementList = event.getAnnouncements();
 
+
+
+            if (event.getSignupLimit() != null) {
+                signupLimit.setText(event.getSignupLimit().toString());
+            } else {
+                signupLimit.setText("No limit");
+            }
+
+
             // Set the listview of announcements to the announcements of the event and set the height of the listview
             ArrayAdapter<String> announcementAdapter =
                     new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, announcementList);
@@ -187,6 +191,32 @@ public class EventDetailsFragment extends Fragment {
 
             });
 
+            // If clicked, this button brings the user to the attendees list fragment. If there
+            // is no attendees in the current event, it will instead show the user a message
+            attendeesButton.setOnClickListener(v -> {
+                databaseService.getEvent(event.getId(), event -> {
+                    if (event != null) {
+                        if (this.event.getCheckIns() != null) {
+                            this.event = event;
+                             AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.event);
+                             FragmentManager fragmentManager = getParentFragmentManager();
+                             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                             fragmentTransaction.replace(R.id.content, attendeesListFragment);
+                             fragmentTransaction.addToBackStack(null);
+                             fragmentTransaction.commit();
+                        }
+                        else {
+                            Toast.makeText(getContext(), "No attendees found", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    else {
+                        Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
+                        FragmentManager fragmentManager = getParentFragmentManager();
+                        fragmentManager.popBackStack();
+                    }
+                });
+            });
+
             // Enable these buttons if the user is the organizer of the event
             if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
                 uploadImageButton.setOnClickListener(v -> {
@@ -194,65 +224,30 @@ public class EventDetailsFragment extends Fragment {
                     intent.setType("image/*");
                     pickImageLauncher.launch(intent);
                 });
+                // For now, option to change event banner is unavailable
+                // eventImage.setOnClickListener(event.uploadPhoto(this, eventImage));
                 setShareButton(shareButton);
-
-                // If clicked, this button brings the user to the attendees list fragment. If there
-                // is no attendees in the current event, it will instead show the user a message
-                attendeesButton.setOnClickListener(v -> {
-                    databaseService.getEvent(event.getId(), event -> {
-                        if (event != null) {
-                            if (event.getCheckIns() != null) {
-                                this.event = event;
-                                AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.event);
-                                FragmentManager fragmentManager = getParentFragmentManager();
-                                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                                fragmentTransaction.replace(R.id.content, attendeesListFragment, "AttendeesList");
-                                fragmentTransaction.addToBackStack(null);
-                                fragmentTransaction.commit();
-                            }
-                            else {
-                                Toast.makeText(getContext(), "No attendees found", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                        else {
-                            Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
-                            FragmentManager fragmentManager = getParentFragmentManager();
-                            fragmentManager.popBackStack();
-                        }
-                    });
-                });
-
-                expandButton.setOnClickListener(v -> {
-                    if (expandButton.getTag() == "false") {
-                        expandButton.setImageResource(R.drawable.baseline_close_24);
-                        uploadImageButton.setVisibility(View.VISIBLE);
-                        shareButton.setVisibility(View.VISIBLE);
-                        attendeesButton.setVisibility(View.VISIBLE);
-                        expandButton.setTag("true");
-
-                    } else {
-                        expandButton.setImageResource(R.drawable.baseline_menu_24);
-                        uploadImageButton.setVisibility(View.GONE);
-                        shareButton.setVisibility(View.GONE);
-                        attendeesButton.setVisibility(View.GONE);
-                        expandButton.setTag("false");
-                    }
-                });
             }
-            // Hide expand button if user is not the organizer
+            // Hide these buttons if user is not the organizer
             else {
-                expandButton.setVisibility(View.GONE);
+                uploadImageButton.setVisibility(View.GONE);
+                shareButton.setVisibility(View.GONE);
+                attendeesButton.setVisibility(View.GONE);
             }
             setShareButton(shareButton);
 
+
+
             // Signup and Signup List buttons
+
             Button signupButton = view.findViewById(R.id.signup_button);
             Button signupListButton = view.findViewById(R.id.signup_list);
+
+
 
             signupButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getContext(), "Signed up!", Toast.LENGTH_SHORT).show();
                     signup();
                 }
             });
@@ -260,7 +255,6 @@ public class EventDetailsFragment extends Fragment {
             signupListButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getContext(), "Signup List", Toast.LENGTH_SHORT).show();
                     signupList();
                 }
             });
@@ -307,7 +301,7 @@ public class EventDetailsFragment extends Fragment {
                 shareQRImage(checkInCodeImage, "checkIn");
             });
 
-            Button closeDialog = shareQrDialog.findViewById(R.id.share_cancel_button);
+            ImageButton closeDialog = shareQrDialog.findViewById(R.id.share_close_button);
             closeDialog.setOnClickListener(v1 -> shareQrDialog.dismiss());
         });
     }
@@ -370,6 +364,8 @@ public class EventDetailsFragment extends Fragment {
      * @param file A URI of the image file to be uploaded
      */
     private void uploadImage(Uri file) {
+        MainActivity mainActivity = (MainActivity) getActivity();
+        event = mainActivity.getEvent();
         databaseService.uploadEventPhoto(file, event, new DatabaseService.OnEventPhotoUpload() {
             @Override
             public void onSuccess(String imageUrl, String imagePath) {
@@ -401,10 +397,41 @@ public class EventDetailsFragment extends Fragment {
         MainActivity mainActivity = (MainActivity) getActivity();
         user = mainActivity.getUser();
 
-        databaseService.userSignup(user, event);
+        databaseService.userSignup(user, event, new DatabaseService.SignupCallback() {
+            @Override
+            public void onSuccess() {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getActivity(), "Signed up!", Toast.LENGTH_SHORT).show());
+                }
+            }
+
+            @Override
+            public void onSignupLimitReached() {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getActivity(), "User signup limit reached.", Toast.LENGTH_SHORT).show());
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getActivity(), "Failed to sign up. Please try again later.", Toast.LENGTH_SHORT).show());
+                }
+            }
+        });
     }
 
-    private void signupList(){
+    private void signupList() {
+        SignupListFragment signupListFragment = new SignupListFragment();
 
+        Bundle args = new Bundle();
+        args.putString("eventId", event.getId());
+        signupListFragment.setArguments(args);
+
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+        transaction.replace(R.id.content, signupListFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
+
 }

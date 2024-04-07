@@ -5,6 +5,7 @@ import static android.content.ContentValues.TAG;
 
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -146,6 +147,11 @@ public class DatabaseService {
         eventData.put("eventPicturePath", event.getEventBannerPath());
         eventData.put("customCheckin", event.getCustomCheckin());
         eventData.put("customPromo", event.getCustomPromo());
+
+
+
+        eventData.put("signupLimit", event.getSignupLimit());
+
 
         // Combine all data into a single map
         Map<String, Object> combinedData = new HashMap<>();
@@ -310,9 +316,15 @@ public class DatabaseService {
         event.setCustomCheckin(queryDocumentSnapshot.getString("customCheckin"));
         event.setCustomPromo(queryDocumentSnapshot.getString("customPromo"));
 
+        //update optional signuplimit
+        Number signupLimitNumber = queryDocumentSnapshot.getLong("signupLimit"); // Using getLong for a more direct approach
+        if (signupLimitNumber != null) {
+            event.setSignupLimit(signupLimitNumber.intValue());
+        }
+
         // Retrieve check-ins for this event
         ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) queryDocumentSnapshot.get("checkins");
-        //Log.d(TAG, "Retrieved " + (checkInsArray != null ? checkInsArray.size() : 0) + " check-ins for event " + eventId);
+        Log.d(TAG, "Retrieved " + (checkInsArray != null ? checkInsArray.size() : 0) + " check-ins for event " + eventId);
         if (checkInsArray != null) {
             // Process the check-ins array
             ArrayList<CheckIn> checkIns = new ArrayList<>();
@@ -322,7 +334,7 @@ public class DatabaseService {
                 checkIns.add(new CheckIn(userId, location));
             }
 
-            //Log.d(TAG, "Created " + checkIns.size() + " check-ins for event " + eventId);
+            Log.d(TAG, "Created " + checkIns.size() + " check-ins for event " + eventId);
             event.setCheckIns(checkIns);
         }
         return event;
@@ -571,23 +583,44 @@ public class DatabaseService {
         eventsRef.document(String.valueOf(event.getId())).set(combinedData, SetOptions.merge());
     }
 
-    public void userSignup(User user, Event event) {
-        // Start a Firestore transaction
-        db.runTransaction(transaction -> {
-                    // References to the user and event documents
-                    DocumentReference userRef = usersRef.document(user.getUserId());
-                    DocumentReference eventRef = eventsRef.document(event.getId());
-
-                    // Atomically add the event ID to the user's "signedUpEvents" list
-                    transaction.update(userRef, "signedUpEvents", FieldValue.arrayUnion(event.getId()));
-                    // Atomically add the user ID to the event's "signups" list
-                    transaction.update(eventRef, "signups", FieldValue.arrayUnion(user.getUserId()));
-
-                    // This function must return a result, null in this case
-                    return null;
-                }).addOnSuccessListener(aVoid -> Log.d(TAG, "User signup and event registration successful."))
-                .addOnFailureListener(e -> Log.e(TAG, "Error during user signup and event registration.", e));
+    public interface SignupCallback {
+        void onSuccess();
+        void onSignupLimitReached();
+        void onFailure(Exception e);
     }
+
+    public void userSignup(User user, Event event, SignupCallback callback) {
+        db.runTransaction(transaction -> {
+            DocumentReference userRef = usersRef.document(user.getUserId());
+            DocumentReference eventRef = eventsRef.document(event.getId());
+
+            DocumentSnapshot eventSnapshot = transaction.get(eventRef);
+            List<String> currentSignups = (List<String>) eventSnapshot.get("signups");
+            Number signupLimit = (Number) eventSnapshot.get("signupLimit");
+
+            // Check is event signups are filled
+            if (signupLimit != null && currentSignups != null && currentSignups.size() >= signupLimit.intValue()) {
+                return "Signup limit reached";
+            }
+
+            transaction.update(eventRef, "signups", FieldValue.arrayUnion(user.getUserId()));
+            transaction.update(userRef, "signedUpEvents", FieldValue.arrayUnion(event.getId()));
+
+            return "Success";
+        }).addOnSuccessListener(result -> {
+            if ("Signup limit reached".equals(result)) {
+                callback.onSignupLimitReached();
+            } else {
+                callback.onSuccess();
+            }
+        }).addOnFailureListener(e -> {
+            callback.onFailure(e);
+        });
+    }
+
+
+
+
 
     public interface OnSignedUpEventsLoaded {
         void onSignedUpEventsLoaded(List<Event> events);
@@ -626,6 +659,47 @@ public class DatabaseService {
         }).addOnFailureListener(e -> {
             Log.e("DatabaseService", "Error fetching signedUpEvents", e);
             callback.onSignedUpEventsLoaded(Collections.emptyList());
+        });
+    }
+
+    public interface OnEventSignUpsLoaded {
+        void onSignUpsLoaded(List<User> users);
+    }
+
+    public void getEventSignUps(String eventId, OnEventSignUpsLoaded callback) {
+        DocumentReference eventRef = eventsRef.document(eventId);
+
+        eventRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists() && documentSnapshot.contains("signups")) {
+                List<String> userIds = (List<String>) documentSnapshot.get("signups");
+                if (userIds != null && !userIds.isEmpty()) {
+                    List<User> signedUpUsers = new ArrayList<>();
+                    AtomicInteger usersCount = new AtomicInteger(userIds.size());
+
+                    for (String userId : userIds) {
+                        getSpecificUserDetails(userId, new OnUserDataLoaded() {
+                            @Override
+                            public void onUserLoaded(User user) {
+                                if (user != null) {
+                                    signedUpUsers.add(user);
+                                }
+                                if (usersCount.decrementAndGet() == 0) {
+                                    callback.onSignUpsLoaded(signedUpUsers);
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    // If there are no users signed up for the event
+                    callback.onSignUpsLoaded(new ArrayList<>());
+                }
+            } else {
+                // If the event does not exist or does not have any signups
+                callback.onSignUpsLoaded(new ArrayList<>());
+            }
+        }).addOnFailureListener(e -> {
+            // In case of any failure
+            callback.onSignUpsLoaded(new ArrayList<>());
         });
     }
 

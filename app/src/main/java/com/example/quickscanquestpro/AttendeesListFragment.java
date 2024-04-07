@@ -94,7 +94,7 @@ public class AttendeesListFragment extends Fragment {
                 // Fetch data from the database (you need to implement this method)
                 fetchData();
             }
-        }, 0, 1000); // Schedule to run every 5 seconds (5000 milliseconds)
+        }, 0, 5000); // Schedule to run every 5 seconds (5000 milliseconds)
     }
 
     /**
@@ -132,7 +132,6 @@ public class AttendeesListFragment extends Fragment {
             checkInList = newCheckInList;
             AtomicInteger totalAttendees = new AtomicInteger(0);
             int size = checkInList.size(); // Size of checkInList to compare with the count
-            int unknownUserCount = 0;
 
             for (ArrayList<Object> attendee : checkInList) {
                 String userId = (String) attendee.get(0);

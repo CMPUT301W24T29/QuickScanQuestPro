@@ -74,6 +74,8 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
 
     private ActivityResultLauncher<Intent> pickImageLauncher;
 
+    private EditText signupLimit;
+
     public EventCreationFragment() {
         // Required empty public constructor
     }
@@ -135,10 +137,12 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
         titleEditText = view.findViewById(R.id.edit_text_event_title);
         descriptionEditText = view.findViewById(R.id.edit_text_event_description);
         locationEditText = view.findViewById(R.id.edit_text_event_address);
+        signupLimit = view.findViewById(R.id.edit_text_signups);
 
         titleEditText.addTextChangedListener(getTextWatcher(titleEditText));
         descriptionEditText.addTextChangedListener(getTextWatcher(descriptionEditText));
         locationEditText.addTextChangedListener(getTextWatcher(locationEditText));
+        signupLimit.addTextChangedListener(getTextWatcher(signupLimit));
 
         // setting time pickers for start / end times
         startTimeText = view.findViewById(R.id.text_event_start_time);
@@ -224,6 +228,17 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
                     creatingEvent.setDescription(editable.toString());
                 } else if (editId == R.id.edit_text_event_address) {
                     creatingEvent.setLocation(editable.toString());
+                } else if (editId == R.id.edit_text_signups) {
+                    String signupLimitString = editable.toString();
+                    Integer signupLimitValue = null; // Initialize to null for an empty case
+                    if (!signupLimitString.isEmpty()) {
+                        try {
+                            signupLimitValue = Integer.parseInt(signupLimitString);
+                        } catch (NumberFormatException e) {
+                            // Log the exception or handle the error state as required
+                        }
+                    }
+                    creatingEvent.setSignupLimit(signupLimitValue); // Could be null or a number
                 }
                 validateEntryFields();
             }
@@ -250,6 +265,27 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
         if (locationEditText.getText().toString().length() <= 0) {
             locationEditText.setError("Must enter an address!");
             valid = false;
+        }
+
+        // Checks if signup limit is empty
+        String signupLimitString = signupLimit.getText().toString();
+        if (!signupLimitString.isEmpty()) {
+            try {
+                int signupLimitValue = Integer.parseInt(signupLimitString);
+                if (signupLimitValue <= 0) {
+                    signupLimit.setError("Signup limit must be greater than 0!");
+                    valid = false;
+                } else {
+                    creatingEvent.setSignupLimit(signupLimitValue);
+                }
+            } catch (NumberFormatException e) {
+                signupLimit.setError("Signup limit must be a number!");
+                valid = false;
+            }
+        } //if field is empty
+        else {
+            signupLimit.setError(null);
+            creatingEvent.setSignupLimit(null);
         }
 
         if (startDateText.getText().toString().length() <= 0) {
