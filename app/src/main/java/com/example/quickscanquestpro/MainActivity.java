@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         user.put("name", "");
         user.put("homepage", "");
         user.put("email", "");
-        user.put("lastCheckIn", "");
+//        user.put("lastCheckIn", "");
         user.put("geolocation", false);
 
         // Add a new document with the generated userId
