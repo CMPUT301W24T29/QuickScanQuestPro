@@ -45,8 +45,10 @@ public class EventDashboardFragment extends Fragment {
     private ArrayAdapter<String> eventArrayAdapter;
 
     private ListView eventList;
-    private DatabaseService databaseService;
+
     private EventTypeAdapter adapter;
+
+    private DatabaseService databaseService = new DatabaseService();
 
     private User user;
 
@@ -75,10 +77,9 @@ public class EventDashboardFragment extends Fragment {
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        databaseService = new DatabaseService();
-        MainActivity mainActivity = (MainActivity) getActivity();
         super.onViewCreated(view, savedInstanceState);
 
+        MainActivity mainActivity = (MainActivity) this.getActivity();
         NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
         // Sets navbar selection to the profile dashboard
         MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
@@ -124,6 +125,7 @@ public class EventDashboardFragment extends Fragment {
                 }
 
                 // Signed up events
+                user = mainActivity.getUser();
                 databaseService.getUserSignedupEvents(user, signedUpEvents -> {
                     if (isAdded() && getActivity() != null) {
                         for (Event event : signedUpEvents) {
@@ -151,12 +153,6 @@ public class EventDashboardFragment extends Fragment {
 
         Button createButton = view.findViewById(R.id.event_dashboard_create_button);
         createButton.setOnClickListener(v -> {
-            EventCreationFragment fragment = new EventCreationFragment();
-            FragmentManager fragmentManager = ((FragmentActivity) getContext()).getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.content, fragment);
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.commit();
             FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
             transaction.replace(R.id.content, new EventCreationFragment(), "EventCreation"); // Ensure that 'R.id.content' is your container ID in the layout.
             transaction.addToBackStack(null);
@@ -171,13 +167,4 @@ public class EventDashboardFragment extends Fragment {
             transaction.commit();
         });
     }
-
-//        Button browseButton = view.findViewById(R.id.event_dashboard_browse_button);
-//        browseButton.setOnClickListener(v -> {
-//            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-//            transaction.replace(R.id.content, new BrowseEventsFragment()); // Ensure that 'R.id.content' is your container ID in the layout.
-//            transaction.addToBackStack(null);
-//            transaction.commit();
-//        });
-//    }
 }

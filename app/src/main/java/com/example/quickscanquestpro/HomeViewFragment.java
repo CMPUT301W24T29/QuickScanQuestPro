@@ -80,6 +80,7 @@ public class HomeViewFragment extends Fragment implements GeolocationService.Geo
         MenuItem item = navBarView.getMenu().findItem(R.id.navigation_qr_scanner);
         item.setChecked(true);
         // Request camera permission first
+        // If the app already has run time permission for camera it will start setupCamera otherwise invoke requestCameraPermissionLauncher
         if(ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
 
             // Camera permission granted, setup camera

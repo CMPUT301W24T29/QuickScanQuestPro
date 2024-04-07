@@ -1,18 +1,11 @@
 package com.example.quickscanquestpro;
 
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.arch.core.executor.ArchTaskExecutor;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-import android.Manifest;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -20,8 +13,6 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationServices;
@@ -29,22 +20,12 @@ import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.FirebaseApp;
 
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.iid.internal.FirebaseInstanceIdInternal;
-import com.google.firebase.messaging.FirebaseMessaging;
 
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 
 /**
  * Main activity for the app, initializes DatabaseService on startup,
@@ -67,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     private List<User> usersList;
 
     private DatabaseService databaseService = new DatabaseService();
-    private String notificationToken;
+
     private Boolean foundUser = false;
 
     private Boolean foundUserList = false;
@@ -88,19 +69,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         // Initiate user
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         userId = prefs.getString(USER_ID_KEY, null);
-        FirebaseMessaging.getInstance().getToken()
-                .addOnCompleteListener(new OnCompleteListener<String>() {
-                    @Override
-                    public void onComplete(@NonNull Task<String> task) {
-                        if (!task.isSuccessful()) {
-                            Log.w("FCM", "Fetching FCM registration token failed", task.getException());
-                            return;
-                        }
-                        // Get new FCM registration token
-                        notificationToken = task.getResult();
-                        databaseService.getUsers(MainActivity.this);
-                    }
-                });
+        databaseService.getUsers(this);
 
         this.transitionFragment(new HomeViewFragment(), this.getString(R.string.title_qr_scanner));
 
@@ -109,11 +78,14 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         navBarView.setSelectedItemId(R.id.navigation_qr_scanner);
         // adds functions to the navbar button
 
+
         navBarView.setOnItemSelectedListener(item -> {
             this.item = item;
             databaseService.getSpecificUserDetails(userId, this);
             return true;
         });
+
+
     }
 
     // TODO: remove test event stuff before finishing project
@@ -152,8 +124,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         user.put("email", "");
         user.put("lastCheckIn", "");
         user.put("geolocation", false);
-        user.put("NotificationToken", notificationToken);
-        user.put("ReceiveNotifications", false);
 
         // Add a new document with the generated userId
         db.collection("users").document(userId).set(user)
@@ -172,7 +142,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
      */
     private void existingUser(String userId) {
         user = new User(userId);
-        // get the firebase messaging token
         Toast.makeText(getApplicationContext(), "Welcome Back!", Toast.LENGTH_SHORT).show();
     }
 
@@ -204,7 +173,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
      * @param tag internal tag that the app uses to know which fragment is open
      */
     public void transitionFragment(Fragment fragment, String tag) {
-        // gets the fragment currently loaded into the content view
         FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content, fragment, tag);
         fragmentTransaction.addToBackStack(null);
@@ -213,7 +181,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
 
     public void addFragment(Fragment fragment, String tag) {
-        // gets the fragment currently loaded into the content view
         FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
         fragmentTransaction.add(R.id.content, fragment, tag);
         fragmentTransaction.addToBackStack(null);
@@ -317,29 +284,4 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         }
 
     }
-
-//    private void callApi(JSONObject jsonObject)
-//    {
-//        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-//        OkHttpClient client = new OkHttpClient();
-//        String url = "https://fcm.googleapis.com/fcm/send";
-//        RequestBody body = RequestBody.create(jsonObject.toString(), JSON);
-//        Request request = new Request.Builder()
-//                .url(url)
-//                .post(body)
-//                // add the api key after bearer with a space
-//                .header("Authorization", "Bearer AAAA-z98YP0:APA91bEoBWfmJI7JHaV87puPVmZhDNv-4m0cxhjYXjsD5mAiPoTuhGbC6xfV0rVBt9qXj59n3TPCRe2QnwlZFXb96DvtoxYvyT5tCNqgaR0m8PapWiWHFVWbNpChm37VzNImEXL5T_iu")
-//                .build();
-//        client.newCall(request).enqueue(new okhttp3.Callback() {
-//            @Override
-//            public void onFailure(okhttp3.Call call, IOException e) {
-//                Log.d("Notification", "Failed to send notification");
-//            }
-//
-//            @Override
-//            public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
-//                Log.d("Notification", "Notification sent successfully");
-//            }
-//        });
-//    }
 }

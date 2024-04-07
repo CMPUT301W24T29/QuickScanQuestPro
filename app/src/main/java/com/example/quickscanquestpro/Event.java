@@ -249,10 +249,6 @@ public class Event {
         return attendees;
     }
 
-    public void setAttendees(ArrayList<User> attendees) {
-        this.attendees = attendees;
-    }
-
     public Bitmap getEventBanner() {
         return eventBanner;
     }
@@ -421,7 +417,6 @@ public class Event {
      * Goes through the event's checkIns, and counts up how many times each user id has checked
      * into the event. Then associates the user's name with how many times they've checked in. If there
      * is currently no user associated with that id, then shows Unknown User.
-     * @param users a list of all users from the database, to get names from by comparing ids
      * @return a list of lists, with the first element of each inner list being the name of the
      * user who checked in, and the second element is how many times they checked in to the event
      */

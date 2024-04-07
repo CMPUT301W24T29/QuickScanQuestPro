@@ -1,13 +1,18 @@
 package com.example.quickscanquestpro;
 
+import static android.content.ContentValues.TAG;
+
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,7 +21,10 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
 
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -31,6 +39,11 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.zxing.MultiFormatWriter;
+
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -124,7 +137,7 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
         });
 
         // adds textwatchers that update the Event whenever text is changed
-        titleEditText = view.findViewById(R.id.edit_notification_title);
+        titleEditText = view.findViewById(R.id.edit_text_event_title);
         descriptionEditText = view.findViewById(R.id.edit_text_event_description);
         locationEditText = view.findViewById(R.id.edit_text_event_address);
         signupLimit = view.findViewById(R.id.edit_text_signups);
@@ -212,7 +225,7 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
             @Override
             public void afterTextChanged(Editable editable) {
                 int editId = editText.getId();
-                if (editId == R.id.edit_notification_title) {
+                if (editId == R.id.edit_text_event_title) {
                     creatingEvent.setTitle(editable.toString());
                 } else if (editId == R.id.edit_text_event_description) {
                     creatingEvent.setDescription(editable.toString());

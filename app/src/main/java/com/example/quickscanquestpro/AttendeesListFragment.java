@@ -37,8 +37,6 @@ public class AttendeesListFragment extends Fragment {
     private TextView checkInTotal;
     private ListView attendeesListView;
     private boolean firstrun = true;
-    private ArrayList<String> UserIds = new ArrayList<>();
-
 
     /**
      * This is the constructor for the AttendeesListFragment class.
@@ -81,17 +79,6 @@ public class AttendeesListFragment extends Fragment {
         attendeesListView.setAdapter(attendeesListAdapter);
 
         startFetchingData();
-        FloatingActionButton alertButton = view.findViewById(R.id.announcement_button);
-        alertButton.setOnClickListener(v -> {
-            // Create a new AttendeeAlertsFragment
-            firstrun = true;
-            AttendeeAlertsFragment attendeeAlertsFragment = new AttendeeAlertsFragment(UserIds);
-            FragmentManager fragmentManager = getParentFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.content, attendeeAlertsFragment);
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.commit();
-        });
     }
 
     /**
@@ -107,7 +94,7 @@ public class AttendeesListFragment extends Fragment {
                 // Fetch data from the database (you need to implement this method)
                 fetchData();
             }
-        }, 0, 1000); // Schedule to run every 5 seconds (5000 milliseconds)
+        }, 0, 5000); // Schedule to run every 5 seconds (5000 milliseconds)
     }
 
     /**
@@ -129,6 +116,7 @@ public class AttendeesListFragment extends Fragment {
         });
     }
 
+
     /**
      * This method fetches the list of attendees for the event from the database.
      * It updates the attendeesListAdapter with the new data and updates the total attendee count.
@@ -141,12 +129,11 @@ public class AttendeesListFragment extends Fragment {
 
         // Update only if data has changed
         if (dataChanged || firstrun) {
-            //checkInList = newCheckInList;
+            checkInList = newCheckInList;
             AtomicInteger totalAttendees = new AtomicInteger(0);
-            int size = newCheckInList.size(); // Size of checkInList to compare with the count
-            int unknownUserCount = 0;
+            int size = checkInList.size(); // Size of checkInList to compare with the count
 
-            for (ArrayList<Object> attendee : newCheckInList) {
+            for (ArrayList<Object> attendee : checkInList) {
                 String userId = (String) attendee.get(0);
                 databaseService.getSpecificUserDetails(userId, new DatabaseService.OnUserDataLoaded() {
                     @Override
@@ -158,8 +145,10 @@ public class AttendeesListFragment extends Fragment {
                         }
                         // Update the user's name in the list
                         if (user == null) {
+                            Log.e("AttendeeListFragment", "User not found.");
                             attendee.set(0, "Unknown User");
                         } else {
+                            Log.d("AttendeeListFragment", user.getName() + " found!");
                             attendee.set(0, user.getName());
                         }
                         // Increment the totalAttendees count
@@ -168,13 +157,13 @@ public class AttendeesListFragment extends Fragment {
                                 @Override
                                 // Update the UI on the main thread
                                 public void run() {
-                                    attendeesListAdapter.updateAttendeesList(newCheckInList);
+                                    attendeesListAdapter.updateAttendeesList(checkInList);
                                     if (attendeesListView.getVisibility() == View.GONE) {
                                         attendeesListView.setVisibility(View.VISIBLE);
                                     }
-                                    attendeeTotal.setText(String.valueOf(newCheckInList.size()));
+                                    attendeeTotal.setText(String.valueOf(checkInList.size()));
                                     int totalAttendees = 0;
-                                    for (ArrayList<Object> checkIn : newCheckInList) {
+                                    for (ArrayList<Object> checkIn : checkInList) {
                                         totalAttendees += (int) checkIn.get(1);
                                     }
                                     checkInTotal.setText(String.valueOf(totalAttendees));
@@ -186,11 +175,6 @@ public class AttendeesListFragment extends Fragment {
             }
         }
         firstrun = false;
-        for (ArrayList<Object> attendee : newCheckInList) {
-            String Id = (String) attendee.get(0);
-            if(!UserIds.contains(Id))
-                UserIds.add(Id);
-        }
-        return newCheckInList;
+        return checkInList;
     }
 }

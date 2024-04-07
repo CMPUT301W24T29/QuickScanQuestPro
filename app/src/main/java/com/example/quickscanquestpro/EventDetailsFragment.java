@@ -67,10 +67,12 @@ import java.util.UUID;
  */
 public class EventDetailsFragment extends Fragment {
 
-    Event event;
+    private Event event;
     private DatabaseService databaseService = new DatabaseService();
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private ImageView eventImage;
+    private ArrayList<ArrayList<Object>> checkInList;
+
     private User user;
     private FloatingActionButton shareButton;
     private FloatingActionButton expandButton;
@@ -196,8 +198,11 @@ public class EventDetailsFragment extends Fragment {
 
             // Set an on click listener for the back button
             backButton.setOnClickListener(v -> {
+
+                // if the user is organiser, i want to go back to admin event dashboard
                 FragmentManager fragmentManager = getParentFragmentManager();
                 fragmentManager.popBackStack();
+
             });
             // Enable these buttons if the user is the organizer of the event
             if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
@@ -256,7 +261,10 @@ public class EventDetailsFragment extends Fragment {
             }
             setShareButton(shareButton);
 
+
+
             // Signup and Signup List buttons
+
             Button signupButton = view.findViewById(R.id.signup_button);
             Button signupListButton = view.findViewById(R.id.signup_list);
 
@@ -278,6 +286,7 @@ public class EventDetailsFragment extends Fragment {
         }
         else {
             Log.e(TAG, "User or MainActivity is null");
+
         }
     }
 

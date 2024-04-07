@@ -341,3 +341,4 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
     }
 
 }
+
