@@ -754,7 +754,10 @@ public class DatabaseService {
                 .addOnFailureListener(e -> callback.onFailure(e));
     }
 
-
+    public void clearEventCheckins(String eventId) {
+        DocumentReference eventRef = db.collection(EVENTS_COLLECTION).document(eventId);
+        eventRef.update("checkins", null);
+    }
 
 
 
