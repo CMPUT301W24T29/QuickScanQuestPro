@@ -18,10 +18,10 @@
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
             android:scaleType="fitCenter"
+            android:src="@drawable/pork_ribs"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:src="@drawable/pork_ribs"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/back_button"
@@ -81,12 +81,22 @@
             android:id="@+id/signup_list"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:contentDescription="View signup list button"
             android:src="@drawable/baseline_checklist_rtl_24"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/edit_banner_button"
+            app:useCompatPadding="false" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/signup_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            />
+            android:contentDescription="Signup button"
+            android:src="@drawable/baseline_thumb_up_alt_24"
+            app:layout_constraintEnd_toEndOf="@id/signup_list"
+            app:layout_constraintTop_toBottomOf="@id/signup_list" />
 
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/event_banner_progress_indicator"
@@ -216,17 +226,6 @@
             app:layout_constraintBottom_toBottomOf="parent"
             android:divider="@color/zxing_transparent"
             android:dividerHeight="10dp" />
-
-        <Button
-            android:id="@+id/signup_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Signup"
-            android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@id/event_announcements_list"
-            app:layout_constraintStart_toEndOf="@+id/signup_list"
-            app:layout_constraintEnd_toEndOf="parent" />
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

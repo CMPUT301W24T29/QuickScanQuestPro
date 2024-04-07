@@ -148,7 +148,8 @@ public class EventDetailsFragment extends Fragment {
             progressIndicator = view.findViewById(R.id.event_banner_progress_indicator);
 
             // Signup and Signup List buttons
-            Button signupButton = view.findViewById(R.id.signup_button);
+            FloatingActionButton signupButton = view.findViewById(R.id.signup_button);
+            signupButton.setVisibility(View.GONE);
             FloatingActionButton signupListButton = view.findViewById(R.id.signup_list);
 
             // Set the tag of the expand button to false
@@ -180,7 +181,6 @@ public class EventDetailsFragment extends Fragment {
             ArrayList<String> announcementList = event.getAnnouncements();
 
 
-
             if (event.getSignupLimit() != null) {
                 signupLimit.setText(event.getSignupLimit().toString());
             } else {
@@ -204,7 +204,7 @@ public class EventDetailsFragment extends Fragment {
 
             });
             // Enable these buttons if the user is the organizer of the event
-            if (!event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
+            if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
                 uploadImageButton.setOnClickListener(v -> {
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("image/*");
@@ -244,6 +244,7 @@ public class EventDetailsFragment extends Fragment {
                         uploadImageButton.setVisibility(View.VISIBLE);
                         attendeesButton.setVisibility(View.VISIBLE);
                         signupListButton.setVisibility(View.VISIBLE);
+                        signupButton.setVisibility(View.VISIBLE);
                         expandButton.setTag("true");
 
                     } else {
@@ -251,6 +252,7 @@ public class EventDetailsFragment extends Fragment {
                         uploadImageButton.setVisibility(View.GONE);
                         attendeesButton.setVisibility(View.GONE);
                         signupListButton.setVisibility(View.GONE);
+                        signupButton.setVisibility(View.GONE);
                         expandButton.setTag("false");
                     }
                 });
@@ -259,6 +261,7 @@ public class EventDetailsFragment extends Fragment {
             else {
                 expandButton.setVisibility(View.GONE);
                 shareButton.setVisibility(View.GONE);
+                signupButton.setVisibility(View.VISIBLE);
             }
             setShareButton(shareButton);
 

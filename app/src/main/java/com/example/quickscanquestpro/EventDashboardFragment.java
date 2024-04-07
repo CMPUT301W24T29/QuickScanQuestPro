@@ -169,7 +169,7 @@ public class EventDashboardFragment extends Fragment {
             transaction.commit();
         });
 
-        FloatingActionButton manageEventsButton = view.findViewById(R.id.event_dashboard_admin_event_search_button);
+/*        FloatingActionButton manageEventsButton = view.findViewById(R.id.event_dashboard_admin_event_search_button);
         manageEventsButton.setVisibility(View.GONE);
         manageEventsButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -238,6 +238,6 @@ public class EventDashboardFragment extends Fragment {
                 viewImagesButton.setVisibility(View.GONE);
                 expandButton.setTag("false");
             }
-        });
+        });*/
     }
 }
