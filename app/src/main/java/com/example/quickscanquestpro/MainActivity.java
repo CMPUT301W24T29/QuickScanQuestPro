@@ -20,6 +20,7 @@ import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.FirebaseApp;
 
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.HashMap;
 import java.util.List;
@@ -59,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
     private MenuItem item;
 
+    private String NotificationToken;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,22 +72,33 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         // Initiate user
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         userId = prefs.getString(USER_ID_KEY, null);
-        databaseService.getUsers(this);
+        // generate a notification token using firebase messaging instance
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Log.w("FCM", "Fetching FCM registration token failed", task.getException());
+                        return;
+                    }
+                    else
+                    {
+                        // Get new FCM registration token
+                        NotificationToken = task.getResult();
+                        Log.d("FCM", "FCM token: " + NotificationToken);
+                    }
+                    databaseService.getUsers(this);
+                    this.transitionFragment(new HomeViewFragment(), this.getString(R.string.title_qr_scanner));
 
-        this.transitionFragment(new HomeViewFragment(), this.getString(R.string.title_qr_scanner));
+                    navBarView = findViewById(R.id.bottom_navigation);
+                    // sets the default selected item for the main activity to the qrscanner button
+                    navBarView.setSelectedItemId(R.id.navigation_qr_scanner);
+                    // adds functions to the navbar button
 
-        navBarView = findViewById(R.id.bottom_navigation);
-        // sets the default selected item for the main activity to the qrscanner button
-        navBarView.setSelectedItemId(R.id.navigation_qr_scanner);
-        // adds functions to the navbar button
-
-
-        navBarView.setOnItemSelectedListener(item -> {
-            this.item = item;
-            databaseService.getSpecificUserDetails(userId, this);
-            return true;
-        });
-
+                    navBarView.setOnItemSelectedListener(item -> {
+                        this.item = item;
+                        databaseService.getSpecificUserDetails(userId, this);
+                        return true;
+                    });
+                });
 
     }
 
@@ -117,12 +131,15 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
         // Create a new user with a Map or a custom object
         Map<String, Object> user = new HashMap<>();
-        user.put("admin", true);
+        user.put("admin", false);
         user.put("check-ins", 0);
         user.put("name", "");
         user.put("homepage", "");
         user.put("email", "");
+//        user.put("lastCheckIn", "");
         user.put("geolocation", false);
+        user.put("ReceiveNotifications", false);
+        user.put("NotificationToken", NotificationToken);
 
         // Add a new document with the generated userId
         db.collection("users").document(userId).set(user)
@@ -174,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     public void transitionFragment(Fragment fragment, String tag) {
         FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content, fragment, tag);
+        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 

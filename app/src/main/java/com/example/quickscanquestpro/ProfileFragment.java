@@ -9,18 +9,24 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -40,6 +46,7 @@ import android.widget.EditText;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -65,10 +72,25 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private ActivityResultLauncher<String[]> locPermLauncher;
     private ActivityResultLauncher<IntentSenderRequest> locResolutionIntentSender;
-    private Button deleteProfilePictureButton;
+    private ImageView deleteProfilePictureButton;
+
     LinearProgressIndicator progressIndicator;
     private DatabaseService databaseService = new DatabaseService();
+    private Switch notificationSwitch;
     private User user;
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
+        @Override
+        public void onActivityResult(Boolean o) {
+            if (o) {
+                notificationSwitch.setChecked(true);
+                Toast.makeText(getContext(), "Notifications Permission granted", Toast.LENGTH_LONG).show();
+            }
+            else {
+                notificationSwitch.setChecked(false);
+                Toast.makeText(getContext(), "Notifications Permission denied", Toast.LENGTH_LONG).show();
+            }
+        }
+    });
     private GeolocationService geolocationService = new GeolocationService(this, this);
     private boolean ignoreGeolocSwitch = false;
     private SwitchMaterial geolocationSwitch;
@@ -126,9 +148,14 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        MainActivity mainActivity = (MainActivity) getActivity();
         super.onViewCreated(view, savedInstanceState);
         initializeViews(view);
 
+        NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
+        // Sets navbar selection to the profile dashboard
+        MenuItem item = navBarView.getMenu().findItem(R.id.navigation_profile);
+        item.setChecked(true);
 
         // when user clicks the back button
         view.findViewById(R.id.backButton).setOnClickListener(v -> {
@@ -137,6 +164,25 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
         });
 
 
+        notificationSwitch = view.findViewById(R.id.alert_switch);
+        notificationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                    // check if user has accepted the permission, if not turn the switch off
+                }
+                else
+                {
+                    user.setGetNotification(true);
+                    databaseService.addUser(user);
+                }
+            }
+            else
+                {
+                    user.setGetNotification(false);
+                    databaseService.addUser(user);
+                }
+        });
     }
 
 
@@ -159,6 +205,8 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
             intent.setType("image/*");
             pickImageLauncher.launch(intent);
         });
+
+
 
 
         //For updating profile information
@@ -351,8 +399,9 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
                     String email = document.getString("email");
                     String profilePictureUrl = document.getString("profilePictureUrl");
                     Boolean geolocation = document.getBoolean("geolocation");
+                    Boolean NotificationPermission = document.getBoolean("ReceiveNotifications");
 
-                    updateUIWithUserData(name, homepage, mobileNum, email, geolocation, profilePictureUrl);
+                    updateUIWithUserData(name, homepage, mobileNum, email, geolocation, profilePictureUrl, NotificationPermission);
                 } else {
                     Log.d("ProfileFragment", "No such document");
                 }
@@ -379,7 +428,7 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
      * @param geolocation The user's geolocation preference to be updated in the UI.
      * @param profilePictureUrl The URL of the user's profile picture. If provided, it is loaded into the profile picture view.
      */
-    private void updateUIWithUserData(String name, String homepage, String mobileNum, String email, Boolean geolocation, String profilePictureUrl) {
+    private void updateUIWithUserData(String name, String homepage, String mobileNum, String email, Boolean geolocation, String profilePictureUrl, Boolean getNotification) {
         View view = getView();
         if (view == null) return; // Ensure view is available
 
@@ -388,6 +437,7 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
         EditText mobileNumberInput = view.findViewById(R.id.mobileNumberInput);
         EditText emailAddressInput = view.findViewById(R.id.emailAddressInput);
         SwitchMaterial geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
+        Switch notificationSwitch = view.findViewById(R.id.alert_switch);
 
         fullNameInput.setText(name);
         homepageInput.setText(homepage);
@@ -406,6 +456,11 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
             ignoreGeolocSwitch = true;
             geolocationSwitch.setChecked(geolocation);
             ignoreGeolocSwitch = false;
+        }
+        // set the notification switch to on or off based on the user's preference
+        if(getNotification != null)
+        {
+            notificationSwitch.setChecked(getNotification);
         }
     }
 
@@ -463,7 +518,11 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
         }
     }
 
-
+    /**
+     * function that is called when the result for a users location (enabling location) is done
+     * @param success true if the location was set, false if it failed
+     * @param result the latitude and longitude as a "lat,long" string, or error string if it failed
+     */
     @Override
     public void geolocationRequestComplete(boolean success, String result) {
         if (success) {
@@ -478,10 +537,18 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
         }
     }
 
+    /**
+     * Returns the registered handler for permission activity results
+     * @return result launcher handler for using .launch()
+     */
     public ActivityResultLauncher<String[]> getLocPermLauncher() {
         return locPermLauncher;
     }
 
+    /**
+     * Returns the registered handler for settings activity results
+     * @return result launcher handler for using .launch()
+     */
     public ActivityResultLauncher<IntentSenderRequest> getLocResolutionIntentSender() {
         return locResolutionIntentSender;
     }
