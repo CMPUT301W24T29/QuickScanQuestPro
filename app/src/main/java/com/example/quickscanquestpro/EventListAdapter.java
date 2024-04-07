@@ -90,7 +90,7 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.Even
 
                         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-                        fragmentTransaction.replace(R.id.content, eventDetailsFragment, "EventDetailsFragment");
+                        fragmentTransaction.replace(R.id.content, eventDetailsFragment);
 
                         fragmentTransaction.addToBackStack(null);
 

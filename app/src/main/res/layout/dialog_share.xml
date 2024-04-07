@@ -43,14 +43,13 @@
         app:layout_constraintStart_toEndOf="@id/share_promo_button"
         android:layout_marginBottom="16dp"/>
 
-    <Button
-        android:id="@+id/share_cancel_button"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
-        android:text="X"
-        android:padding="0dp"
+    <ImageButton
+        android:id="@+id/share_close_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginStart="5dp" />
+        android:src="@drawable/ic_close"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

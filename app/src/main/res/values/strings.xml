@@ -11,7 +11,7 @@
     <string name="events_list_title">My Events</string>
     <string name="browse_events_dashboard_title">Browse Events</string>
     <string name="profile_list_title">Profile List</string>
-    <string name="attendee_list">Attendees</string>
+    <string name="attendee_list">Event Attendee List</string>
 
     // The following strings are used in the EventDetailsFragment
     <string name="event_title">This is the title of the event</string>

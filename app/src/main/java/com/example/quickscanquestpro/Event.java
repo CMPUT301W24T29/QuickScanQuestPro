@@ -249,10 +249,6 @@ public class Event {
         return attendees;
     }
 
-    public void setAttendees(ArrayList<User> attendees) {
-        this.attendees = attendees;
-    }
-
     public Bitmap getEventBanner() {
         return eventBanner;
     }

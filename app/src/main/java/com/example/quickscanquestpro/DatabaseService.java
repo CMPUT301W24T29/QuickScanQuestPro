@@ -177,16 +177,12 @@ public class DatabaseService {
         userData.put("name", user.getName());
         userData.put("email", user.getEmail());
         userData.put("phone", user.getMobileNum());
-        userData.put("geoLocation", user.isGeolocation());
-//        userData.put("check-ins", user.getCheckins());
         userData.put("geolocation", user.isGeolocation());
         userData.put("check-ins", user.getCheckins());
         userData.put("Homepage", user.getHomepage());
         userData.put("profilePictureUrl", user.getProfilePictureUrl());
         userData.put("profilePicturePath", user.getProfilePicturePath());
-        userData.put("NotificationToken", user.getNotificationToken());
         userData.put("lastCheckIn", user.getLastCheckIn());
-        userData.put("ReceiveNotifications", user.getGetNotification());
 
         // Add the user data to the Firestore "users" collection with the incremented document number
         usersRef.document(String.valueOf(user.getUserId())).set(userData, SetOptions.merge());
@@ -215,8 +211,10 @@ public class DatabaseService {
                 event.setEndTime(LocalTime.parse(document.getString("End-time")));
                 event.setEventBannerUrl(document.getString("eventPictureUrl"));
                 event.setEventBannerPath(document.getString("eventPicturePath"));
+
                 // Retrieve check-ins for this event
                 ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) document.get("checkins");
+                Log.d(TAG, "Retrieved " + (checkInsArray != null ? checkInsArray.size() : 0) + " check-ins for event " + eventId);
 
                 if (checkInsArray != null) {
                     // Process the check-ins array
@@ -227,6 +225,7 @@ public class DatabaseService {
                         checkIns.add(new CheckIn(userId, location));
                     }
 
+                    Log.d(TAG, "Created " + checkIns.size() + " check-ins for event " + eventId);
                     event.setCheckIns(checkIns);
                 }
 
@@ -258,8 +257,6 @@ public class DatabaseService {
                 user.setEmail(document.getString("email"));
                 user.setMobileNum(document.getString("phone"));
                 user.setHomepage(document.getString("Homepage"));
-                user.setNotificationToken(document.getString("NotificationToken"));
-//                user.setGeolocation(document.getBoolean("geoLocation"));
                 user.setGeolocation(Boolean.TRUE.equals(document.getBoolean("geolocation")));
 //                user.setCheckins(document.getLong("check-ins").intValue());
                 user.setProfilePictureUrl(document.getString("profilePictureUrl"));
@@ -275,7 +272,6 @@ public class DatabaseService {
      * @param userId The ID of the user to be fetched
      * @param callback The callback to be called when the data is loaded
      */
-
 
     public void getSpecificUserDetails(String userId, OnUserDataLoaded callback) {
         usersRef.document(userId).get().addOnSuccessListener(queryDocumentSnapshot -> {
@@ -294,10 +290,7 @@ public class DatabaseService {
             user.setAdmin(Boolean.TRUE.equals(queryDocumentSnapshot.getBoolean("admin")));
             user.setProfilePictureUrl(queryDocumentSnapshot.getString("profilePictureUrl"));
             user.setProfilePicturePath(queryDocumentSnapshot.getString("profilePicturePath"));
-            user.setNotificationToken(queryDocumentSnapshot.getString("NotificationToken"));
             user.setLastCheckIn(queryDocumentSnapshot.getString("lastCheckIn"));
-            user.setGetNotification(queryDocumentSnapshot.getBoolean("ReceiveNotifications"));
-//            user.setGeolocation(queryDocumentSnapshot.getBoolean("geoLocation"));
             user.setGeolocation(Boolean.TRUE.equals(queryDocumentSnapshot.getBoolean("geolocation")));
 //            user.setCheckins(queryDocumentSnapshot.getLong("check-ins").intValue());
 
@@ -322,6 +315,7 @@ public class DatabaseService {
         event.setEventBannerPath(queryDocumentSnapshot.getString("eventPicturePath"));
         event.setCustomCheckin(queryDocumentSnapshot.getString("customCheckin"));
         event.setCustomPromo(queryDocumentSnapshot.getString("customPromo"));
+
         //update optional signuplimit
         Number signupLimitNumber = queryDocumentSnapshot.getLong("signupLimit"); // Using getLong for a more direct approach
         if (signupLimitNumber != null) {
@@ -330,6 +324,7 @@ public class DatabaseService {
 
         // Retrieve check-ins for this event
         ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) queryDocumentSnapshot.get("checkins");
+        Log.d(TAG, "Retrieved " + (checkInsArray != null ? checkInsArray.size() : 0) + " check-ins for event " + eventId);
         if (checkInsArray != null) {
             // Process the check-ins array
             ArrayList<CheckIn> checkIns = new ArrayList<>();
@@ -339,6 +334,7 @@ public class DatabaseService {
                 checkIns.add(new CheckIn(userId, location));
             }
 
+            Log.d(TAG, "Created " + checkIns.size() + " check-ins for event " + eventId);
             event.setCheckIns(checkIns);
         }
         return event;
@@ -412,79 +408,6 @@ public class DatabaseService {
 
         }).addOnFailureListener(e -> callback.onEventLoaded(null));
 
-    }
-
-
-    public void ListenForEventAttendeeUpdates(String eventId, OnEventDataLoaded callback) {
-            // Assuming eventsRef is a reference to the collection containing event documents
-            DocumentReference eventDocRef = eventsRef.document(eventId);
-            eventDocRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                @Override
-                public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                    if (e != null) {
-                        Log.w("DatabaseService", "Listen failed.", e);
-                        callback.onEventLoaded(null);
-                        return;
-                    }
-
-                    if (documentSnapshot != null && documentSnapshot.exists()) {
-                        Event event = new Event(eventId);
-                        List<Map<String, Object>> checkInsList = (List<Map<String, Object>>) documentSnapshot.get("checkins");
-                        if (checkInsList != null) {
-                            ArrayList<User> attendees = new ArrayList<>();
-                            for (Map<String, Object> checkInMap : checkInsList) {
-                                // Extract data from the check-in map
-                                String userId = (String) checkInMap.get("userId");
-                                // Create a User object
-                                User user = new User(userId);
-                                // Add the user object to the list of attendees
-                                attendees.add(user);
-                            }
-                            // Set the list of attendees to the event object
-                            event.setAttendees(attendees);
-                        }
-                        callback.onEventLoaded(event);
-                    } else {
-                        callback.onEventLoaded(null);
-                    }
-                }
-            });
-        }
-
-    /**
-     * This function listens for updates to the check-ins array of a specific event document in the Firestore database.
-     * @param userId
-     * @param callback
-     */
-    public void listenForSpecificUserDetails(String userId, OnUserDataLoaded callback) {
-        DocumentReference userRef = db.collection("users").document(userId);
-
-        userRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w("DatabaseService", "Listen failed.", e);
-                    callback.onUserLoaded(null);
-                    return;
-                }
-
-                if (documentSnapshot != null && documentSnapshot.exists()) {
-                    User user = new User(userId);
-                    user.setName(documentSnapshot.getString("name"));
-//                    user.setEmail(documentSnapshot.getString("email"));
-//                    user.setMobileNum(documentSnapshot.getString("phone"));
-//                    user.setHomepage(documentSnapshot.getString("Homepage"));
-//                    user.setAdmin(documentSnapshot.getBoolean("admin"));
-                    user.setProfilePictureUrl(documentSnapshot.getString("profilePictureUrl"));
-//                    user.setProfilePicturePath(documentSnapshot.getString("profilePicturePath"));
-//                    user.setGeolocation(documentSnapshot.getBoolean("geoLocation"));
-//                    user.setCheckins(documentSnapshot.getLong("check-ins").intValue());
-                    callback.onUserLoaded(user);
-                } else {
-                    callback.onUserLoaded(null);
-                }
-            }
-        });
     }
 
     /**
@@ -573,7 +496,6 @@ public class DatabaseService {
             }
         });
     }
-
 
     /**
      * Method to listen for updates to the events collection in the Firestore database
