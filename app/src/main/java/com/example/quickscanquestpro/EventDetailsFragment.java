@@ -71,10 +71,6 @@ public class EventDetailsFragment extends Fragment {
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private ImageView eventImage;
     private User user;
-    private FloatingActionButton shareButton;
-    private FloatingActionButton expandButton;
-    private FloatingActionButton uploadImageButton;
-    private FloatingActionButton attendeesButton;
 
     /**
      * This is the default constructor for the EventDetailsFragment class. If no event is passed in,

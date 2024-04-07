@@ -107,7 +107,7 @@ public class AttendeesListFragment extends Fragment {
                 // Fetch data from the database (you need to implement this method)
                 fetchData();
             }
-        }, 0, 1000); // Schedule to run every 5 seconds (5000 milliseconds)
+        }, 0, 1000); // Schedule to run every 1 seconds (5000 milliseconds)
     }
 
     /**
@@ -128,6 +128,7 @@ public class AttendeesListFragment extends Fragment {
             }
         });
     }
+
 
     /**
      * This method fetches the list of attendees for the event from the database.
@@ -158,8 +159,10 @@ public class AttendeesListFragment extends Fragment {
                         }
                         // Update the user's name in the list
                         if (user == null) {
+                            Log.e("AttendeeListFragment", "User not found.");
                             attendee.set(0, "Unknown User");
                         } else {
+                            Log.d("AttendeeListFragment", user.getName() + " found!");
                             attendee.set(0, user.getName());
                         }
                         // Increment the totalAttendees count

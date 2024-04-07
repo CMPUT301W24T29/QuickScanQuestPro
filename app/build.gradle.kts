@@ -84,7 +84,6 @@ dependencies {
         exclude(module = "protobuf-lite")
     }
     implementation("androidx.recyclerview:recyclerview:1.2.1");
-
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.android.gms:play-services-location:21.2.0")
 

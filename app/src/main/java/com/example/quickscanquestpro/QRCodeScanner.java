@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
  * The attendees can also go to events details page without checking, if a promotional code is scanned
  *
  */
-public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
+public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
     private ExecutorService cameraExecutor;
     private PreviewView previewView;
     private Context context;
@@ -278,6 +278,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
                     databaseService.recordCheckIn(event.getId(), currentUser.getUserId(), "");
                     databaseService.updateLastCheckIn(currentUser.getUserId(), event.getId());
                     event.checkIn();
+                    Toast.makeText(mainActivity.getApplicationContext(), "Checked in!", Toast.LENGTH_SHORT).show();
                 }
             } else {
                 Toast.makeText(mainActivity.getApplicationContext(), "Promotion code scanned!", Toast.LENGTH_SHORT).show();

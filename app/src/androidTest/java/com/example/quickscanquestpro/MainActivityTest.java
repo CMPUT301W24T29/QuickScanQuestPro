@@ -4,11 +4,14 @@ import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.pressKey;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
+import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
@@ -18,6 +21,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withSubstring;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.allOf;
@@ -28,8 +32,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import android.Manifest;
-<<<<<<< HEAD
-=======
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
@@ -38,22 +40,25 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
->>>>>>> 76b712d9276fb433355952910e2ebf955be1679a
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.DatePicker;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ListView;
 import android.widget.TimePicker;
 
-<<<<<<< HEAD
-=======
 import androidx.annotation.IdRes;
 import androidx.fragment.app.Fragment;
->>>>>>> 76b712d9276fb433355952910e2ebf955be1679a
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.contrib.PickerActions;
+
+import androidx.test.espresso.contrib.RecyclerViewActions;
+import androidx.test.espresso.intent.Intents;
+import androidx.test.espresso.matcher.ViewMatchers;
 
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -66,6 +71,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.File;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -90,7 +97,7 @@ public class MainActivityTest {
 
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
 
-        onView(withId(R.id.edit_notification_title)).perform(ViewActions.typeText("My Event Title"));
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("My Event Title"));
         onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
         onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
         Espresso.closeSoftKeyboard();
@@ -189,7 +196,7 @@ public class MainActivityTest {
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
 
         String eventTitle = UUID.randomUUID().toString();
-        onView(withId(R.id.edit_notification_title)).perform(ViewActions.typeText(eventTitle));
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText(eventTitle));
         onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
         onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
         Espresso.closeSoftKeyboard();
@@ -346,7 +353,7 @@ public class MainActivityTest {
 
 
     @Test
-    public void testUS_04_03_01AdminRemoveUserImage() {
+    public void testUS_04_03_01AdminRemoveUserImage(){
         onView(isRoot()).perform(waitFor(5000));
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
@@ -366,7 +373,7 @@ public class MainActivityTest {
 
 
     @Test
-    public void testUS_04_03_01AdminRemoveEventImage() {
+    public void testUS_04_03_01AdminRemoveEventImage(){
         onView(isRoot()).perform(waitFor(5000));
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
@@ -385,7 +392,7 @@ public class MainActivityTest {
     }
 
     @Test
-    public void testUS_04_05_01AdminBrowseImage() {
+    public void testUS_04_05_01AdminBrowseImage(){
         onView(isRoot()).perform(waitFor(5000));
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
@@ -401,7 +408,6 @@ public class MainActivityTest {
     /**
      * This gets an activity reference from a running test, but you should not hold onto this reference as it may change
      * or be recreated. Try to call this every time you need something out of the activity.
-     *
      * @param activityScenarioRule the scenario from the scenarioTestRule
      * @return returns the Activity from the scenario, which can then be cast to (MainActivity) if needed
      */
@@ -415,7 +421,7 @@ public class MainActivityTest {
      * This test requires a custom QR code that is loaded into the virtual camera that isnt used by an event yet, or it will fail.
      */
     @Test
-    public void testUS01_01_02ReuseQR() {
+    public void testUS01_01_02ReuseQR(){
         // begin event creation
         // fill all the boxes
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
