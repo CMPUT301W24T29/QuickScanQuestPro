@@ -36,12 +36,22 @@ import com.google.android.gms.tasks.Task;
 
 import java.util.Map;
 
+/**
+ * This class allows a Fragment that implements this classes GeolocationRegisteredFragment to get the current
+ * location of the device. In order to do this, the class must implement GeolocationRegisteredFragment AND
+ * have previously registered for activity result ActivityResultContracts.RequestMultiplePermissions() using
+ * geolocationService::locationPermissionResultHandler and ActivityResultContracts.StartIntentSenderForResult() using
+ * geolocationService::locationEnabledResolutionHandler, and pass both of these registered handlers back through the
+ * implementation of getLocPermLauncher() and getLocResolutionIntentSender() respectively. This has to be done
+ * because only a created fragment/activity can receive callbacks from a request for permissions/settings.
+ */
 public class GeolocationService {
     private Fragment fragment;
     private GeolocationRegisteredFragment callback;
 
     /**
      * Callback for when location is found / for error because permissions not granted or location not enabled
+     * also allows us to get the registered handlers for permissions / settings changes
      */
     public interface GeolocationRegisteredFragment {
         void geolocationRequestComplete(boolean success, String result);
@@ -49,12 +59,22 @@ public class GeolocationService {
         ActivityResultLauncher<IntentSenderRequest> getLocResolutionIntentSender();
     }
 
+    /**
+     * constructor that makes a new geolocation service with an associated fragment, and callback function + registered permissions and
+     * settings result handlers.
+     * @param fragment the fragment that the request comes from
+     * @param callback also the fragment that the request comes from, but specifically implementing geolocation interface
+     */
     public GeolocationService(Fragment fragment, GeolocationRegisteredFragment callback) {
         // these are all the same thing, but java SUCKS!!!! and you have to pretend theyre all different idk!!!
         this.fragment = fragment;
         this.callback = callback;
     }
 
+    /**
+     * Gets the current location of the device, and handles checking for location permissions and enabled location services.
+     * If permissions are granted and location is enabled, then it uses the registered callback to return the lat & long.
+     */
     @SuppressLint("MissingPermission")
     public void getLocation() {
         // check if permissions are granted, if not the permissions launcher will either trigger the callback with an error (if theyre denied explicitly) or call getLocation() again when they ARE granted
@@ -91,6 +111,11 @@ public class GeolocationService {
         });
     }
 
+    /**
+     * checks if location permissions are granted to the app. if not, requests them using the registered perm activity result
+     * handler via callback.getLocPermLauncher()
+     * @return true if granted, false if not
+     */
     private boolean locationGranted() {
 
         if (ActivityCompat.checkSelfPermission(fragment.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(fragment.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -99,15 +124,16 @@ public class GeolocationService {
             return false;
         }
 
-//        if (ActivityCompat.checkSelfPermission(fragment.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            locPermLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
-//            return false;
-//        }
 
         return true;
 
     }
 
+    /**
+     * checks if location services are enabled (gps or network). if not, requests them using the registered settings activity
+     * result handler via callback.getLocResolutionIntentSender()
+     * @return true if enabled, false if not
+     */
     private boolean locationEnabled() {
         LocationManager locationManager = (LocationManager) fragment.getActivity().getSystemService(Context.LOCATION_SERVICE);
         // if either GPS or network location providers are disabled, we request the user allow GPS be enabled
@@ -115,7 +141,6 @@ public class GeolocationService {
             SettingsClient mSettingsClient;
             LocationSettingsRequest mLocationSettingsRequest;
 
-            final int REQUEST_CHECK_SETTINGS = 214;
 
             LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
             LocationRequest.Builder locBuilder = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 0);
@@ -165,6 +190,12 @@ public class GeolocationService {
         return true;
     }
 
+    /**
+     * This is set in the function that is calling geolocation services as part of its registration to handle permissions activity results
+     * pass to registerForActivityResult() like geolocationService::locationPermissionResultHandler instead of using an anonymous function
+     * if the permissions were denied, this uses the callback to return the error to the calling fragment or continues getting location otherwise
+     * @param result the result of the permission request
+     */
     public void locationPermissionResultHandler(Map<String, Boolean> result) {
         if (Boolean.TRUE.equals(result.get(Manifest.permission.ACCESS_FINE_LOCATION)) || Boolean.TRUE.equals(result.get(Manifest.permission.ACCESS_COARSE_LOCATION))) {
             // granted one of the permissions, so this will call locationEnabled() next
@@ -176,14 +207,20 @@ public class GeolocationService {
         }
     }
 
+    /**
+     * This is set in the function that is calling geolocation services as part of its registration to handle location settings activity results
+     * pass to registerForActivityResult() like geolocationService::locationEnabledResolutionHandler instead of using an anonymous function
+     * if the settings failed to enable, this uses the callback to return the error to the calling fragment or continues getting location otherwise
+     * @param result the result of the permission request
+     */
     public void locationEnabledResolutionHandler(ActivityResult result){
         if (result.getResultCode() == fragment.getActivity().RESULT_OK) {
-            // call again to ensure the
+            // location is enabled, so call this to get the actual location
             getLocation();
         } else {
-            // permissions were denied
-            // callback with success = false and result = "Location permissions denied: cannot record checkin location."
-            callback.geolocationRequestComplete(false, "Please enable location via system settings.");
+            // location wasnt enabled/was denied
+            // callback with success = false and result = "no location."
+            callback.geolocationRequestComplete(false, "Please enable location services via system settings.");
         }
     }
 
