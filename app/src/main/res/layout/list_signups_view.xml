@@ -6,7 +6,7 @@
     android:padding="8dp">
 
     <TextView
-        android:id="@+id/attendee_name"
+        android:id="@+id/signup_name"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="2"

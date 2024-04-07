@@ -73,6 +73,8 @@ public class EventDashboardFragment extends Fragment {
      * Runs when view is created and displayed.
      * This should display 3 collapsible headers each with either a list of events that a user has organized or signed-up to or are actively attending.
      * It also displays a default message if any of the collapsible headers are empty.
+     * Runs when view is created and displayed. Currently adds a test event to the list if none exist, or otherwise displays attributes of the event stored in main activity.
+     * Creates drop down menus for Checked in Events, Organized Events, Other Events, and Signedup Events. It also populates those menus with events form the database
      * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
      * @param savedInstanceState If non-null, this fragment is being re-constructed
      * from a previous saved state as given here.
