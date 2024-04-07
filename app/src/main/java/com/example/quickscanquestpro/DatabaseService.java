@@ -5,10 +5,12 @@ import static android.content.ContentValues.TAG;
 
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -24,13 +26,16 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A class to handle all database operations
@@ -84,7 +89,6 @@ public class DatabaseService {
     }
 
     /**
-<<<<<<< HEAD
      * Callback interface for uploading event photos to Firebase Storage.
      * This interface is used to notify the caller of the progress, success, or failure of the upload operation.
      */
@@ -144,6 +148,11 @@ public class DatabaseService {
         eventData.put("customCheckin", event.getCustomCheckin());
         eventData.put("customPromo", event.getCustomPromo());
 
+
+
+        eventData.put("signupLimit", event.getSignupLimit());
+
+
         // Combine all data into a single map
         Map<String, Object> combinedData = new HashMap<>();
         combinedData.putAll(eventData);
@@ -168,7 +177,7 @@ public class DatabaseService {
         userData.put("name", user.getName());
         userData.put("email", user.getEmail());
         userData.put("phone", user.getMobileNum());
-        userData.put("geoLocation", user.isGeolocation());
+        userData.put("geolocation", user.isGeolocation());
         userData.put("check-ins", user.getCheckins());
         userData.put("Homepage", user.getHomepage());
         userData.put("profilePictureUrl", user.getProfilePictureUrl());
@@ -202,8 +211,29 @@ public class DatabaseService {
                 event.setEndTime(LocalTime.parse(document.getString("End-time")));
                 event.setEventBannerUrl(document.getString("eventPictureUrl"));
                 event.setEventBannerPath(document.getString("eventPicturePath"));
+
+                // Retrieve check-ins for this event
+                ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) document.get("checkins");
+                Log.d(TAG, "Retrieved " + (checkInsArray != null ? checkInsArray.size() : 0) + " check-ins for event " + eventId);
+
+                if (checkInsArray != null) {
+                    // Process the check-ins array
+                    ArrayList<CheckIn> checkIns = new ArrayList<>();
+                    for (Map<String, Object> checkInMap : checkInsArray) {
+                        String userId = (String) checkInMap.get("userId");
+                        String location = (String) checkInMap.get("location");
+                        checkIns.add(new CheckIn(userId, location));
+                    }
+
+                    Log.d(TAG, "Created " + checkIns.size() + " check-ins for event " + eventId);
+                    event.setCheckIns(checkIns);
+                }
+
+                // Add the event to the list
                 events.add(event);
             }
+
+            // Call the callback with the list of events
             callback.onEventsLoaded(events);
         }).addOnFailureListener(e -> callback.onEventsLoaded(null));
     }
@@ -227,7 +257,7 @@ public class DatabaseService {
                 user.setEmail(document.getString("email"));
                 user.setMobileNum(document.getString("phone"));
                 user.setHomepage(document.getString("Homepage"));
-//                user.setGeolocation(document.getBoolean("geoLocation"));
+                user.setGeolocation(Boolean.TRUE.equals(document.getBoolean("geolocation")));
 //                user.setCheckins(document.getLong("check-ins").intValue());
                 user.setProfilePictureUrl(document.getString("profilePictureUrl"));
                 user.setProfilePicturePath(document.getString("profilePicturePath"));
@@ -257,11 +287,11 @@ public class DatabaseService {
             user.setEmail(queryDocumentSnapshot.getString("email"));
             user.setMobileNum(queryDocumentSnapshot.getString("phone"));
             user.setHomepage(queryDocumentSnapshot.getString("Homepage"));
-            user.setAdmin(queryDocumentSnapshot.getBoolean("admin"));
+            user.setAdmin(Boolean.TRUE.equals(queryDocumentSnapshot.getBoolean("admin")));
             user.setProfilePictureUrl(queryDocumentSnapshot.getString("profilePictureUrl"));
             user.setProfilePicturePath(queryDocumentSnapshot.getString("profilePicturePath"));
             user.setLastCheckIn(queryDocumentSnapshot.getString("lastCheckIn"));
-//            user.setGeolocation(queryDocumentSnapshot.getBoolean("geoLocation"));
+            user.setGeolocation(Boolean.TRUE.equals(queryDocumentSnapshot.getBoolean("geolocation")));
 //            user.setCheckins(queryDocumentSnapshot.getLong("check-ins").intValue());
 
             callback.onUserLoaded(user);
@@ -286,26 +316,37 @@ public class DatabaseService {
         event.setCustomCheckin(queryDocumentSnapshot.getString("customCheckin"));
         event.setCustomPromo(queryDocumentSnapshot.getString("customPromo"));
 
-        // This is supposed to load event picture, but unsure if it works properly
-        // To be implemented later
-                /*String eventPictureUrl = queryDocumentSnapshot.getString("eventPictureUrl");
-                if (eventPictureUrl != null) {
-                    Glide.with(mainActivity)
-                            .asBitmap()
-                            .load(eventPictureUrl)
-                            .into(new CustomTarget<Bitmap>() {
-                                @Override
-                                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                    event.setEventBanner(resource);
-                                }
-                                @Override
-                                public void onLoadCleared(@Nullable Drawable placeholder) {
-                                }
-                            });
-                }*/
+        //update optional signuplimit
+        Number signupLimitNumber = queryDocumentSnapshot.getLong("signupLimit"); // Using getLong for a more direct approach
+        if (signupLimitNumber != null) {
+            event.setSignupLimit(signupLimitNumber.intValue());
+        }
+
+        // Retrieve check-ins for this event
+        ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) queryDocumentSnapshot.get("checkins");
+        Log.d(TAG, "Retrieved " + (checkInsArray != null ? checkInsArray.size() : 0) + " check-ins for event " + eventId);
+        if (checkInsArray != null) {
+            // Process the check-ins array
+            ArrayList<CheckIn> checkIns = new ArrayList<>();
+            for (Map<String, Object> checkInMap : checkInsArray) {
+                String userId = (String) checkInMap.get("userId");
+                String location = (String) checkInMap.get("location");
+                checkIns.add(new CheckIn(userId, location));
+            }
+
+            Log.d(TAG, "Created " + checkIns.size() + " check-ins for event " + eventId);
+            event.setCheckIns(checkIns);
+        }
         return event;
     }
 
+    /**
+     * This function searches the database for an existing event that either has an ID that is the same as the string being passed in
+     * Or that has a customCheckin or customPromo attribute that contains the string passed in. Then it returns the Event with details from
+     * the database for this found event, or null otherwise if no event was found.
+     * @param customQR The string to search the database for
+     * @param callback The function to call once the data is retrieved and the event is found/not found, passes in either Event or null
+     */
     public void getEventWithCustomQR(String customQR, OnEventDataLoaded callback) {
         if (customQR.startsWith("c") || customQR.startsWith("p")) {
             // may be attempting to get a "custom" qr that is just the ID of an existing event
@@ -530,6 +571,125 @@ public class DatabaseService {
                 }))
                 .addOnFailureListener(callback::onFailure);
     }
+
+
+    public interface SignupCallback {
+        void onSuccess();
+        void onSignupLimitReached();
+        void onFailure(Exception e);
+    }
+
+    public void userSignup(User user, Event event, SignupCallback callback) {
+        db.runTransaction(transaction -> {
+            DocumentReference userRef = usersRef.document(user.getUserId());
+            DocumentReference eventRef = eventsRef.document(event.getId());
+
+            DocumentSnapshot eventSnapshot = transaction.get(eventRef);
+            List<String> currentSignups = (List<String>) eventSnapshot.get("signups");
+            Number signupLimit = (Number) eventSnapshot.get("signupLimit");
+
+            // Check is event signups are filled
+            if (signupLimit != null && currentSignups != null && currentSignups.size() >= signupLimit.intValue()) {
+                return "Signup limit reached";
+            }
+
+            transaction.update(eventRef, "signups", FieldValue.arrayUnion(user.getUserId()));
+            transaction.update(userRef, "signedUpEvents", FieldValue.arrayUnion(event.getId()));
+
+            return "Success";
+        }).addOnSuccessListener(result -> {
+            if ("Signup limit reached".equals(result)) {
+                callback.onSignupLimitReached();
+            } else {
+                callback.onSuccess();
+            }
+        }).addOnFailureListener(e -> {
+            callback.onFailure(e);
+        });
+    }
+
+    public interface OnSignedUpEventsLoaded {
+        void onSignedUpEventsLoaded(List<Event> events);
+    }
+
+    public void getUserSignedupEvents(User user, OnSignedUpEventsLoaded callback) {
+        DocumentReference userRef = usersRef.document(user.getUserId());
+        userRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists() && documentSnapshot.contains("signedUpEvents")) {
+                List<String> eventIds = (List<String>) documentSnapshot.get("signedUpEvents");
+                if (eventIds != null && !eventIds.isEmpty()) {
+                    List<Event> signedUpEvents = new ArrayList<>();
+                    AtomicInteger eventsCount = new AtomicInteger(eventIds.size());
+                    for (String eventId : eventIds) {
+                        getEvent(eventId, event -> {
+                            if (event != null) {
+                                // Checks if the events date is already passed
+                                LocalDate endDate = event.getEndDate();
+                                LocalDateTime endDateTime = endDate.atTime(event.getEndTime());
+                                if (endDateTime.isAfter(LocalDateTime.now())) {
+                                    signedUpEvents.add(event);
+                                }
+                            }
+                            if (eventsCount.decrementAndGet() == 0) {
+                                callback.onSignedUpEventsLoaded(signedUpEvents);
+                            }
+                        });
+                    }
+                } else {
+                    // if there are no signups
+                    callback.onSignedUpEventsLoaded(Collections.emptyList());
+                }
+            } else {
+                callback.onSignedUpEventsLoaded(Collections.emptyList());
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("DatabaseService", "Error fetching signedUpEvents", e);
+            callback.onSignedUpEventsLoaded(Collections.emptyList());
+        });
+    }
+
+    public interface OnEventSignUpsLoaded {
+        void onSignUpsLoaded(List<User> users);
+    }
+
+    public void getEventSignUps(String eventId, OnEventSignUpsLoaded callback) {
+        DocumentReference eventRef = eventsRef.document(eventId);
+
+        eventRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists() && documentSnapshot.contains("signups")) {
+                List<String> userIds = (List<String>) documentSnapshot.get("signups");
+                if (userIds != null && !userIds.isEmpty()) {
+                    List<User> signedUpUsers = new ArrayList<>();
+                    AtomicInteger usersCount = new AtomicInteger(userIds.size());
+
+                    for (String userId : userIds) {
+                        getSpecificUserDetails(userId, new OnUserDataLoaded() {
+                            @Override
+                            public void onUserLoaded(User user) {
+                                if (user != null) {
+                                    signedUpUsers.add(user);
+                                }
+                                if (usersCount.decrementAndGet() == 0) {
+                                    callback.onSignUpsLoaded(signedUpUsers);
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    // If there are no users signed up for the event
+                    callback.onSignUpsLoaded(new ArrayList<>());
+                }
+            } else {
+                // If the event does not exist or does not have any signups
+                callback.onSignUpsLoaded(new ArrayList<>());
+            }
+        }).addOnFailureListener(e -> {
+            // In case of any failure
+            callback.onSignUpsLoaded(new ArrayList<>());
+        });
+    }
+
+
 
 
     public void deleteUserProfilePicture(String userId, OnProfilePictureDelete callback) {

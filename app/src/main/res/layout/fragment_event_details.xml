@@ -51,7 +51,16 @@
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="16dp"
             android:layout_marginStart="130dp"
-            android:text="Upload Image"/>
+            android:text=" Upload Image "/>
+
+        <Button
+            android:id="@+id/view_attendees_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/edit_banner_button"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="130dp"
+            android:text="View Atendees"/>
 
         <TextView
             android:id="@+id/event_title"
@@ -63,7 +72,7 @@
             android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/edit_banner_button" />
+            app:layout_constraintTop_toBottomOf="@id/view_attendees_button" />
 
         <TextView
             android:id="@+id/event_description"
@@ -123,6 +132,29 @@
             app:layout_constraintTop_toBottomOf="@id/where_text" />
 
         <TextView
+            android:id="@+id/signup_limit_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="Sign Up Limit"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/event_location" />
+
+        <TextView
+            android:id="@+id/signup_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="16dp"
+            android:ems="20"
+            android:text="This will be the maximum number of signups"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/signup_limit_text" />
+
+        <TextView
             android:id="@+id/event_announcements_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -132,7 +164,7 @@
             android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/event_location" />
+            app:layout_constraintTop_toBottomOf="@id/signup_number" />
 
         <ListView
             android:id="@+id/event_announcements_list"
@@ -144,6 +176,27 @@
             app:layout_constraintBottom_toBottomOf="parent"
             android:divider="@color/zxing_transparent"
             android:dividerHeight="10dp" />
+
+        <Button
+            android:id="@+id/signup_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Signup"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/event_announcements_list"
+            app:layout_constraintStart_toEndOf="@+id/signup_list"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <Button
+            android:id="@+id/signup_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Signup List"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/event_announcements_list"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/signup_button" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

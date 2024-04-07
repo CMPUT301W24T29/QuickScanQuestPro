@@ -1,15 +1,21 @@
 package com.example.quickscanquestpro;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.FirebaseApp;
 
@@ -52,7 +58,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     private NavigationBarView navBarView;
 
     private MenuItem item;
-
 
 
     @Override
@@ -169,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     public void transitionFragment(Fragment fragment, String tag) {
         FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.content, fragment, tag);
+        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 

@@ -25,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -52,6 +53,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -61,19 +63,19 @@ import java.util.UUID;
  * The user can upload profile picture
  * The user can delete profile picture
  */
-public class ProfileFragment extends Fragment {
-
-
+public class ProfileFragment extends Fragment implements GeolocationService.GeolocationRegisteredFragment {
     private ImageView profilePicturePlaceholder;
-
     private ActivityResultLauncher<Intent> pickImageLauncher;
+    private ActivityResultLauncher<String[]> locPermLauncher;
+    private ActivityResultLauncher<IntentSenderRequest> locResolutionIntentSender;
     private ImageView deleteProfilePictureButton;
 
     LinearProgressIndicator progressIndicator;
-
     private DatabaseService databaseService = new DatabaseService();
-
     private User user;
+    private GeolocationService geolocationService = new GeolocationService(this, this);
+    private boolean ignoreGeolocSwitch = false;
+    private SwitchMaterial geolocationSwitch;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -86,7 +88,7 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-  
+
         setupActivityResultLaunchers();
 
     }
@@ -107,6 +109,13 @@ public class ProfileFragment extends Fragment {
                 }
             }
         });
+
+        // launcher to deal with permission results
+        locPermLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), geolocationService::locationPermissionResultHandler);
+
+        // launcher to deal with user's not having location enabled, but having geolocation permissions granted and toggled on in profile
+        locResolutionIntentSender = registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(), geolocationService::locationEnabledResolutionHandler);
+
     }
 
 
@@ -163,7 +172,7 @@ public class ProfileFragment extends Fragment {
         EditText homepageInput = view.findViewById(R.id.homepageInput);
         EditText mobileNumberInput = view.findViewById(R.id.mobileNumberInput);
         EditText emailAddressInput = view.findViewById(R.id.emailAddressInput);
-        SwitchMaterial geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
+        geolocationSwitch = view.findViewById(R.id.geolocationSwitch);
 
         //Get User from Main activity
 
@@ -237,8 +246,14 @@ public class ProfileFragment extends Fragment {
         });
 
         geolocationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            user.setGeolocation(isChecked);
-            databaseService.addUser(user);
+            if (isChecked && !ignoreGeolocSwitch) {
+                // disable it before attempting to get location, because this could take a while
+                geolocationSwitch.setEnabled(false);
+                geolocationService.getLocation();
+            } else if (!ignoreGeolocSwitch){
+                user.setGeolocation(false);
+                databaseService.addUser(user);
+            }
         });
 
         //Prepopulate EditText
@@ -343,8 +358,6 @@ public class ProfileFragment extends Fragment {
                     String profilePictureUrl = document.getString("profilePictureUrl");
                     Boolean geolocation = document.getBoolean("geolocation");
 
-
-                    // Assuming this runs on the UI thread, but consider checking and/or using runOnUiThread if needed
                     updateUIWithUserData(name, homepage, mobileNum, email, geolocation, profilePictureUrl);
                 } else {
                     Log.d("ProfileFragment", "No such document");
@@ -354,7 +367,6 @@ public class ProfileFragment extends Fragment {
             }
         });
     }
-
 
     /**
      * Updates the UI with the user's data fetched from the database.
@@ -397,7 +409,9 @@ public class ProfileFragment extends Fragment {
             deleteProfilePictureButton.setVisibility(View.GONE);
         }
         if (geolocation != null) {
+            ignoreGeolocSwitch = true;
             geolocationSwitch.setChecked(geolocation);
+            ignoreGeolocSwitch = false;
         }
     }
 
@@ -455,5 +469,38 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+    /**
+     * function that is called when the result for a users location (enabling location) is done
+     * @param success true if the location was set, false if it failed
+     * @param result the latitude and longitude as a "lat,long" string, or error string if it failed
+     */
+    @Override
+    public void geolocationRequestComplete(boolean success, String result) {
+        if (success) {
+            user.setGeolocation(true);
+            databaseService.addUser(user);
+            geolocationSwitch.setEnabled(true);
+            Toast.makeText(getContext(), "Location enabled!", Toast.LENGTH_SHORT).show();
+        } else {
+            geolocationSwitch.setChecked(false);
+            Toast.makeText(getContext(), result, Toast.LENGTH_LONG).show();
+            geolocationSwitch.setEnabled(true);
+        }
+    }
 
+    /**
+     * Returns the registered handler for permission activity results
+     * @return result launcher handler for using .launch()
+     */
+    public ActivityResultLauncher<String[]> getLocPermLauncher() {
+        return locPermLauncher;
+    }
+
+    /**
+     * Returns the registered handler for settings activity results
+     * @return result launcher handler for using .launch()
+     */
+    public ActivityResultLauncher<IntentSenderRequest> getLocResolutionIntentSender() {
+        return locResolutionIntentSender;
+    }
 }
