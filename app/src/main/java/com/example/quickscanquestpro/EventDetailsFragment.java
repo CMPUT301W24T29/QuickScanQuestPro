@@ -261,7 +261,7 @@ public class EventDetailsFragment extends Fragment {
             // Signup and Signup List buttons
 
             Button signupButton = view.findViewById(R.id.signup_button);
-            Button signupListButton = view.findViewById(R.id.signup_list);
+            Button signupListButton = view.findViewById(R.id.signup_list_button);
 
             signupButton.setOnClickListener(new View.OnClickListener() {
                 @Override

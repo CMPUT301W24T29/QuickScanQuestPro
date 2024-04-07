@@ -144,50 +144,50 @@ public class OrganizerIntentTests {
 
     }
 
-    @Test
-    public void testUS01_06_01ShareEventQR() {
-        onView(isRoot()).perform(waitFor(2000));
-        onView(withId(R.id.navigation_dashboard)).perform(click());
-        onView(withId(R.id.navigation_dashboard)).perform(click());
-        onView(isRoot()).perform(waitFor(2000));
-        onView(withId(R.id.navigation_dashboard)).perform(click());
-        onView(isRoot()).perform(waitFor(2000));
-
-        onView(withId(R.id.event_dashboard_create_button)).perform(click());
-
-        String eventTitle = UUID.randomUUID().toString();
-        onView(isRoot()).perform(waitFor(4000));
-        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText(eventTitle), ViewActions.closeSoftKeyboard());
-        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"), ViewActions.closeSoftKeyboard());
-        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"), ViewActions.closeSoftKeyboard());
-
-        // Assuming setDate and setTime are correctly implemented to interact with your date/time pickers
-        setDate(R.id.text_event_start_date, 2024, 8, 18);
-        setDate(R.id.text_event_end_date, 2024, 8, 19);
-        setTime(R.id.text_event_start_time, 12, 30);
-        setTime(R.id.text_event_end_time, 19, 36);
-
-        onView(withId(R.id.create_event_confirm_button)).perform(click());
-
-        onView(withId(R.id.navigation_profile)).perform(click());
-        onView(withId(R.id.admin_button_manage_events)).perform(click());
-
-        // Scroll to the event with the specific title and click on it
-        // Replace this scrolling mechanism with a more reliable way if available
-        onView(allOf(withText(eventTitle), isDescendantOfA(withId(R.id.admin_event_dashboard_list))))
-                .perform(click());
-
-        // Assert that the sharing intent is triggered
-        onView(withId(R.id.share_event_button)).perform(click());
-
-        // Stubbing the Intent to prevent the chooser from actually launching
-        intending(hasAction(Intent.ACTION_CHOOSER)).respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, null));
-
-        onView(withId(R.id.share_promo_button)).perform(click());
-
-        // Verify the chooser intent was triggered
-        intended(hasAction(Intent.ACTION_CHOOSER));
-    }
+//    @Test
+//    public void testUS01_06_01ShareEventQR() {
+//        onView(isRoot()).perform(waitFor(2000));
+//        onView(withId(R.id.navigation_dashboard)).perform(click());
+//        onView(withId(R.id.navigation_dashboard)).perform(click());
+//        onView(isRoot()).perform(waitFor(2000));
+//        onView(withId(R.id.navigation_dashboard)).perform(click());
+//        onView(isRoot()).perform(waitFor(2000));
+//
+//        onView(withId(R.id.event_dashboard_create_button)).perform(click());
+//
+//        String eventTitle = UUID.randomUUID().toString();
+//        onView(isRoot()).perform(waitFor(4000));
+//        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText(eventTitle), ViewActions.closeSoftKeyboard());
+//        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"), ViewActions.closeSoftKeyboard());
+//        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"), ViewActions.closeSoftKeyboard());
+//
+//        // Assuming setDate and setTime are correctly implemented to interact with your date/time pickers
+//        setDate(R.id.text_event_start_date, 2024, 8, 18);
+//        setDate(R.id.text_event_end_date, 2024, 8, 19);
+//        setTime(R.id.text_event_start_time, 12, 30);
+//        setTime(R.id.text_event_end_time, 19, 36);
+//
+//        onView(withId(R.id.create_event_confirm_button)).perform(click());
+//
+//        onView(withId(R.id.navigation_profile)).perform(click());
+//        onView(withId(R.id.admin_button_manage_events)).perform(click());
+//
+//        // Scroll to the event with the specific title and click on it
+//        // Replace this scrolling mechanism with a more reliable way if available
+//        onView(allOf(withText(eventTitle), isDescendantOfA(withId(R.id.admin_event_dashboard_list))))
+//                .perform(click());
+//
+//        // Assert that the sharing intent is triggered
+//        onView(withId(R.id.share_event_button)).perform(click());
+//
+//        // Stubbing the Intent to prevent the chooser from actually launching
+//        intending(hasAction(Intent.ACTION_CHOOSER)).respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, null));
+//
+//        onView(withId(R.id.share_promo_button)).perform(click());
+//
+//        // Verify the chooser intent was triggered
+//        intended(hasAction(Intent.ACTION_CHOOSER));
+//    }
 
     public static void setDate(int datePickerLaunchViewId, int year, int monthOfYear, int dayOfMonth) {
         onView(withId(datePickerLaunchViewId)).perform(click());

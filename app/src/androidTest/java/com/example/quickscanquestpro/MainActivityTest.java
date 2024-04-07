@@ -494,9 +494,158 @@ public class MainActivityTest {
             });
         }
 
-
-
-
     }
 
+    @Test
+    public void testUS_01_10_01EventSignedUpList(){
+        onView(isRoot()).perform(waitFor(5000));
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+        onView(withId(R.id.event_dashboard_title)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.event_dashboard_create_button)).perform(click());
+
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("My Test Event Title"));
+        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Test Event Description"));
+        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Test Event Location"));
+        Espresso.closeSoftKeyboard();
+
+        setDate(R.id.text_event_start_date, 2024, 8, 18);
+        Espresso.closeSoftKeyboard();
+        setDate(R.id.text_event_end_date, 2024, 8, 19);
+        Espresso.closeSoftKeyboard();
+
+        setTime(R.id.text_event_start_time, 12, 30);
+        Espresso.closeSoftKeyboard();
+        setTime(R.id.text_event_end_time, 19, 36);
+        Espresso.closeSoftKeyboard();
+
+        onView(withId(R.id.create_event_confirm_button)).perform(click());
+        onView(isRoot()).perform(waitFor(3000));
+
+        // Click on the third item in the RecyclerView
+        onView(withId(R.id.event_dashboard_list))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(2, click()));
+        onView(isRoot()).perform(waitFor(3000));
+
+        onView(withText("My Test Event Title")).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.signup_button)).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.signup_list_button)).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.signup_list_title)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void testUS_01_11_01LimitSignups(){
+
+        onView(isRoot()).perform(waitFor(5000));
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+        onView(withId(R.id.event_dashboard_title)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.event_dashboard_create_button)).perform(click());
+
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("My Test Event Title"));
+        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Test Event Description"));
+        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Test Event Location"));
+        onView(withId(R.id.edit_text_signups)).perform(ViewActions.typeText("10"));
+        Espresso.closeSoftKeyboard();
+
+        setDate(R.id.text_event_start_date, 2024, 8, 18);
+        Espresso.closeSoftKeyboard();
+        setDate(R.id.text_event_end_date, 2024, 8, 19);
+        Espresso.closeSoftKeyboard();
+
+        setTime(R.id.text_event_start_time, 12, 30);
+        Espresso.closeSoftKeyboard();
+        setTime(R.id.text_event_end_time, 19, 36);
+        Espresso.closeSoftKeyboard();
+
+        onView(withId(R.id.create_event_confirm_button)).perform(click());
+        onView(isRoot()).perform(waitFor(3000));
+
+        onView(withId(R.id.event_dashboard_list))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(2, click()));
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withText("My Test Event Title")).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withText("10"))
+                .check(matches(isDisplayed()));
+        onView(isRoot()).perform(waitFor(2000));
+    }
+
+    @Test
+    public void testUS_02_07_01Signup(){
+        onView(isRoot()).perform(waitFor(5000));
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+        onView(withId(R.id.event_dashboard_title)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.event_dashboard_browse_button)).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        // click first item in browse events
+        onView(withId(R.id.browse_events_dashboard_list))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.signup_button)).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+    }
+
+    @Test
+    public void testUS_02_09_01UserSignupList(){
+        onView(isRoot()).perform(waitFor(5000));
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+        onView(withId(R.id.event_dashboard_title)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.event_dashboard_create_button)).perform(click());
+
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("My Test Event Title"));
+        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Test Event Description"));
+        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Test Event Location"));
+        Espresso.closeSoftKeyboard();
+
+        setDate(R.id.text_event_start_date, 2024, 8, 18);
+        Espresso.closeSoftKeyboard();
+        setDate(R.id.text_event_end_date, 2024, 8, 19);
+        Espresso.closeSoftKeyboard();
+
+        setTime(R.id.text_event_start_time, 12, 30);
+        Espresso.closeSoftKeyboard();
+        setTime(R.id.text_event_end_time, 19, 36);
+        Espresso.closeSoftKeyboard();
+
+        onView(withId(R.id.create_event_confirm_button)).perform(click());
+        onView(isRoot()).perform(waitFor(3000));
+
+        // Click on the third item in the RecyclerView
+        onView(withId(R.id.event_dashboard_list))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(2, click()));
+        onView(isRoot()).perform(waitFor(3000));
+
+        onView(withText("My Test Event Title")).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.signup_button)).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.back_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+
+
+        onView(withId(R.id.event_dashboard_list))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(1, click()));
+        onView(isRoot()).perform(waitFor(5000));
+        onView(withText("My Test Event Title"))
+                .check(matches(isDisplayed()));
+    }
 }
