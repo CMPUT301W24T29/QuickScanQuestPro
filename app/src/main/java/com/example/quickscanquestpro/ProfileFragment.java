@@ -505,7 +505,11 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
         }
     }
 
-
+    /**
+     * function that is called when the result for a users location (enabling location) is done
+     * @param success true if the location was set, false if it failed
+     * @param result the latitude and longitude as a "lat,long" string, or error string if it failed
+     */
     @Override
     public void geolocationRequestComplete(boolean success, String result) {
         if (success) {
@@ -520,10 +524,18 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
         }
     }
 
+    /**
+     * Returns the registered handler for permission activity results
+     * @return result launcher handler for using .launch()
+     */
     public ActivityResultLauncher<String[]> getLocPermLauncher() {
         return locPermLauncher;
     }
 
+    /**
+     * Returns the registered handler for settings activity results
+     * @return result launcher handler for using .launch()
+     */
     public ActivityResultLauncher<IntentSenderRequest> getLocResolutionIntentSender() {
         return locResolutionIntentSender;
     }

@@ -258,7 +258,6 @@ public class DatabaseService {
                 user.setMobileNum(document.getString("phone"));
                 user.setHomepage(document.getString("Homepage"));
                 user.setNotificationToken(document.getString("NotificationToken"));
-//                user.setGeolocation(document.getBoolean("geoLocation"));
                 user.setGeolocation(Boolean.TRUE.equals(document.getBoolean("geolocation")));
 //                user.setCheckins(document.getLong("check-ins").intValue());
                 user.setProfilePictureUrl(document.getString("profilePictureUrl"));
@@ -618,10 +617,6 @@ public class DatabaseService {
             callback.onFailure(e);
         });
     }
-
-
-
-
 
     public interface OnSignedUpEventsLoaded {
         void onSignedUpEventsLoaded(List<Event> events);

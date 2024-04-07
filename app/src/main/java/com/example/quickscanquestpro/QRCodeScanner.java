@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
  * The attendees can also go to events details page without checking, if a promotional code is scanned
  *
  */
-public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
+public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
     private ExecutorService cameraExecutor;
     private PreviewView previewView;
     private Context context;
@@ -329,3 +329,4 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
     }
 
 }
+

@@ -154,5 +154,4 @@ public class EventDashboardFragment extends Fragment {
             transaction.commit();
         });
     }
-
 }

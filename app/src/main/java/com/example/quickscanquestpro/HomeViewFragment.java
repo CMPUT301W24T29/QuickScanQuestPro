@@ -1,6 +1,7 @@
 package com.example.quickscanquestpro;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import androidx.activity.result.ActivityResultLauncher;
@@ -125,6 +126,7 @@ public class HomeViewFragment extends Fragment implements GeolocationService.Geo
             qrCodeScanner.shutdown();
         }
     }
+
     @Override
     public void geolocationRequestComplete(boolean success, String result) {
         // pass it along to the scanner

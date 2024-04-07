@@ -124,7 +124,6 @@ public class GeolocationService {
             return false;
         }
 
-
         return true;
 
     }
@@ -140,7 +139,6 @@ public class GeolocationService {
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
             SettingsClient mSettingsClient;
             LocationSettingsRequest mLocationSettingsRequest;
-
 
             LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
             LocationRequest.Builder locBuilder = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 0);

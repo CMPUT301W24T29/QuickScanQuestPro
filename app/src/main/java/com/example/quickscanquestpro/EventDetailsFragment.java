@@ -213,7 +213,7 @@ public class EventDetailsFragment extends Fragment {
                              AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.event);
                              FragmentManager fragmentManager = getParentFragmentManager();
                              FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                                fragmentTransaction.replace(R.id.content, attendeesListFragment, "AttendeesList");
+                             fragmentTransaction.replace(R.id.content, attendeesListFragment);
                              fragmentTransaction.addToBackStack(null);
                              fragmentTransaction.commit();
                         }
@@ -316,7 +316,7 @@ public class EventDetailsFragment extends Fragment {
                 shareQRImage(checkInCodeImage, "checkIn");
             });
 
-            Button closeDialog = shareQrDialog.findViewById(R.id.share_close_button);
+            ImageButton closeDialog = shareQrDialog.findViewById(R.id.share_close_button);
             closeDialog.setOnClickListener(v1 -> shareQrDialog.dismiss());
         });
     }

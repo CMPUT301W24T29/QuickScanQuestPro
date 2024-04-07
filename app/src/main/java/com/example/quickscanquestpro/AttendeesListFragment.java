@@ -107,7 +107,7 @@ public class AttendeesListFragment extends Fragment {
                 // Fetch data from the database (you need to implement this method)
                 fetchData();
             }
-        }, 0, 1000); // Schedule to run every 1 seconds (5000 milliseconds)
+        }, 0, 5000); // Schedule to run every 5 seconds (5000 milliseconds)
     }
 
     /**
