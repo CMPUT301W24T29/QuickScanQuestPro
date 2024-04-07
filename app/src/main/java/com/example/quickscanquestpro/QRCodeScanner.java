@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.IntentSenderRequest;
 import androidx.annotation.OptIn;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ExperimentalGetImage;
@@ -47,7 +49,7 @@ import java.util.concurrent.TimeUnit;
  * The attendees can also go to events details page without checking, if a promotional code is scanned
  *
  */
-public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
+public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
     private ExecutorService cameraExecutor;
     private PreviewView previewView;
     private Context context;
@@ -59,6 +61,8 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
     private String processingQrType;
     private OnQRScanned callback;
     private String customCode;
+    private GeolocationService geolocationService;
+    private Event locationGettingEvent;
 
     /**
      * Interface for callbacks when a QRCode is scanned that returns the scanned code instead.
@@ -72,7 +76,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
      * @param context The application context used for accessing the camera.
      * @param previewView The view into which the camera preview is rendered
      */
-    public QRCodeScanner(Context context, PreviewView previewView, LifecycleOwner lifecycleOwner, MainActivity mainActivity)
+    public QRCodeScanner(Context context, PreviewView previewView, LifecycleOwner lifecycleOwner, MainActivity mainActivity, GeolocationService geolocationService)
     {
         this.mainActivity = mainActivity;
         this.context = context;
@@ -80,10 +84,11 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
         this.cameraExecutor = Executors.newSingleThreadExecutor();
         this.scanner = BarcodeScanning.getClient();
         this.lifecycleOwner = lifecycleOwner;
+        this.geolocationService = geolocationService;
 
     }
 
-    public QRCodeScanner(Context context, PreviewView previewView, LifecycleOwner lifecycleOwner, MainActivity mainActivity, OnQRScanned callback)
+    public QRCodeScanner(Context context, PreviewView previewView, LifecycleOwner lifecycleOwner, MainActivity mainActivity, GeolocationService geolocationService, OnQRScanned callback)
     {
         this.mainActivity = mainActivity;
         this.context = context;
@@ -91,6 +96,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
         this.cameraExecutor = Executors.newSingleThreadExecutor();
         this.scanner = BarcodeScanning.getClient();
         this.lifecycleOwner = lifecycleOwner;
+        this.geolocationService = geolocationService;
         this.callback = callback;
 
     }
@@ -224,6 +230,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
 
     /**
      * This runs when the processed QRcode returns from the database and either checks in the user or shows them the details page
+     * Depending on if the event code was a promo or checkin code
      * @param event Event returned from DatabaseService, can be null if not found.
      */
     @Override
@@ -262,18 +269,23 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
             }
 
             if (processingQrType.equals("c")){
-                databaseService.recordCheckIn(event.getId(), currentUser.getUserId(), "The location where QR is scanned");
-                databaseService.updateLastCheckIn(currentUser.getUserId(), event.getId());
-
-                Toast.makeText(mainActivity.getApplicationContext(), "Checked in!", Toast.LENGTH_SHORT).show();
-                event.checkIn();
+                if (currentUser.isGeolocation()) {
+                    locationGettingEvent = event;
+                    // will eventually call geolocationRequestComplete() with result
+                    geolocationService.getLocation();
+                    return;
+                } else {
+                    databaseService.recordCheckIn(event.getId(), currentUser.getUserId(), "");
+                    databaseService.updateLastCheckIn(currentUser.getUserId(), event.getId());
+                    event.checkIn();
+                    Toast.makeText(mainActivity.getApplicationContext(), "Checked in!", Toast.LENGTH_SHORT).show();
+                }
             } else {
                 Toast.makeText(mainActivity.getApplicationContext(), "Promotion code scanned!", Toast.LENGTH_SHORT).show();
             }
 
             // transition to the new event
             mainActivity.transitionFragment(new EventDetailsFragment(event), "EventDetailsFragment");
-
             NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
             // Sets navbar selection to the event dashboard
             MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
@@ -281,6 +293,39 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded{
 
             shutdown();
         }
+    }
+
+
+    /**
+     * called by homeview fragment with the result of the location request
+     * @param success true if retrieved, false if not
+     * @param result the location as a "lat,long" string or the error message if success false
+     */
+    public void geolocationRequestComplete(boolean success, String result) {
+        User currentUser = mainActivity.getUser();
+
+        // all done with location request yayy
+        if (success) {
+            Toast.makeText(mainActivity.getApplicationContext(), "Checked in!", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(mainActivity.getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+            result = "";
+            Toast.makeText(mainActivity.getApplicationContext(), "Checked in!", Toast.LENGTH_SHORT).show();
+        }
+
+        databaseService.recordCheckIn(locationGettingEvent.getId(), currentUser.getUserId(), result);
+        databaseService.updateLastCheckIn(currentUser.getUserId(), locationGettingEvent.getId());
+        locationGettingEvent.checkIn();
+
+        // transition to the new event
+        mainActivity.transitionFragment(new EventDetailsFragment(locationGettingEvent), "EventDetailsFragment");
+        NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
+        // Sets navbar selection to the event dashboard
+        MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
+        item.setChecked(true);
+
+        shutdown();
+
     }
 
 }
