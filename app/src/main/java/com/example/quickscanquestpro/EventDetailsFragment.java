@@ -204,7 +204,7 @@ public class EventDetailsFragment extends Fragment {
 
             });
             // Enable these buttons if the user is the organizer of the event
-            if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
+            if (!event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
                 uploadImageButton.setOnClickListener(v -> {
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("image/*");
@@ -318,7 +318,7 @@ public class EventDetailsFragment extends Fragment {
                 shareQRImage(checkInCodeImage, "checkIn");
             });
 
-            Button closeDialog = shareQrDialog.findViewById(R.id.share_cancel_button);
+            ImageButton closeDialog = shareQrDialog.findViewById(R.id.share_close_button);
             closeDialog.setOnClickListener(v1 -> shareQrDialog.dismiss());
         });
     }
