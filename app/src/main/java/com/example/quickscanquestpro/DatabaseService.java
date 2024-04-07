@@ -148,6 +148,10 @@ public class DatabaseService {
                 .addOnFailureListener(e -> Log.e("DatabaseService", "Error enabling admin", e));
     }
 
+    /**
+     * Takes the passed in event and updates the database with the event attributes
+     * @param event An event object with attributes to be updated in the database
+     */
     public void addEvent(Event event) {
 
         // Create a Map to store the data
@@ -593,12 +597,24 @@ public class DatabaseService {
     }
 
 
+    /**
+     * This interface is implemented by userSignup
+     * Used as a callback for Signup button to know if the signup was successful
+     */
     public interface SignupCallback {
         void onSuccess();
         void onSignupLimitReached();
         void onFailure(Exception e);
     }
 
+    /**
+     * This method is called when the signup button is pressed in an Event Details Fragment.
+     * It Creates A List of Users in the database to represents signups.
+     * Also implements a callback function so the method that calls this method will know the sigun status
+     * @param user User object to be added as a signup
+     * @param event Event object that will hold the signups field
+     * @param callback A callback function to be able to tell the signup function if the signup was successful
+     */
     public void userSignup(User user, Event event, SignupCallback callback) {
         db.runTransaction(transaction -> {
             DocumentReference userRef = usersRef.document(user.getUserId());
@@ -628,10 +644,20 @@ public class DatabaseService {
         });
     }
 
+
+    /**
+     * This interface is implemented by getUserSignedupEvents
+     * functions as a callback function
+     */
     public interface OnSignedUpEventsLoaded {
         void onSignedUpEventsLoaded(List<Event> events);
     }
 
+    /**
+     * This method is called in EventDashboardFragment
+     * @param user
+     * @param callback
+     */
     public void getUserSignedupEvents(User user, OnSignedUpEventsLoaded callback) {
         DocumentReference userRef = usersRef.document(user.getUserId());
         userRef.get().addOnSuccessListener(documentSnapshot -> {

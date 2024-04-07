@@ -50,7 +50,7 @@ public class SignupListFragment extends Fragment {
             @Override
             public void onSignUpsLoaded(List<User> users) {
                 // Update your ListView adapter with the fetched users
-                ArrayAdapter<User> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, users);
+                SignupListAdapter adapter = new SignupListAdapter(getActivity(), R.layout.list_signups_view, users);
                 listView.setAdapter(adapter);
             }
         });

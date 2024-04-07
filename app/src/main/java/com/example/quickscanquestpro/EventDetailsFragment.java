@@ -124,6 +124,7 @@ public class EventDetailsFragment extends Fragment {
      * It also sets an click listener for the back button for all users. If the user's ID matches the
      * event organizer's ID, it also sets a click listener for the share button and the upload image button.
      * If the user is not the organizer, the upload image button and the share button are hidden.
+     * It also creates the buttons to signup and view the signupList
      * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
      * @param savedInstanceState If non-null, this fragment is being re-constructed
      * from a previous saved state as given here.
@@ -175,7 +176,7 @@ public class EventDetailsFragment extends Fragment {
             ArrayList<String> announcementList = event.getAnnouncements();
 
 
-
+            // set the text of sign up limit depending on if there is a limit
             if (event.getSignupLimit() != null) {
                 signupLimit.setText(event.getSignupLimit().toString());
             } else {
@@ -261,8 +262,6 @@ public class EventDetailsFragment extends Fragment {
 
             Button signupButton = view.findViewById(R.id.signup_button);
             Button signupListButton = view.findViewById(R.id.signup_list);
-
-
 
             signupButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -420,6 +419,11 @@ public class EventDetailsFragment extends Fragment {
         });
     }
 
+    /**
+     * This method is called when the signup button is called.
+     * It calls a database service function to add the user to the list of signups for the event.
+     * Will send a send a toast depending on the result of the signup
+     */
     private void signup(){
         MainActivity mainActivity = (MainActivity) getActivity();
         user = mainActivity.getUser();
@@ -448,6 +452,9 @@ public class EventDetailsFragment extends Fragment {
         });
     }
 
+    /**
+     * This method is called when the signup list button is called and it create the signuplist fragment
+     */
     private void signupList() {
         SignupListFragment signupListFragment = new SignupListFragment();
 
