@@ -494,9 +494,23 @@ public class MainActivityTest {
             });
         }
 
+    }
 
+    /**
+     * This test requires a valid CHECKIN qr loaded into the scanner
+     */
+    @Test
+    public void testUS03_02_01Geolocation(){
+        // test that when checking in with User bool disabled, event stored checkin but no location
+        // default for a test is a new user, which has location disabled in user
+        onView(isRoot()).perform(waitFor(7000)); // Wait for scanning of checkin code
 
+        MainActivity mainActivity = getActivityFromScenario(scenario);
 
+        DatabaseService databaseService = new DatabaseService();
+        databaseService.getEvent();
+
+        // test that when checking in with User bool enabled, event stored checkin WITH a location
     }
 
 }
