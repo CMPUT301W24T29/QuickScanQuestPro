@@ -313,9 +313,6 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
      * and makes the delete profile picture button visible. In case of failure, it displays a toast message.
      */
     private void uploadImage(Uri file) {
-        MainActivity mainActivity = (MainActivity) getActivity();
-        User user = mainActivity.getUser();
-
         progressIndicator.setVisibility(View.VISIBLE);
         progressIndicator.setIndeterminate(true);
 
@@ -351,9 +348,6 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
      * It shows a toast message indicating success or failure.
      */
     public void deleteProfilePicture() {
-        MainActivity mainActivity = (MainActivity) getActivity();
-        User user = mainActivity.getUser();
-
         databaseService.deleteProfilePicture(user, new DatabaseService.OnProfilePictureDelete() {
             @Override
             public void onSuccess() {
