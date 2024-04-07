@@ -85,7 +85,7 @@ public class AdminManageEventsFragment extends Fragment {
         eventsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         FloatingActionButton backButton = view.findViewById(R.id.back_button);
 
-        boolean isAdmin = false;
+        boolean isAdmin = true;
         if (getActivity() instanceof MainActivity) {
             isAdmin = ((MainActivity) getActivity()).getUser().isAdmin();
         }
