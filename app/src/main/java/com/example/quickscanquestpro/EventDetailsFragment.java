@@ -137,6 +137,7 @@ public class EventDetailsFragment extends Fragment {
             TextView eventDescription = view.findViewById(R.id.event_description);
             TextView eventDate = view.findViewById(R.id.event_date);
             TextView eventLocation = view.findViewById(R.id.event_location);
+            TextView signupLimit = view.findViewById(R.id.signup_number);
             eventImage = view.findViewById(R.id.event_banner);
             FloatingActionButton backButton = view.findViewById(R.id.back_button);
             FloatingActionButton shareButton = view.findViewById(R.id.share_event_button);
@@ -164,6 +165,15 @@ public class EventDetailsFragment extends Fragment {
             eventDate.setText(eventDateString);
             eventLocation.setText(event.getLocation());
             ArrayList<String> announcementList = event.getAnnouncements();
+
+
+
+            if (event.getSignupLimit() != null) {
+                signupLimit.setText(event.getSignupLimit().toString());
+            } else {
+                signupLimit.setText("No limit");
+            }
+
 
             // Set the listview of announcements to the announcements of the event and set the height of the listview
             ArrayAdapter<String> announcementAdapter =
@@ -233,10 +243,11 @@ public class EventDetailsFragment extends Fragment {
             Button signupButton = view.findViewById(R.id.signup_button);
             Button signupListButton = view.findViewById(R.id.signup_list);
 
+
+
             signupButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getContext(), "Signed up!", Toast.LENGTH_SHORT).show();
                     signup();
                 }
             });
@@ -244,7 +255,6 @@ public class EventDetailsFragment extends Fragment {
             signupListButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getContext(), "Signup List", Toast.LENGTH_SHORT).show();
                     signupList();
                 }
             });
@@ -387,10 +397,41 @@ public class EventDetailsFragment extends Fragment {
         MainActivity mainActivity = (MainActivity) getActivity();
         user = mainActivity.getUser();
 
-        databaseService.userSignup(user, event);
+        databaseService.userSignup(user, event, new DatabaseService.SignupCallback() {
+            @Override
+            public void onSuccess() {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getActivity(), "Signed up!", Toast.LENGTH_SHORT).show());
+                }
+            }
+
+            @Override
+            public void onSignupLimitReached() {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getActivity(), "User signup limit reached.", Toast.LENGTH_SHORT).show());
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getActivity(), "Failed to sign up. Please try again later.", Toast.LENGTH_SHORT).show());
+                }
+            }
+        });
     }
 
-    private void signupList(){
+    private void signupList() {
+        SignupListFragment signupListFragment = new SignupListFragment();
 
+        Bundle args = new Bundle();
+        args.putString("eventId", event.getId());
+        signupListFragment.setArguments(args);
+
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+        transaction.replace(R.id.content, signupListFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
+
 }
