@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -40,6 +41,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -71,7 +73,7 @@ public class EventDetailsFragment extends Fragment {
     private ImageView eventImage;
 
     private User user;
-
+    LinearProgressIndicator progressIndicator;
     /**
      * This is the default constructor for the EventDetailsFragment class. If no event is passed in,
      * a test event is created.
@@ -143,6 +145,7 @@ public class EventDetailsFragment extends Fragment {
             FloatingActionButton uploadImageButton = view.findViewById(R.id.edit_banner_button);
             FloatingActionButton attendeesButton = view.findViewById(R.id.view_attendees_button);
             FloatingActionButton expandButton = view.findViewById(R.id.expand_button);
+            progressIndicator = view.findViewById(R.id.event_banner_progress_indicator);
 
             // Set the tag of the expand button to false
             expandButton.setTag("false");
@@ -190,6 +193,7 @@ public class EventDetailsFragment extends Fragment {
             // Set an on click listener for the back button
             backButton.setOnClickListener(v -> {
 
+                // if the user is organiser, i want to go back to admin event dashboard
                 FragmentManager fragmentManager = getParentFragmentManager();
                 fragmentManager.popBackStack();
 
@@ -203,31 +207,31 @@ public class EventDetailsFragment extends Fragment {
                 });
                 setShareButton(shareButton);
 
-            // If clicked, this button brings the user to the attendees list fragment. If there
-            // is no attendees in the current event, it will instead show the user a message
-            attendeesButton.setOnClickListener(v -> {
-                databaseService.getEvent(event.getId(), event -> {
-                    if (event != null) {
+                // If clicked, this button brings the user to the attendees list fragment. If there
+                // is no attendees in the current event, it will instead show the user a message
+                attendeesButton.setOnClickListener(v -> {
+                    databaseService.getEvent(event.getId(), event -> {
+                        if (event != null) {
                             if (event.getCheckIns() != null) {
-                            this.event = event;
-                             AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.event);
-                             FragmentManager fragmentManager = getParentFragmentManager();
-                             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                             fragmentTransaction.replace(R.id.content, attendeesListFragment);
-                             fragmentTransaction.addToBackStack(null);
-                             fragmentTransaction.commit();
+                                this.event = event;
+                                AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.event);
+                                FragmentManager fragmentManager = getParentFragmentManager();
+                                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                                fragmentTransaction.replace(R.id.content, attendeesListFragment, "AttendeesList");
+                                fragmentTransaction.addToBackStack(null);
+                                fragmentTransaction.commit();
+                            }
+                            else {
+                                Toast.makeText(getContext(), "No attendees found", Toast.LENGTH_SHORT).show();
+                            }
                         }
                         else {
-                            Toast.makeText(getContext(), "No attendees found", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
+                            FragmentManager fragmentManager = getParentFragmentManager();
+                            fragmentManager.popBackStack();
                         }
-                    }
-                    else {
-                        Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
-                        FragmentManager fragmentManager = getParentFragmentManager();
-                        fragmentManager.popBackStack();
-                    }
+                    });
                 });
-            });
 
                 expandButton.setOnClickListener(v -> {
                     if (expandButton.getTag() == "false") {
@@ -316,7 +320,7 @@ public class EventDetailsFragment extends Fragment {
                 shareQRImage(checkInCodeImage, "checkIn");
             });
 
-            ImageButton closeDialog = shareQrDialog.findViewById(R.id.share_close_button);
+            Button closeDialog = shareQrDialog.findViewById(R.id.share_close_button);
             closeDialog.setOnClickListener(v1 -> shareQrDialog.dismiss());
         });
     }
@@ -379,6 +383,8 @@ public class EventDetailsFragment extends Fragment {
      * @param file A URI of the image file to be uploaded
      */
     private void uploadImage(Uri file) {
+        progressIndicator.setVisibility(View.VISIBLE);
+        progressIndicator.setIndeterminate(true);
         databaseService.uploadEventPhoto(file, event, new DatabaseService.OnEventPhotoUpload() {
             @Override
             public void onSuccess(String imageUrl, String imagePath) {
@@ -390,6 +396,7 @@ public class EventDetailsFragment extends Fragment {
 
                         eventImage.setVisibility(View.VISIBLE);
                         Toast.makeText(getContext(), "Event Banner Uploaded", Toast.LENGTH_SHORT).show();
+                        progressIndicator.setVisibility(View.GONE);
                     });
                 } else {
                     Log.d(TAG, "Fragment is not attached to an activity.");
@@ -400,8 +407,15 @@ public class EventDetailsFragment extends Fragment {
             public void onFailure(Exception e) {
                 if (isAdded()) {
                     getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Upload Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    progressIndicator.setVisibility(View.GONE);
                 }
                 Log.d(TAG, "onFailure: " + e.getMessage());
+            }
+
+            @Override
+            public void onProgress(double progress) {
+                // Update the UI with the progress
+                progressIndicator.setProgress((int) progress);
             }
         });
     }

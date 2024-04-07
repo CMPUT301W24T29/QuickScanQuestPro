@@ -4,18 +4,24 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import android.widget.Toast;
+
+import com.google.android.material.navigation.NavigationBarView;
 
 
 /**
@@ -65,11 +71,18 @@ public class HomeViewFragment extends Fragment implements GeolocationService.Geo
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        MainActivity mainActivity = (MainActivity) getActivity();
         super.onViewCreated(view, savedInstanceState);
         view.findViewById(R.id.homeViewLayout).setBackgroundColor(getActivity().getColor(R.color.white));
 
+        NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
+        // Sets navbar selection to the profile dashboard
+        MenuItem item = navBarView.getMenu().findItem(R.id.navigation_qr_scanner);
+        item.setChecked(true);
         // Request camera permission first
+        // If the app already has run time permission for camera it will start setupCamera otherwise invoke requestCameraPermissionLauncher
         if(ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
+
             // Camera permission granted, setup camera
             setupCamera();
         }

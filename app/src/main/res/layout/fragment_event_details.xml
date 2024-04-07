@@ -77,6 +77,17 @@
             android:layout_marginTop="8dp"
             />
 
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/event_banner_progress_indicator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toTopOf="@id/event_title"
+            style="@style/Widget.MaterialComponents.LinearProgressIndicator"
+            android:indeterminate="false"
+            android:visibility="gone"/>
+
         <TextView
             android:id="@+id/event_title"
             android:layout_width="wrap_content"

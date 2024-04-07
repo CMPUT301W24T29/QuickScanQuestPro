@@ -15,6 +15,7 @@
 
     // The following strings are used in the EventDetailsFragment
     <string name="event_title">This is the title of the event</string>
+    <string name="what_text">What?</string>
     <string name="event_description">This is where the description of the event will go. It will be a long string of text that will be displayed in a TextView.</string>
     <string name="when_text">When?</string>
     <string name="event_date">This will be the date and time of the event.</string>

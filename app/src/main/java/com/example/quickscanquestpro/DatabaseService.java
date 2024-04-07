@@ -95,6 +95,7 @@ public class DatabaseService {
     public interface OnEventPhotoUpload {
         void onSuccess(String imageUrl, String imagePath);
         void onFailure(Exception e);
+        void onProgress(double progress);
     }
     /**
      * Constructor to initialize the Firestore database
@@ -131,7 +132,20 @@ public class DatabaseService {
 
     public void updateLastCheckIn(String userId, String eventId){
         DocumentReference userRef = db.collection("users").document(userId);
-        userRef.update("lastCheckIn", eventId);
+        User user = new User(userId);
+        user.setLastCheckIn(eventId);
+        userRef.set(user, SetOptions.mergeFields("lastCheckIn"))
+                .addOnSuccessListener(aVoid -> Log.d("DatabaseService", "Last Checked in event updated successfully"))
+                .addOnFailureListener(e -> Log.e("DatabaseService", "Error updating last checked in event", e));
+    }
+
+    public void enableAdmin(String userId){
+        DocumentReference userRef = db.collection("users").document(userId);
+        User user = new User(userId);
+        user.setAdmin(true);
+        userRef.set(user, SetOptions.mergeFields("admin"))
+                .addOnSuccessListener(aVoid -> Log.d("DatabaseService", "Admin enabled successfully"))
+                .addOnFailureListener(e -> Log.e("DatabaseService", "Error enabling admin", e));
     }
 
     public void addEvent(Event event) {
@@ -553,6 +567,10 @@ public class DatabaseService {
         StorageReference ref = storage.getReference().child(refPath);
 
         ref.putFile(fileUri)
+                .addOnProgressListener(taskSnapshot -> {
+                    double progressPercentage = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                    callback.onProgress(progressPercentage);
+                })
                 .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(uri -> {
                     String imageUrl = uri.toString();
                     if (event != null) {
