@@ -145,11 +145,12 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
         // Create a new user with a Map or a custom object
         Map<String, Object> user = new HashMap<>();
-        user.put("admin", true);
+        user.put("admin", false);
         user.put("check-ins", 0);
         user.put("name", "");
         user.put("homepage", "");
         user.put("email", "");
+        user.put("lastCheckIn", "");
         user.put("geolocation", false);
         user.put("NotificationToken", notificationToken);
         user.put("ReceiveNotifications", false);

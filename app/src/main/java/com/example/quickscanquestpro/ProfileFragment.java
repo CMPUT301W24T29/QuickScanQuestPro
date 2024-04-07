@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -42,6 +43,7 @@ import android.widget.EditText;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -139,9 +141,14 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        MainActivity mainActivity = (MainActivity) getActivity();
         super.onViewCreated(view, savedInstanceState);
         initializeViews(view);
 
+        NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
+        // Sets navbar selection to the profile dashboard
+        MenuItem item = navBarView.getMenu().findItem(R.id.navigation_profile);
+        item.setChecked(true);
 
         // when user clicks the back button
         view.findViewById(R.id.backButton).setOnClickListener(v -> {

@@ -19,12 +19,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.google.android.material.navigation.NavigationBarView;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -76,6 +79,10 @@ public class EventDashboardFragment extends Fragment {
         MainActivity mainActivity = (MainActivity) getActivity();
         super.onViewCreated(view, savedInstanceState);
 
+        NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
+        // Sets navbar selection to the profile dashboard
+        MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
+        item.setChecked(true);
 
         RecyclerView eventRecyclerView = view.findViewById(R.id.event_dashboard_list);
         eventRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

@@ -95,6 +95,7 @@ public class DatabaseService {
     public interface OnEventPhotoUpload {
         void onSuccess(String imageUrl, String imagePath);
         void onFailure(Exception e);
+        void onProgress(double progress);
     }
     /**
      * Constructor to initialize the Firestore database
@@ -642,6 +643,10 @@ public class DatabaseService {
         StorageReference ref = storage.getReference().child(refPath);
 
         ref.putFile(fileUri)
+                .addOnProgressListener(taskSnapshot -> {
+                    double progressPercentage = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                    callback.onProgress(progressPercentage);
+                })
                 .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(uri -> {
                     String imageUrl = uri.toString();
                     if (event != null) {

@@ -200,10 +200,6 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
                     databaseService.enableAdmin(mainActivity.getUser().getUserId());
                     Toast.makeText(mainActivity.getApplicationContext(), "Congratulations, you are now an Admin!!", Toast.LENGTH_SHORT).show();
                     mainActivity.transitionFragment(new AdminDashboardFragment(), "AdminDashboardFragment");
-                    NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
-                    // Sets navbar selection to the profile dashboard
-                    MenuItem item = navBarView.getMenu().findItem(R.id.navigation_profile);
-                    item.setChecked(true);
                 } else {
                     Toast.makeText(mainActivity.getApplicationContext(), "User not logged in", Toast.LENGTH_SHORT).show();
                     Log.e("QRCodeScanner", "User not logged in");

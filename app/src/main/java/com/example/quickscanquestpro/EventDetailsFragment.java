@@ -41,6 +41,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -75,6 +76,7 @@ public class EventDetailsFragment extends Fragment {
     private FloatingActionButton expandButton;
     private FloatingActionButton uploadImageButton;
     private FloatingActionButton attendeesButton;
+    LinearProgressIndicator progressIndicator;
 
     /**
      * This is the default constructor for the EventDetailsFragment class. If no event is passed in,
@@ -147,6 +149,7 @@ public class EventDetailsFragment extends Fragment {
             FloatingActionButton uploadImageButton = view.findViewById(R.id.edit_banner_button);
             FloatingActionButton attendeesButton = view.findViewById(R.id.view_attendees_button);
             FloatingActionButton expandButton = view.findViewById(R.id.expand_button);
+            progressIndicator = view.findViewById(R.id.event_banner_progress_indicator);
 
             // Set the tag of the expand button to false
             expandButton.setTag("false");
@@ -377,6 +380,8 @@ public class EventDetailsFragment extends Fragment {
      * @param file A URI of the image file to be uploaded
      */
     private void uploadImage(Uri file) {
+        progressIndicator.setVisibility(View.VISIBLE);
+        progressIndicator.setIndeterminate(true);
         databaseService.uploadEventPhoto(file, event, new DatabaseService.OnEventPhotoUpload() {
             @Override
             public void onSuccess(String imageUrl, String imagePath) {
@@ -388,6 +393,7 @@ public class EventDetailsFragment extends Fragment {
 
                         eventImage.setVisibility(View.VISIBLE);
                         Toast.makeText(getContext(), "Event Banner Uploaded", Toast.LENGTH_SHORT).show();
+                        progressIndicator.setVisibility(View.GONE);
                     });
                 } else {
                     Log.d(TAG, "Fragment is not attached to an activity.");
@@ -398,8 +404,15 @@ public class EventDetailsFragment extends Fragment {
             public void onFailure(Exception e) {
                 if (isAdded()) {
                     getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Upload Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    progressIndicator.setVisibility(View.GONE);
                 }
                 Log.d(TAG, "onFailure: " + e.getMessage());
+            }
+
+            @Override
+            public void onProgress(double progress) {
+                // Update the UI with the progress
+                progressIndicator.setProgress((int) progress);
             }
         });
     }
