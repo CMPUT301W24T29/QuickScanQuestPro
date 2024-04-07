@@ -320,7 +320,7 @@ public class EventDetailsFragment extends Fragment {
                 shareQRImage(checkInCodeImage, "checkIn");
             });
 
-            Button closeDialog = shareQrDialog.findViewById(R.id.share_cancel_button);
+            Button closeDialog = shareQrDialog.findViewById(R.id.share_close_button);
             closeDialog.setOnClickListener(v1 -> shareQrDialog.dismiss());
         });
     }
