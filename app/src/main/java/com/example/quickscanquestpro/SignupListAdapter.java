@@ -27,22 +27,18 @@ public class SignupListAdapter extends ArrayAdapter<User> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        // Get the user item for this position
         User user = getItem(position);
 
-        // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(resource, parent, false);
         }
 
-        // Lookup view for data population
         TextView userNameTextView = convertView.findViewById(R.id.signup_name);
 
-        // Populate the data into the template view using the data object
         userNameTextView.setText(user.getName());
 
 
-        // Return the completed view to render on screen
+
         return convertView;
     }
 }

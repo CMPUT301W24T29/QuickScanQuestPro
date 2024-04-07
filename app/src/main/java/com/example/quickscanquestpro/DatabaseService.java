@@ -134,6 +134,10 @@ public class DatabaseService {
         userRef.update("lastCheckIn", eventId);
     }
 
+    /**
+     * Takes the passed in event and updates the database with the event attributes
+     * @param event An event object with attributes to be updated in the database
+     */
     public void addEvent(Event event) {
 
         // Create a Map to store the data
@@ -147,11 +151,7 @@ public class DatabaseService {
         eventData.put("eventPicturePath", event.getEventBannerPath());
         eventData.put("customCheckin", event.getCustomCheckin());
         eventData.put("customPromo", event.getCustomPromo());
-
-
-
         eventData.put("signupLimit", event.getSignupLimit());
-
 
         // Combine all data into a single map
         Map<String, Object> combinedData = new HashMap<>();
@@ -581,12 +581,24 @@ public class DatabaseService {
         eventsRef.document(String.valueOf(event.getId())).set(combinedData, SetOptions.merge());
     }
 
+    /**
+     * This interface is implemented by userSignup
+     * Used as a callback for Signup button to know if the signup was successful
+     */
     public interface SignupCallback {
         void onSuccess();
         void onSignupLimitReached();
         void onFailure(Exception e);
     }
 
+    /**
+     * This method is called when the signup button is pressed in an Event Details Fragment.
+     * It Creates A List of Users in the database to represents signups.
+     * Also implements a callback function so the method that calls this method will know the sigun status
+     * @param user User object to be added as a signup
+     * @param event Event object that will hold the signups field
+     * @param callback A callback function to be able to tell the signup function if the signup was successful
+     */
     public void userSignup(User user, Event event, SignupCallback callback) {
         db.runTransaction(transaction -> {
             DocumentReference userRef = usersRef.document(user.getUserId());
@@ -617,9 +629,9 @@ public class DatabaseService {
     }
 
 
-
-
-
+    /**
+     *
+     */
     public interface OnSignedUpEventsLoaded {
         void onSignedUpEventsLoaded(List<Event> events);
     }
