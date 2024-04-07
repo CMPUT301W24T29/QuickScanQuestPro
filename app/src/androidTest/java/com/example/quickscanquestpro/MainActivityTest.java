@@ -221,11 +221,11 @@ public class MainActivityTest {
         while (true) {
             onView(isRoot()).perform(waitFor(3000));
             try {
-                onView(allOf(withText(eventTitle), isDescendantOfA(withId(R.id.admin_event_dashboard_list))))
+                onView(allOf(withText(eventTitle), isDescendantOfA(withId(R.id.browse_events_dashboard_list))))
                         .perform(click());
                 break;
             } catch (Exception e) {
-                onView(withId(R.id.admin_event_dashboard_list)).perform(ViewActions.swipeUp());
+                onView(withId(R.id.browse_events_dashboard_list)).perform(ViewActions.swipeUp());
             }
         }
 
@@ -323,7 +323,7 @@ public class MainActivityTest {
         // Go to Manage Events
         onView(withId(R.id.admin_button_manage_events)).perform(click());
         onView(isRoot()).perform(waitFor(5000)); // Wait for the event list to load
-        onView(withId(R.id.admin_event_dashboard_list)).check(matches(isDisplayed()));
+        onView(withId(R.id.browse_events_dashboard_list)).check(matches(isDisplayed()));
     }
 
     @Test
@@ -342,11 +342,11 @@ public class MainActivityTest {
 
         String firstItemIdentifier = "unique_text_of_first_item";
 
-        onData(anything()).inAdapterView(withId(R.id.admin_event_dashboard_list)).atPosition(0).onChildView(withId(R.id.admin_delete_button)).perform(click());
+        onData(anything()).inAdapterView(withId(R.id.browse_events_dashboard_list)).atPosition(0).onChildView(withId(R.id.admin_delete_button)).perform(click());
 
         onView(isRoot()).perform(waitFor(2000));
 
-        onView(withId(R.id.admin_event_dashboard_list))
+        onView(withId(R.id.browse_events_dashboard_list))
                 .check(matches(not(hasDescendant(withText(firstItemIdentifier)))));
     }
 
