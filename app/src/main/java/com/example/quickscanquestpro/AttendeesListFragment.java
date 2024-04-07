@@ -159,10 +159,8 @@ public class AttendeesListFragment extends Fragment {
                         }
                         // Update the user's name in the list
                         if (user == null) {
-                            Log.e("AttendeeListFragment", "User not found.");
                             attendee.set(0, "Unknown User");
                         } else {
-                            Log.d("AttendeeListFragment", user.getName() + " found!");
                             attendee.set(0, user.getName());
                         }
                         // Increment the totalAttendees count

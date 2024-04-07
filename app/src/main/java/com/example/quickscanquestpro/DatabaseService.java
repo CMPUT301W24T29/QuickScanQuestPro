@@ -213,6 +213,7 @@ public class DatabaseService {
                 event.setEndTime(LocalTime.parse(document.getString("End-time")));
                 event.setEventBannerUrl(document.getString("eventPictureUrl"));
                 event.setEventBannerPath(document.getString("eventPicturePath"));
+
                 // Retrieve check-ins for this event
                 ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) document.get("checkins");
 

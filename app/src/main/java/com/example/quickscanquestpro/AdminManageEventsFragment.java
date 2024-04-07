@@ -69,7 +69,7 @@ public class AdminManageEventsFragment extends Fragment {
                 }
 
                 if (events.isEmpty()) {
-                    Toast.makeText(getActivity(), "No events found!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "No users found!", Toast.LENGTH_SHORT).show();
                 } else {
                     AdminEventAdapter adapter = new AdminEventAdapter(getActivity(), R.layout.list_admin_view, events);
                     // Set the adapter for the eventListView
