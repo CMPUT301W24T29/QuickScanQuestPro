@@ -46,6 +46,7 @@ import android.widget.EditText;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -179,10 +180,10 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
                 }
             }
             else
-                {
-                    user.setGetNotification(false);
-                    databaseService.addUser(user);
-                }
+            {
+                user.setGetNotification(false);
+                databaseService.addUser(user);
+            }
         });
     }
 
@@ -310,6 +311,77 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
         fetchAndPopulateUserData(user);
 
         deleteProfilePictureButton.setOnClickListener(v -> deleteProfilePicture());
+
+        FloatingActionButton manageEventsButton = view.findViewById(R.id.event_dashboard_admin_event_search_button);
+        manageEventsButton.setVisibility(View.GONE);
+        manageEventsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AdminManageEventsFragment adminManageEventsFragment = new AdminManageEventsFragment();
+
+                if (isAdded() && getActivity() != null) {
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.content, adminManageEventsFragment)
+                            .addToBackStack(null)
+                            .commit();
+                }
+            }
+        });
+
+        FloatingActionButton manageProfileButton = view.findViewById(R.id.event_dashboard_admin_profile_user_search_button);
+        manageProfileButton.setVisibility(View.GONE);
+        manageProfileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AdminManageProfileFragment adminManageProfileFragment = new AdminManageProfileFragment();
+
+                if (isAdded() && getActivity() != null) {
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.content, adminManageProfileFragment)
+                            .addToBackStack(null)
+                            .commit();
+                }
+            }
+        });
+
+        FloatingActionButton viewImagesButton = view.findViewById(R.id.event_dashboard_admin_image_search_button);
+        viewImagesButton.setVisibility(View.GONE);
+
+        viewImagesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AdminManageImagesFragment adminManageImagesFragment = new AdminManageImagesFragment();
+
+                if (isAdded() && getActivity() != null) {
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.content, adminManageImagesFragment)
+                            .addToBackStack(null)
+                            .commit();
+                }
+            }
+        });
+
+        FloatingActionButton expandButton = view.findViewById(R.id.event_dashboard_admin_expand_button);
+        if (!user.isAdmin()) {
+            expandButton.setVisibility(View.GONE);
+        }
+        expandButton.setTag("false");
+        expandButton.setOnClickListener(v -> {
+            if (expandButton.getTag() == "false") {
+                expandButton.setImageResource(R.drawable.baseline_close_24);
+                manageEventsButton.setVisibility(View.VISIBLE);
+                manageProfileButton.setVisibility(View.VISIBLE);
+                viewImagesButton.setVisibility(View.VISIBLE);
+                expandButton.setTag("true");
+
+            } else {
+                expandButton.setImageResource(R.drawable.baseline_menu_24);
+                manageEventsButton.setVisibility(View.GONE);
+                manageProfileButton.setVisibility(View.GONE);
+                viewImagesButton.setVisibility(View.GONE);
+                expandButton.setTag("false");
+            }
+        });
 
     }
 

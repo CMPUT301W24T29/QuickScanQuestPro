@@ -280,10 +280,10 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
                 fragment1 = new EventDashboardFragment();
             } else if (Objects.equals(pressedTitle, profileTitle)) {
                 if (this.user != null && this.user.isAdmin()){
-                    fragment1 = new AdminDashboardFragment();
+                    fragment1 = new ProfileFragment();
                 }
                 else{
-                    fragment1 = new ProfileFragment();
+                    fragment1 = null;
                 }
 
             } else {
