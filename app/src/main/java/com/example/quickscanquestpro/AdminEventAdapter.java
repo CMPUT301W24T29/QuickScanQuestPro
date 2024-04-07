@@ -17,12 +17,28 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import java.util.List;
 
+
+/**
+ * An adapter for rendering a list of {@link Event} objects within an admin interface. This adapter
+ * converts each {@link Event} object into a View that can be inserted into a RecyclerView and
+ * provides functionality for navigating to the user's profile details and deleting a event.
+ */
 public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.EventViewHolder> {
     private Context context;
     private List<Event> eventsList;
     private DatabaseService databaseService = new DatabaseService();
     private boolean isAdmin;
 
+    /**
+     * Constructs an adapter for displaying a list of {@link Event} objects in a RecyclerView.
+     * The adapter supports functionalities like navigating to event details and event deletion
+     * for administrators.
+     *
+     * @param context The current context, used for inflating layouts and accessing resources.
+     * @param eventsList The list of events to be displayed.
+     * @param isAdmin A boolean indicating whether the user is an administrator. This affects
+     *                visibility of admin-specific functionalities like deleting events.
+     */
     public AdminEventAdapter(Context context, List<Event> eventsList, boolean isAdmin) {
         this.context = context;
         this.eventsList = eventsList;
@@ -30,12 +46,25 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
 
     }
 
+    /**
+     * A ViewHolder class for the RecyclerView in AdminEventAdapter. It holds the UI elements
+     * that represent a single event item within the RecyclerView. This includes views for
+     * displaying the event's image, title, location, dates, times, and a delete button.
+     */
     public static class EventViewHolder extends RecyclerView.ViewHolder {
         ImageView eventImage, deleteButton;
         TextView eventTitle, eventLocation, eventDates, eventTimes;
 
 
 
+        /**
+         * Constructor that initializes the ViewHolder with references to the UI components
+         * based on the itemView provided. It uses the itemView to find each component by its
+         * ID, facilitating the setting of event details in onBindViewHolder of the adapter.
+         *
+         * @param itemView The View for a single item row in the RecyclerView. It contains
+         *                 the event image, title, location, dates, times, and delete button.
+         */
         public EventViewHolder(View itemView) {
             super(itemView);
             eventImage = itemView.findViewById(R.id.event_image);
@@ -47,6 +76,16 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
         }
     }
 
+
+    /**
+     * Provides a new ViewHolder instance for the RecyclerView to display. This method inflates
+     * the layout for individual event items.
+     *
+     * @param parent The parent ViewGroup into which the new View will be added after it is
+     *               bound to an adapter position.
+     * @param viewType The view type of the new View.
+     * @return A new instance of EventViewHolder that holds the View for each event item.
+     */
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -54,6 +93,16 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
         return new EventViewHolder(itemView);
     }
 
+
+    /**
+     * Binds the data at the specified position in the eventsList to the ViewHolder. This method
+     * sets up the event details, formats date and time strings, and initializes click listeners
+     * for navigating to event details and deleting events (if the user is an admin).
+     *
+     * @param holder The ViewHolder which should be updated to represent the contents of the
+     *               item at the given position in the data set.
+     * @param position The position of the item within the adapter's data set.
+     */
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = eventsList.get(position);
@@ -116,11 +165,25 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
         });
     }
 
+
+    /**
+     * Returns the total number of items in the eventsList (the data set held by the adapter).
+     *
+     * @return The size of the eventsList.
+     */
     @Override
     public int getItemCount() {
         return eventsList.size();
     }
 
+
+    /**
+     * Updates the events list within the adapter and refreshes the RecyclerView to display
+     * the new data. This method is useful for dynamically adding, removing, or updating the
+     * list of events.
+     *
+     * @param events The new list of events to be displayed.
+     */
     public void updateEvents(List<Event> events) {
         this.eventsList.clear();
         this.eventsList.addAll(events);
