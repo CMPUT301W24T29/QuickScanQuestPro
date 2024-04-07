@@ -67,19 +67,13 @@ import java.util.UUID;
  */
 public class EventDetailsFragment extends Fragment {
 
-    private Event event;
+    Event event;
     private DatabaseService databaseService = new DatabaseService();
     private ActivityResultLauncher<Intent> pickImageLauncher;
     private ImageView eventImage;
-    private ArrayList<ArrayList<Object>> checkInList;
 
     private User user;
-    private FloatingActionButton shareButton;
-    private FloatingActionButton expandButton;
-    private FloatingActionButton uploadImageButton;
-    private FloatingActionButton attendeesButton;
     LinearProgressIndicator progressIndicator;
-
     /**
      * This is the default constructor for the EventDetailsFragment class. If no event is passed in,
      * a test event is created.

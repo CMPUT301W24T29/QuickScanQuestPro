@@ -196,7 +196,9 @@ public class DatabaseService {
         userData.put("Homepage", user.getHomepage());
         userData.put("profilePictureUrl", user.getProfilePictureUrl());
         userData.put("profilePicturePath", user.getProfilePicturePath());
+        userData.put("NotificationToken", user.getNotificationToken());
         userData.put("lastCheckIn", user.getLastCheckIn());
+        userData.put("ReceiveNotifications", user.getGetNotification());
 
         // Add the user data to the Firestore "users" collection with the incremented document number
         usersRef.document(String.valueOf(user.getUserId())).set(userData, SetOptions.merge());
@@ -228,7 +230,6 @@ public class DatabaseService {
 
                 // Retrieve check-ins for this event
                 ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) document.get("checkins");
-                Log.d(TAG, "Retrieved " + (checkInsArray != null ? checkInsArray.size() : 0) + " check-ins for event " + eventId);
 
                 if (checkInsArray != null) {
                     // Process the check-ins array
@@ -239,7 +240,6 @@ public class DatabaseService {
                         checkIns.add(new CheckIn(userId, location));
                     }
 
-                    Log.d(TAG, "Created " + checkIns.size() + " check-ins for event " + eventId);
                     event.setCheckIns(checkIns);
                 }
 
@@ -271,6 +271,7 @@ public class DatabaseService {
                 user.setEmail(document.getString("email"));
                 user.setMobileNum(document.getString("phone"));
                 user.setHomepage(document.getString("Homepage"));
+                user.setNotificationToken(document.getString("NotificationToken"));
                 user.setGeolocation(Boolean.TRUE.equals(document.getBoolean("geolocation")));
 //                user.setCheckins(document.getLong("check-ins").intValue());
                 user.setProfilePictureUrl(document.getString("profilePictureUrl"));
@@ -304,7 +305,9 @@ public class DatabaseService {
             user.setAdmin(Boolean.TRUE.equals(queryDocumentSnapshot.getBoolean("admin")));
             user.setProfilePictureUrl(queryDocumentSnapshot.getString("profilePictureUrl"));
             user.setProfilePicturePath(queryDocumentSnapshot.getString("profilePicturePath"));
+            user.setNotificationToken(queryDocumentSnapshot.getString("NotificationToken"));
             user.setLastCheckIn(queryDocumentSnapshot.getString("lastCheckIn"));
+            user.setGetNotification(queryDocumentSnapshot.getBoolean("ReceiveNotifications"));
             user.setGeolocation(Boolean.TRUE.equals(queryDocumentSnapshot.getBoolean("geolocation")));
 //            user.setCheckins(queryDocumentSnapshot.getLong("check-ins").intValue());
 
@@ -338,7 +341,6 @@ public class DatabaseService {
 
         // Retrieve check-ins for this event
         ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) queryDocumentSnapshot.get("checkins");
-        Log.d(TAG, "Retrieved " + (checkInsArray != null ? checkInsArray.size() : 0) + " check-ins for event " + eventId);
         if (checkInsArray != null) {
             // Process the check-ins array
             ArrayList<CheckIn> checkIns = new ArrayList<>();
@@ -348,7 +350,6 @@ public class DatabaseService {
                 checkIns.add(new CheckIn(userId, location));
             }
 
-            Log.d(TAG, "Created " + checkIns.size() + " check-ins for event " + eventId);
             event.setCheckIns(checkIns);
         }
         return event;
@@ -511,6 +512,7 @@ public class DatabaseService {
         });
     }
 
+
     /**
      * Method to listen for updates to the events collection in the Firestore database
      * @param callback The callback to be called when the data is loaded
@@ -579,7 +581,7 @@ public class DatabaseService {
                         Log.e("DatabaseService", "Cannot set event banner URL because the event is null");
                     }
                     if (event != null) {
-                        updateEventInDatabase(event);
+                        addEvent(event);
                     } else {
                         Log.e(TAG, "Event object is null.");
                         // Handle the null case appropriately, maybe notify the user or log the error.
@@ -590,14 +592,6 @@ public class DatabaseService {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    public void updateEventInDatabase(Event event) {
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("eventPictureUrl", event.getEventBannerUrl());
-        updates.put("eventPicturePath", event.getEventBannerPath());
-        Map<String, Object> combinedData = new HashMap<>();
-        combinedData.putAll(updates);
-        eventsRef.document(String.valueOf(event.getId())).set(combinedData, SetOptions.merge());
-    }
 
     public interface SignupCallback {
         void onSuccess();

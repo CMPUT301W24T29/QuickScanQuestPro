@@ -91,9 +91,7 @@ public class HomeViewFragment extends Fragment implements GeolocationService.Geo
             requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA);
         }
 
-
     }
-
 
     /**
      * This method initializes the camera for QR Code Scanning
