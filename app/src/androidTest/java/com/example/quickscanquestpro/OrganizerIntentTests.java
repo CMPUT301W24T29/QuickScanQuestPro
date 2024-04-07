@@ -174,7 +174,7 @@ public class OrganizerIntentTests {
 
         // Scroll to the event with the specific title and click on it
         // Replace this scrolling mechanism with a more reliable way if available
-        onView(allOf(withText(eventTitle), isDescendantOfA(withId(R.id.admin_event_dashboard_list))))
+        onView(allOf(withText(eventTitle), isDescendantOfA(withId(R.id.browse_events_dashboard_list))))
                 .perform(click());
 
         // Assert that the sharing intent is triggered
