@@ -630,12 +630,18 @@ public class DatabaseService {
 
 
     /**
-     *
+     * This interface is implemented by getUserSignedupEvents
+     * functions as a callback function
      */
     public interface OnSignedUpEventsLoaded {
         void onSignedUpEventsLoaded(List<Event> events);
     }
 
+    /**
+     * This method is called in EventDashboardFragment
+     * @param user
+     * @param callback
+     */
     public void getUserSignedupEvents(User user, OnSignedUpEventsLoaded callback) {
         DocumentReference userRef = usersRef.document(user.getUserId());
         userRef.get().addOnSuccessListener(documentSnapshot -> {
