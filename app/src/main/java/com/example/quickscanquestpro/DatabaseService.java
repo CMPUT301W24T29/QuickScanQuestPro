@@ -130,6 +130,11 @@ public class DatabaseService {
                 .addOnFailureListener(e -> Log.e("DatabaseService", "Error adding new check-in.", e));
     }
 
+    /**
+     * Updates the lastCheckIn field with the event the user checked into
+     * @param userId The ID of the user checking in
+     * @param eventId he ID of the event the user checked into
+     */
     public void updateLastCheckIn(String userId, String eventId){
         DocumentReference userRef = db.collection("users").document(userId);
         User user = new User(userId);
@@ -139,6 +144,11 @@ public class DatabaseService {
                 .addOnFailureListener(e -> Log.e("DatabaseService", "Error updating last checked in event", e));
     }
 
+    /**
+     * Sets admin field of user to true
+     * Allows user to access admin functions
+     * @param userId The ID of the current user
+     */
     public void enableAdmin(String userId){
         DocumentReference userRef = db.collection("users").document(userId);
         User user = new User(userId);
@@ -165,6 +175,7 @@ public class DatabaseService {
         eventData.put("eventPicturePath", event.getEventBannerPath());
         eventData.put("customCheckin", event.getCustomCheckin());
         eventData.put("customPromo", event.getCustomPromo());
+        eventData.put("announcements", event.getAnnouncements());
 
 
 
@@ -231,6 +242,7 @@ public class DatabaseService {
                 event.setEndTime(LocalTime.parse(document.getString("End-time")));
                 event.setEventBannerUrl(document.getString("eventPictureUrl"));
                 event.setEventBannerPath(document.getString("eventPicturePath"));
+                event.setAnnouncements((ArrayList<String>) document.get("announcements"));
 
                 // Retrieve check-ins for this event
                 ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) document.get("checkins");
@@ -336,6 +348,7 @@ public class DatabaseService {
         event.setEventBannerPath(queryDocumentSnapshot.getString("eventPicturePath"));
         event.setCustomCheckin(queryDocumentSnapshot.getString("customCheckin"));
         event.setCustomPromo(queryDocumentSnapshot.getString("customPromo"));
+        event.setAnnouncements((ArrayList<String>) queryDocumentSnapshot.get("announcements"));
 
         //update optional signuplimit
         Number signupLimitNumber = queryDocumentSnapshot.getLong("signupLimit"); // Using getLong for a more direct approach
@@ -648,17 +661,17 @@ public class DatabaseService {
 
 
     /**
-     * This interface is implemented by getUserSignedupEvents
-     * functions as a callback function
+     * This interface is implemented by getUserSignedupEvents as a callback function
      */
     public interface OnSignedUpEventsLoaded {
         void onSignedUpEventsLoaded(List<Event> events);
     }
 
     /**
-     * This method is called in EventDashboardFragment
-     * @param user
-     * @param callback
+     * This method is called in EventDashboardFragment to get all the events the User is sign up to
+     * populate the dropdown list in the dashboard
+     * @param user A User object representing the user that will get the signed up events
+     * @param callback A callback function to show to status of signup list fetch
      */
     public void getUserSignedupEvents(User user, OnSignedUpEventsLoaded callback) {
         DocumentReference userRef = usersRef.document(user.getUserId());
@@ -696,10 +709,19 @@ public class DatabaseService {
         });
     }
 
+    /**
+     * An interface implemented by get EventSignups as a callback function
+     */
     public interface OnEventSignUpsLoaded {
         void onSignUpsLoaded(List<User> users);
     }
 
+    /**
+     * This method is called by signupList() in EventDetailsFragment.
+     * It gets the users that have signed up to the passed in event.
+     * @param eventId Is the event Id of event that should have its users that have signed up returned
+     * @param callback A callback function to return the status
+     */
     public void getEventSignUps(String eventId, OnEventSignUpsLoaded callback) {
         DocumentReference eventRef = eventsRef.document(eventId);
 

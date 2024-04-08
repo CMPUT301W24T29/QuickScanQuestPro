@@ -2,6 +2,10 @@ package com.example.quickscanquestpro;
 
 import java.util.List;
 
+/**
+ * Model class for the expandable headers
+ */
+
 public class EventDashboardModel {
 
     private List<Event> eventList;

@@ -53,6 +53,7 @@ import android.widget.TimePicker;
 
 import androidx.annotation.IdRes;
 import androidx.fragment.app.Fragment;
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
@@ -142,7 +143,6 @@ public class MainActivityTest {
     @Test
     public void testUS02_06_01NoLogin() {
         onView(withId(R.id.navigation_profile)).perform(click());
-        onView(withId(R.id.navigation_dashboard)).perform(click());
     }
 
     @Test
@@ -151,10 +151,8 @@ public class MainActivityTest {
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
 
         // Go to Manage Users
-        onView(withId(R.id.button_profile)).perform(click());
         onView(isRoot()).perform(waitFor(4000)); // Wait for the user list to load
 
         for (int i = 0; i < 20; i++) {
@@ -174,10 +172,7 @@ public class MainActivityTest {
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
 
-        // Go to Manage Users
-        onView(withId(R.id.button_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
 
         onView(withText("John Doe")).check(matches(isDisplayed()));
@@ -205,9 +200,9 @@ public class MainActivityTest {
         onView(withId(R.id.navigation_dashboard)).perform(click());
 
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
-        onView(isRoot()).perform(waitFor(2000));
 
-        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("testUS02_04_01ViewEventDetails"));
+        String eventTitle = UUID.randomUUID().toString();
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText(eventTitle));
         onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
         onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
         Espresso.closeSoftKeyboard();
@@ -280,24 +275,37 @@ public class MainActivityTest {
         };
     }
 
-
     @Test
     public void testUS_04_02_01AdminRemoveProfile() {
-        onView(isRoot()).perform(waitFor(7000)); // Wait to ensure the app is ready
+
+
+        onView(isRoot()).perform(waitFor(10000)); // Wait to ensure the app is ready
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        DatabaseService databaseService = new DatabaseService();
+        databaseService.enableAdmin(user.getUserId());
+        user = mainActivity.getUser();
+        user.setAdmin(true);
+        mainActivity.setUser(user);
+
+        onView(isRoot()).perform(waitFor(4000)); // wait for database update
 
         // Navigate to the Admin Dashboard
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.event_dashboard_admin_expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
 
         // Go to Manage Users
-        onView(withId(R.id.admin_button_manage_users)).perform(click());
+        onView(withId(R.id.event_dashboard_admin_profile_user_search_button)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
 
         String firstItemIdentifier = "unique_text_of_first_item";
 
-        onData(anything()).inAdapterView(withId(R.id.admin_profile_dashboard_list)).atPosition(0).onChildView(withId(R.id.admin_delete_button)).perform(click());
+        onView(withId(R.id.admin_profile_dashboard_list))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(0, MyViewActions.clickChildViewWithId(R.id.delete_button)));
 
         onView(isRoot()).perform(waitFor(2000));
 
@@ -306,71 +314,153 @@ public class MainActivityTest {
 
     }
 
+
+    public static class MyViewActions {
+        public static ViewAction clickChildViewWithId(final int id) {
+            return new ViewAction() {
+                @Override
+                public Matcher<View> getConstraints() {
+                    return null;
+                }
+
+                @Override
+                public String getDescription() {
+                    return "Click on a child view with specified ID.";
+                }
+
+                @Override
+                public void perform(UiController uiController, View view) {
+                    View v = view.findViewById(id);
+                    v.performClick();
+                }
+            };
+        }
+    }
+
+
     @Test
     public void testUS_04_06_01AdminBrowseProfile () {
-        onView(isRoot()).perform(waitFor(5000)); // Wait to ensure the app is ready
+        onView(isRoot()).perform(waitFor(10000)); // Wait to ensure the app is ready
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        DatabaseService databaseService = new DatabaseService();
+        databaseService.enableAdmin(user.getUserId());
+        user = mainActivity.getUser();
+        user.setAdmin(true);
+        mainActivity.setUser(user);
+
+        onView(isRoot()).perform(waitFor(4000)); // wait for database update
 
         // Navigate to the Admin Dashboard
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.event_dashboard_admin_expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
 
         // Go to Manage Users
-        onView(withId(R.id.admin_button_manage_users)).perform(click());
-        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
+        onView(withId(R.id.event_dashboard_admin_profile_user_search_button)).perform(click());
+
         onView(withId(R.id.admin_profile_dashboard_list)).check(matches(isDisplayed()));
+
+
     }
 
     @Test
     public void testUS_04_04_01AdminBrowseEvent() {
         onView(isRoot()).perform(waitFor(10000)); // Wait to ensure the app is ready
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        DatabaseService databaseService = new DatabaseService();
+        databaseService.enableAdmin(user.getUserId());
+        user = mainActivity.getUser();
+        user.setAdmin(true);
+        mainActivity.setUser(user);
 
-        // Navigate to the Admin Dashboard
-        onView(withId(R.id.navigation_profile)).perform(click());
-        onView(isRoot()).perform(waitFor(5000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
-
-        // Go to Manage Events
-        onView(withId(R.id.admin_button_manage_events)).perform(click());
-        onView(isRoot()).perform(waitFor(5000)); // Wait for the event list to load
-        onView(withId(R.id.browse_events_dashboard_list)).check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void testUS_04_05_01AdminRemoveEvent() {
-        onView(isRoot()).perform(waitFor(7000)); // Wait to ensure the app is ready
+        onView(isRoot()).perform(waitFor(4000)); // wait for database update
 
         // Navigate to the Admin Dashboard
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
 
-        // Go to Manage Events
-        onView(withId(R.id.admin_button_manage_events)).perform(click());
-        onView(isRoot()).perform(waitFor(2000)); // Wait for the event list to load
+        onView(withId(R.id.event_dashboard_admin_expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+
+        // Go to Manage Users
+        onView(withId(R.id.event_dashboard_admin_event_search_button)).perform(click());
+
+        onView(withId(R.id.browse_events_dashboard_list)).check(matches(isDisplayed()));
+
+
+    }
+
+
+    @Test
+    public void testUS_04_05_01AdminRemoveEvent() {
+        onView(isRoot()).perform(waitFor(10000)); // Wait to ensure the app is ready
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        DatabaseService databaseService = new DatabaseService();
+        databaseService.enableAdmin(user.getUserId());
+        user = mainActivity.getUser();
+        user.setAdmin(true);
+        mainActivity.setUser(user);
+
+        onView(isRoot()).perform(waitFor(4000)); // wait for database update
+
+        // Navigate to the Admin Dashboard
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+
+        onView(withId(R.id.event_dashboard_admin_expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+
+        // Go to Manage Users
+        onView(withId(R.id.event_dashboard_admin_event_search_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
 
         String firstItemIdentifier = "unique_text_of_first_item";
 
-        onData(anything()).inAdapterView(withId(R.id.browse_events_dashboard_list)).atPosition(0).onChildView(withId(R.id.admin_delete_button)).perform(click());
+        onView(withId(R.id.browse_events_dashboard_list))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(0, MyViewActions.clickChildViewWithId(R.id.delete_button)));
 
         onView(isRoot()).perform(waitFor(2000));
 
         onView(withId(R.id.browse_events_dashboard_list))
                 .check(matches(not(hasDescendant(withText(firstItemIdentifier)))));
+
     }
 
 
     @Test
     public void testUS_04_03_01AdminRemoveUserImage(){
-        onView(isRoot()).perform(waitFor(5000));
+        onView(isRoot()).perform(waitFor(10000)); // Wait to ensure the app is ready
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        DatabaseService databaseService = new DatabaseService();
+        databaseService.enableAdmin(user.getUserId());
+        user = mainActivity.getUser();
+        user.setAdmin(true);
+        mainActivity.setUser(user);
+
+        onView(isRoot()).perform(waitFor(4000)); // wait for database update
+
+        // Navigate to the Admin Dashboard
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
 
-        onView(withId(R.id.admin_button_view_images)).perform(click());
+        onView(withId(R.id.event_dashboard_admin_expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+
+        // Go to Manage Users
+        onView(withId(R.id.event_dashboard_admin_image_search_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
+
+
         onView(isRoot()).perform(waitFor(5000)); // Wait for the user list to load
         onView(withId(R.id.profiles_recycler_view))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
@@ -385,13 +475,30 @@ public class MainActivityTest {
 
     @Test
     public void testUS_04_03_01AdminRemoveEventImage(){
-        onView(isRoot()).perform(waitFor(5000));
+        onView(isRoot()).perform(waitFor(10000)); // Wait to ensure the app is ready
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        DatabaseService databaseService = new DatabaseService();
+        databaseService.enableAdmin(user.getUserId());
+        user = mainActivity.getUser();
+        user.setAdmin(true);
+        mainActivity.setUser(user);
+
+        onView(isRoot()).perform(waitFor(4000)); // wait for database update
+
+        // Navigate to the Admin Dashboard
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
 
-        onView(withId(R.id.admin_button_view_images)).perform(click());
+        onView(withId(R.id.event_dashboard_admin_expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+
+        // Go to Manage Users
+        onView(withId(R.id.event_dashboard_admin_image_search_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
+
+
         onView(isRoot()).perform(waitFor(5000)); // Wait for the user list to load
         onView(withId(R.id.events_recycler_view))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
@@ -405,22 +512,33 @@ public class MainActivityTest {
 
     @Test
     public void testUS_04_05_01AdminBrowseImage(){
-        onView(isRoot()).perform(waitFor(5000));
+        onView(isRoot()).perform(waitFor(10000)); // Wait to ensure the app is ready
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        DatabaseService databaseService = new DatabaseService();
+        databaseService.enableAdmin(user.getUserId());
+        user = mainActivity.getUser();
+        user.setAdmin(true);
+        mainActivity.setUser(user);
+
+        onView(isRoot()).perform(waitFor(4000)); // wait for database update
+
+        // Navigate to the Admin Dashboard
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
 
-        onView(withId(R.id.admin_button_view_images)).perform(click());
-        onView(isRoot()).perform(waitFor(5000)); // Wait for the user list to load
-        onView(withId(R.id.events_recycler_view)).check(matches(isDisplayed()));
-        onView(withId(R.id.profiles_recycler_view)).check(matches(isDisplayed()));
+        onView(withId(R.id.event_dashboard_admin_expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+
+        // Go to Manage Users
+        onView(withId(R.id.event_dashboard_admin_image_search_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
     }
 
     /**
      * This gets an activity reference from a running test, but you should not hold onto this reference as it may change
      * or be recreated. Try to call this every time you need something out of the activity.
-     *
      * @param activityScenarioRule the scenario from the scenarioTestRule
      * @return returns the Activity from the scenario, which can then be cast to (MainActivity) if needed
      */
@@ -508,6 +626,164 @@ public class MainActivityTest {
 
     }
 
+    @Test
+    public void testUS_01_10_01EventSignedUpList(){
+        onView(isRoot()).perform(waitFor(5000));
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+        onView(withId(R.id.event_dashboard_title)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.event_dashboard_create_button)).perform(click());
+
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("My Test Event Title"));
+        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Test Event Description"));
+        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Test Event Location"));
+        Espresso.closeSoftKeyboard();
+
+        setDate(R.id.text_event_start_date, 2024, 8, 18);
+        Espresso.closeSoftKeyboard();
+        setDate(R.id.text_event_end_date, 2024, 8, 19);
+        Espresso.closeSoftKeyboard();
+
+        setTime(R.id.text_event_start_time, 12, 30);
+        Espresso.closeSoftKeyboard();
+        setTime(R.id.text_event_end_time, 19, 36);
+        Espresso.closeSoftKeyboard();
+
+        onView(withId(R.id.create_event_confirm_button)).perform(click());
+        onView(isRoot()).perform(waitFor(3000));
+
+        // Click on the third item in the RecyclerView
+        onView(withId(R.id.event_dashboard_list))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(2, click()));
+        onView(isRoot()).perform(waitFor(3000));
+
+        onView(withText("My Test Event Title")).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.signup_button)).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.signup_list)).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.signup_list_title)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void testUS_01_11_01LimitSignups(){
+
+        onView(isRoot()).perform(waitFor(5000));
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+        onView(withId(R.id.event_dashboard_title)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.event_dashboard_create_button)).perform(click());
+
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("My Test Event Title"));
+        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Test Event Description"));
+        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Test Event Location"));
+        onView(withId(R.id.edit_text_signups)).perform(ViewActions.typeText("10"));
+        Espresso.closeSoftKeyboard();
+
+        setDate(R.id.text_event_start_date, 2024, 8, 18);
+        Espresso.closeSoftKeyboard();
+        setDate(R.id.text_event_end_date, 2024, 8, 19);
+        Espresso.closeSoftKeyboard();
+
+        setTime(R.id.text_event_start_time, 12, 30);
+        Espresso.closeSoftKeyboard();
+        setTime(R.id.text_event_end_time, 19, 36);
+        Espresso.closeSoftKeyboard();
+
+        onView(withId(R.id.create_event_confirm_button)).perform(click());
+        onView(isRoot()).perform(waitFor(3000));
+
+        onView(withId(R.id.event_dashboard_list))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(2, click()));
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withText("My Test Event Title")).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withText("10"))
+                .check(matches(isDisplayed()));
+        onView(isRoot()).perform(waitFor(2000));
+    }
+
+    @Test
+    public void testUS_02_07_01Signup(){
+        onView(isRoot()).perform(waitFor(5000));
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+        onView(withId(R.id.event_dashboard_title)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.event_dashboard_browse_button)).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        // click first item in browse events
+        onView(withId(R.id.browse_events_dashboard_list))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.signup_button)).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+    }
+
+    @Test
+    public void testUS_02_09_01UserSignupList(){
+        onView(isRoot()).perform(waitFor(5000));
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+        onView(withId(R.id.event_dashboard_title)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.event_dashboard_create_button)).perform(click());
+
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("My Test Event Title"));
+        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Test Event Description"));
+        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Test Event Location"));
+        Espresso.closeSoftKeyboard();
+
+        setDate(R.id.text_event_start_date, 2024, 8, 18);
+        Espresso.closeSoftKeyboard();
+        setDate(R.id.text_event_end_date, 2024, 8, 19);
+        Espresso.closeSoftKeyboard();
+
+        setTime(R.id.text_event_start_time, 12, 30);
+        Espresso.closeSoftKeyboard();
+        setTime(R.id.text_event_end_time, 19, 36);
+        Espresso.closeSoftKeyboard();
+
+        onView(withId(R.id.create_event_confirm_button)).perform(click());
+        onView(isRoot()).perform(waitFor(3000));
+
+        // Click on the third item in the RecyclerView
+        onView(withId(R.id.event_dashboard_list))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(2, click()));
+        onView(isRoot()).perform(waitFor(3000));
+
+        onView(withText("My Test Event Title")).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.signup_button)).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.back_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+
+
+        onView(withId(R.id.event_dashboard_list))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(1, click()));
+        onView(isRoot()).perform(waitFor(5000));
+        onView(withText("My Test Event Title"))
+                .check(matches(isDisplayed()));
+    }
     /**
      * This test requires a valid CHECKIN qr loaded into the scanner
      * This test also requires android location be enabled in the settings before running.
@@ -740,4 +1016,279 @@ public class MainActivityTest {
             databaseService.deleteEvent(event);
         }
     }
+
+    @Test
+    public void testUS_01_03_01SendNotificationsToAttendees(){
+        onView(isRoot()).perform(waitFor(4000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(4000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(4000)); // Wait for navigation
+
+        // create new event
+        onView(withId(R.id.event_dashboard_create_button)).perform(click());
+
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("Test US01_03_01Notification"));
+        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
+        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
+        Espresso.closeSoftKeyboard();
+
+        setDate(R.id.text_event_start_date, 2024, 8, 18);
+        Espresso.closeSoftKeyboard();
+        setDate(R.id.text_event_end_date, 2024, 8, 19);
+        Espresso.closeSoftKeyboard();
+
+        setTime(R.id.text_event_start_time, 12, 30);
+        Espresso.closeSoftKeyboard();
+        setTime(R.id.text_event_end_time, 19, 36);
+        Espresso.closeSoftKeyboard();
+
+        DatabaseService databaseService = new DatabaseService();
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        EventCreationFragment fragment = (EventCreationFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventCreation");
+        Event event = fragment.creatingEvent;
+        String eventId = event.getId();
+
+        try {
+            onView(withId(R.id.create_event_confirm_button)).perform(click());
+            onView(isRoot()).perform(waitFor(3000));
+
+            // look at organized events to find newly created event
+            onView(withId(R.id.event_dashboard_list)).perform(actionOnItemAtPosition(2, click()));
+            onView(isRoot()).perform(waitFor(4000));
+
+            // click on newly made event
+            onView(allOf(withId(R.id.events_rv), hasDescendant(withText("Test US01_03_01Notification")))).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            // check in an attendee
+            databaseService.recordCheckIn(eventId, "9b4dd42c-7de3-4d76-a96d-fde4958e7104", "location");
+            onView(isRoot()).perform(waitFor(1000));
+            databaseService.recordCheckIn(eventId, "9b4dd42c-7de3-4d76-a96d-fde4958e7104", "location");
+            onView(isRoot()).perform(waitFor(4000));
+
+            // click on view attendees
+            onView(withId(R.id.expand_button)).perform(click());
+            onView(withId(R.id.view_attendees_button)).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            // click on view attendees
+            onView(withId(R.id.expand_attendee_button)).perform(click());
+            onView(withId(R.id.announcement_button)).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            // send a title and body
+            onView(withId(R.id.edit_notification_title)).perform(ViewActions.typeText("Test Title"));
+            onView(withId(R.id.edit_notification_body)).perform(ViewActions.typeText("Test Body"));
+            Espresso.closeSoftKeyboard();
+            onView(isRoot()).perform(waitFor(4000));
+
+
+            // send the notification
+            onView(withId(R.id.create_notification_confirm_button)).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            // check if it went back to attendeeFragment
+            onView(withText("Attendee test user")).check(matches(isDisplayed()));
+            onView(withText("Check-ins: 2")).check(matches(isDisplayed()));
+
+            // go back to event dashboard
+            onView(withId(R.id.navigation_dashboard)).perform(click());
+            onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+            onView(withId(R.id.navigation_dashboard)).perform(click());
+            onView(isRoot()).perform(waitFor(4000)); // Wait for navigation
+
+            // look at organized events to find newly created event
+            onView(withId(R.id.event_dashboard_list)).perform(actionOnItemAtPosition(2, click()));
+            onView(isRoot()).perform(waitFor(4000));
+
+            // click on newly made event
+            onView(allOf(withId(R.id.events_rv), hasDescendant(withText("Test US01_03_01Notification")))).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            onView(withId(R.id.event_details_fragment)).perform(ViewActions.swipeUp());
+            onView(isRoot()).perform(waitFor(4000));
+
+            //check if text matches
+            onView(withText("Test Title: Test Body")).check(matches(isDisplayed()));
+
+    }
+        finally {
+            onView(isRoot()).perform(waitFor(4000));
+            // delete new event
+            databaseService.deleteEvent(event);
+        }
+    }
+
+    @Test
+    public void testUS_02_03_01ReceiveAlert(){
+        onView(isRoot()).perform(waitFor(4000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(4000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(4000)); // Wait for navigation
+
+        // create new event
+        onView(withId(R.id.event_dashboard_create_button)).perform(click());
+
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("Test US02_03_01ReceiveAlert"));
+        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
+        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
+        Espresso.closeSoftKeyboard();
+
+        setDate(R.id.text_event_start_date, 2024, 8, 18);
+        Espresso.closeSoftKeyboard();
+        setDate(R.id.text_event_end_date, 2024, 8, 19);
+        Espresso.closeSoftKeyboard();
+
+        setTime(R.id.text_event_start_time, 12, 30);
+        Espresso.closeSoftKeyboard();
+        setTime(R.id.text_event_end_time, 19, 36);
+        Espresso.closeSoftKeyboard();
+
+        DatabaseService databaseService = new DatabaseService();
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        EventCreationFragment fragment = (EventCreationFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventCreation");
+        Event event = fragment.creatingEvent;
+        String eventId = event.getId();
+
+        try {
+            onView(withId(R.id.create_event_confirm_button)).perform(click());
+            onView(isRoot()).perform(waitFor(3000));
+
+            // look at organized events to find newly created event
+            onView(withId(R.id.event_dashboard_list)).perform(actionOnItemAtPosition(2, click()));
+            onView(isRoot()).perform(waitFor(4000));
+
+            // click on newly made event
+            onView(allOf(withId(R.id.events_rv), hasDescendant(withText("Test US02_03_01ReceiveAlert")))).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            // check in an attendee
+            databaseService.recordCheckIn(eventId, "9b4dd42c-7de3-4d76-a96d-fde4958e7104", "location");
+            onView(isRoot()).perform(waitFor(1000));
+            databaseService.recordCheckIn(eventId, "9b4dd42c-7de3-4d76-a96d-fde4958e7104", "location");
+            onView(isRoot()).perform(waitFor(4000));
+
+            // click on view attendees
+            onView(withId(R.id.expand_button)).perform(click());
+            onView(withId(R.id.view_attendees_button)).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            // click on view attendees
+            onView(withId(R.id.expand_attendee_button)).perform(click());
+            onView(withId(R.id.announcement_button)).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            // send a title and body
+            onView(withId(R.id.edit_notification_title)).perform(ViewActions.typeText("Test Title"));
+            onView(withId(R.id.edit_notification_body)).perform(ViewActions.typeText("Test Body"));
+            Espresso.closeSoftKeyboard();
+            onView(isRoot()).perform(waitFor(4000));
+
+
+            // send the notification
+            onView(withId(R.id.create_notification_confirm_button)).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            // check if it went back to attendeeFragment
+            onView(withText("Attendee test user")).check(matches(isDisplayed()));
+            onView(withText("Check-ins: 2")).check(matches(isDisplayed()));
+
+            // go back to event dashboard
+            onView(withId(R.id.navigation_dashboard)).perform(click());
+            onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+            onView(withId(R.id.navigation_dashboard)).perform(click());
+            onView(isRoot()).perform(waitFor(4000)); // Wait for navigation
+
+            // look at organized events to find newly created event
+            onView(withId(R.id.event_dashboard_list)).perform(actionOnItemAtPosition(2, click()));
+            onView(isRoot()).perform(waitFor(4000));
+
+            // click on newly made event
+            onView(allOf(withId(R.id.events_rv), hasDescendant(withText("Test US02_03_01ReceiveAlert")))).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            onView(withId(R.id.event_details_fragment)).perform(ViewActions.swipeUp());
+            onView(isRoot()).perform(waitFor(4000));
+
+            //check if text matches
+            onView(withText("Test Title: Test Body")).check(matches(isDisplayed()));
+
+        }
+        finally {
+            onView(isRoot()).perform(waitFor(4000));
+            // delete new event
+            databaseService.deleteEvent(event);
+        }
+    }
+
+    @Test
+    public void testUS01_05_01LiveCount() {
+        onView(isRoot()).perform(waitFor(4000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(4000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(4000)); // Wait for navigation
+
+        // create new event
+        onView(withId(R.id.event_dashboard_create_button)).perform(click());
+
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("Test US01_05_01LiveCount"));
+        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
+        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
+        Espresso.closeSoftKeyboard();
+
+        setDate(R.id.text_event_start_date, 2024, 8, 18);
+        Espresso.closeSoftKeyboard();
+        setDate(R.id.text_event_end_date, 2024, 8, 19);
+        Espresso.closeSoftKeyboard();
+
+        setTime(R.id.text_event_start_time, 12, 30);
+        Espresso.closeSoftKeyboard();
+        setTime(R.id.text_event_end_time, 19, 36);
+        Espresso.closeSoftKeyboard();
+
+        DatabaseService databaseService = new DatabaseService();
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        EventCreationFragment fragment = (EventCreationFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventCreation");
+        Event event = fragment.creatingEvent;
+        String eventId = event.getId();
+
+        try {
+            onView(withId(R.id.create_event_confirm_button)).perform(click());
+            onView(isRoot()).perform(waitFor(3000));
+
+            // look at organized events to find newly created event
+            onView(withId(R.id.event_dashboard_list)).perform(actionOnItemAtPosition(2, click()));
+            onView(isRoot()).perform(waitFor(2000));
+
+            // click on newly made event
+            onView(allOf(withId(R.id.events_rv), hasDescendant(withText("Test US01_05_01LiveCount")))).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            // check in an attendee
+            databaseService.recordCheckIn(eventId, "9b4dd42c-7de3-4d76-a96d-fde4958e7104", "location");
+            onView(isRoot()).perform(waitFor(2000));
+            databaseService.recordCheckIn(eventId, "9b4dd42c-7de3-4d76-a96d-fde4958e7104", "location");
+            onView(isRoot()).perform(waitFor(4000));
+            // click on view attendees
+            onView(withId(R.id.expand_button)).perform(click());
+            onView(withId(R.id.view_attendees_button)).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            databaseService.recordCheckIn(eventId, "9b4dd42c-7de3-4d76-a96d-fde4958e7104", "location");
+            onView(isRoot()).perform(waitFor(4000));
+
+            // test to see if attendees are shown correctly
+            onView(withText("Attendee test user")).check(matches(isDisplayed()));
+            onView(withText("Check-ins: 3")).check(matches(isDisplayed()));
+
+        } finally {
+            onView(isRoot()).perform(waitFor(4000));
+            // delete new event
+            databaseService.deleteEvent(event);
+        }
+    }
+
 }

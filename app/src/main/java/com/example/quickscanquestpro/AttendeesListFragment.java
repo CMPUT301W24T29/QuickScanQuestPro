@@ -36,7 +36,7 @@ public class AttendeesListFragment extends Fragment {
     private TextView attendeeTotal;
     private ListView attendeesListView;
     private boolean firstrun = true;
-    private ArrayList<String> userIds = new ArrayList<>();
+    private ArrayList<String> UserIds = new ArrayList<>();
 
     /**
      * This is the constructor for the AttendeesListFragment class.
@@ -87,7 +87,7 @@ public class AttendeesListFragment extends Fragment {
         alertButton.setOnClickListener(v -> {
             // Create a new AttendeeAlertsFragment
             firstrun = true;
-            AttendeeAlertsFragment attendeeAlertsFragment = new AttendeeAlertsFragment(userIds);
+            AttendeeAlertsFragment attendeeAlertsFragment = new AttendeeAlertsFragment(UserIds, event.getId());
             FragmentManager fragmentManager = getParentFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.replace(R.id.content, attendeeAlertsFragment);
@@ -139,7 +139,10 @@ public class AttendeesListFragment extends Fragment {
                 checkInList = getAttendees();
 
             } else {
-                Log.e("AttendeesListFragment", "Event is null");
+
+                Log.e("AttendeesListFragment", "Event is null. Cannot fetch details.");
+//                FragmentManager fragmentManager = getParentFragmentManager();
+//                fragmentManager.popBackStack();
             }
         });
     }
@@ -205,8 +208,8 @@ public class AttendeesListFragment extends Fragment {
         firstrun = false;
         for (ArrayList<Object> attendee : newCheckInList) {
             String Id = (String) attendee.get(0);
-            if(!userIds.contains(Id))
-                userIds.add(Id);
+            if(!UserIds.contains(Id))
+                UserIds.add(Id);
         }
         return newCheckInList;
     }
