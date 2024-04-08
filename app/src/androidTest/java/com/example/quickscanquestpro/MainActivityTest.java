@@ -1112,7 +1112,7 @@ public class MainActivityTest {
             //check if text matches
             onView(withText("Test Title: Test Body")).check(matches(isDisplayed()));
 
-    }
+        }
         finally {
             onView(isRoot()).perform(waitFor(4000));
             // delete new event
