@@ -157,6 +157,8 @@ public class EventDetailsFragment extends Fragment {
             expandButton.setTag("false");
 
             // Hide the upload image button and the share button by default
+            shareButton.setVisibility(View.GONE);
+            expandButton.setVisibility(View.GONE);
             uploadImageButton.setVisibility(View.GONE);
             attendeesButton.setVisibility(View.GONE);
             signupListButton.setVisibility(View.GONE);
@@ -166,63 +168,31 @@ public class EventDetailsFragment extends Fragment {
 //                event = Event.createTestEvent(mainActivity.getNewEventID());
 //            }
 
-            // Set the image of the event to the event banner if it exists, otherwise hide the imageview
-            if (event.getEventBannerUrl() != null) {
-                Glide.with(this).load(event.getEventBannerUrl()).into(eventImage);
-            } else {
+            databaseService.getEvent(event.getId(), event -> {
+                if (event != null) {
+                    this.event = event;
+                    // Set the image of the event to the event banner if it exists, otherwise hide the imageview
+                    if (event.getEventBannerUrl() != null) {
+                        Glide.with(this).load(event.getEventBannerUrl()).into(eventImage);
+                    } else {
 //                eventImage.setVisibility(View.GONE);
-                eventImage.setImageResource(R.drawable.ic_launcher_background);
-            }
+                        eventImage.setImageResource(R.drawable.ic_launcher_background);
+                    }
 
-            // Set the text of the event details to the event details
-            eventTitle.setText(event.getTitle());
-            eventDescription.setText(event.getDescription());
-            String eventDateString = event.getStartDate().toString() + " at " + event.getStartTime().toString() + " until " + event.getEndDate().toString() + " at " + event.getEndTime().toString();
-            eventDate.setText(eventDateString);
-            eventLocation.setText(event.getLocation());
-            ArrayList<String> announcementList = event.getAnnouncements();
+                    // Enable these buttons if the user is the organizer of the event
+                    if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
+                        expandButton.setVisibility(View.VISIBLE);
+                        shareButton.setVisibility(View.VISIBLE);
+                        uploadImageButton.setOnClickListener(v -> {
+                            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                            intent.setType("image/*");
+                            pickImageLauncher.launch(intent);
+                        });
+                        setShareButton(shareButton);
 
-
-            // set the text of sign up limit depending on if there is a limit
-            if (event.getSignupLimit() != null) {
-                signupLimit.setText(event.getSignupLimit().toString());
-            } else {
-                signupLimit.setText("No limit");
-            }
-
-            if(announcementList != null)
-            {
-                // Set the listview of announcements to the announcements of the event and set the height of the listview
-                ArrayAdapter<String> announcementAdapter =
-                        new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, announcementList);
-                ListView announcementListView = view.findViewById(R.id.event_announcements_list);
-                announcementListView.setAdapter(announcementAdapter);
-                ListViewHelper.getListViewSize(announcementListView, announcementAdapter);
-            }
-
-
-            // Set an on click listener for the back button
-            backButton.setOnClickListener(v -> {
-
-                // if the user is organiser, i want to go back to admin event dashboard
-                FragmentManager fragmentManager = getParentFragmentManager();
-                fragmentManager.popBackStack();
-
-            });
-            // Enable these buttons if the user is the organizer of the event
-            if (event.getOrganizerId().equals(mainActivity.getUser().getUserId())) {
-                uploadImageButton.setOnClickListener(v -> {
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                    intent.setType("image/*");
-                    pickImageLauncher.launch(intent);
-                });
-                setShareButton(shareButton);
-
-                // If clicked, this button brings the user to the attendees list fragment. If there
-                // is no attendees in the current event, it will instead show the user a message
-                attendeesButton.setOnClickListener(v -> {
-                    databaseService.getEvent(event.getId(), event -> {
-                        if (event != null) {
+                        // If clicked, this button brings the user to the attendees list fragment. If there
+                        // is no attendees in the current event, it will instead show the user a message
+                        attendeesButton.setOnClickListener(v -> {
                             if (event.getCheckIns() != null) {
                                 this.event = event;
                                 AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.event);
@@ -235,55 +205,91 @@ public class EventDetailsFragment extends Fragment {
                             else {
                                 Toast.makeText(getContext(), "No attendees found", Toast.LENGTH_SHORT).show();
                             }
-                        }
-                        else {
-                            Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
-                            FragmentManager fragmentManager = getParentFragmentManager();
-                            fragmentManager.popBackStack();
+                        });
+
+                        expandButton.setOnClickListener(v -> {
+                            if (expandButton.getTag() == "false") {
+                                expandButton.setImageResource(R.drawable.baseline_close_24);
+                                uploadImageButton.setVisibility(View.VISIBLE);
+                                attendeesButton.setVisibility(View.VISIBLE);
+                                signupListButton.setVisibility(View.VISIBLE);
+                                signupButton.setVisibility(View.VISIBLE);
+                                expandButton.setTag("true");
+
+                            } else {
+                                expandButton.setImageResource(R.drawable.baseline_menu_24);
+                                uploadImageButton.setVisibility(View.GONE);
+                                attendeesButton.setVisibility(View.GONE);
+                                signupListButton.setVisibility(View.GONE);
+                                signupButton.setVisibility(View.GONE);
+                                expandButton.setTag("false");
+                            }
+                        });
+                    }
+                    // Hide expand button if user is not the organizer
+                    else {
+                        expandButton.setVisibility(View.GONE);
+                        shareButton.setVisibility(View.GONE);
+                        signupButton.setVisibility(View.VISIBLE);
+                    }
+                    setShareButton(shareButton);
+
+                    // Set the text of the event details to the event details
+                    eventTitle.setText(event.getTitle());
+                    eventDescription.setText(event.getDescription());
+                    String eventDateString = event.getStartDate().toString() + " at " + event.getStartTime().toString() + " until " + event.getEndDate().toString() + " at " + event.getEndTime().toString();
+                    eventDate.setText(eventDateString);
+                    eventLocation.setText(event.getLocation());
+                    ArrayList<String> announcementList = event.getAnnouncements();
+
+                    // set the text of sign up limit depending on if there is a limit
+                    if (event.getSignupLimit() != null) {
+                        signupLimit.setText(event.getSignupLimit().toString());
+                    } else {
+                        signupLimit.setText("No limit");
+                    }
+
+                    if(announcementList != null)
+                    {
+                        // Set the listview of announcements to the announcements of the event and set the height of the listview
+                        ArrayAdapter<String> announcementAdapter =
+                                new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, announcementList);
+                        ListView announcementListView = view.findViewById(R.id.event_announcements_list);
+                        announcementListView.setAdapter(announcementAdapter);
+                        ListViewHelper.getListViewSize(announcementListView, announcementAdapter);
+                    }
+
+
+                    // Set an on click listener for the back button
+                    backButton.setOnClickListener(v -> {
+                        // if the user is organiser, i want to go back to admin event dashboard
+                        FragmentManager fragmentManager = getParentFragmentManager();
+                        fragmentManager.popBackStack();
+
+                    });
+
+                    signupButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            signup();
                         }
                     });
-                });
 
-                expandButton.setOnClickListener(v -> {
-                    if (expandButton.getTag() == "false") {
-                        expandButton.setImageResource(R.drawable.baseline_close_24);
-                        uploadImageButton.setVisibility(View.VISIBLE);
-                        attendeesButton.setVisibility(View.VISIBLE);
-                        signupListButton.setVisibility(View.VISIBLE);
-                        signupButton.setVisibility(View.VISIBLE);
-                        expandButton.setTag("true");
-
-                    } else {
-                        expandButton.setImageResource(R.drawable.baseline_menu_24);
-                        uploadImageButton.setVisibility(View.GONE);
-                        attendeesButton.setVisibility(View.GONE);
-                        signupListButton.setVisibility(View.GONE);
-                        signupButton.setVisibility(View.GONE);
-                        expandButton.setTag("false");
-                    }
-                });
-            }
-            // Hide expand button if user is not the organizer
-            else {
-                expandButton.setVisibility(View.GONE);
-                shareButton.setVisibility(View.GONE);
-                signupButton.setVisibility(View.VISIBLE);
-            }
-            setShareButton(shareButton);
-
-            signupButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    signup();
+                    signupListButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            signupList();
+                        }
+                    });
+                }
+                else {
+                    Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
+                    FragmentManager fragmentManager = getParentFragmentManager();
+                    fragmentManager.popBackStack();
                 }
             });
 
-            signupListButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    signupList();
-                }
-            });
+
         }
         else {
             Log.e(TAG, "User or MainActivity is null");
