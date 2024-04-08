@@ -142,8 +142,8 @@ public class AttendeesListFragment extends Fragment {
             } else {
 
                 Log.e("AttendeesListFragment", "Event is null. Cannot fetch details.");
-                FragmentManager fragmentManager = getParentFragmentManager();
-                fragmentManager.popBackStack();
+//                FragmentManager fragmentManager = getParentFragmentManager();
+//                fragmentManager.popBackStack();
             }
         });
     }
