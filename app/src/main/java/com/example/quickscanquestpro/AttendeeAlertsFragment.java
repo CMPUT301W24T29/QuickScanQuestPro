@@ -166,7 +166,7 @@ public class AttendeeAlertsFragment extends DialogFragment {
                 .url(url)
                 .post(body)
                 // add the api key after bearer with a space
-                .header("Authorization", "Bearer AAAA-z98YP0:APA91bEoBWfmJI7JHaV87puPVmZhDNv-4m0cxhjYXjsD5mAiPoTuhGbC6xfV0rVBt9qXj59n3TPCRe2QnwlZFXb96DvtoxYvyT5tCNqgaR0m8PapWiWHFVWbNpChm37VzNImEXL5T_iu")
+                .header("Authorization", "Bearer AAAAtAdV94Q:APA91bFgztgBaZWV36ToL1EfavCu_To_gzBuRztq8tLqdqRErCGyHptvOeVNiiAmtIB7LG1QE6SQlW7Fo4bwtdPxQKsJHtrrjUSE_10Iz_4xJGe7B8Ue9ZtDEspPEbpvg0pGwIEFhw-5")
                 .build();
         client.newCall(request).enqueue(new okhttp3.Callback() {
             @Override
