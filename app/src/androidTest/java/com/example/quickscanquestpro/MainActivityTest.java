@@ -4,6 +4,7 @@ import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.pressKey;
+import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
@@ -14,6 +15,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
@@ -29,6 +31,7 @@ import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import android.Manifest;
@@ -57,6 +60,7 @@ import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.contrib.PickerActions;
 
 import androidx.test.espresso.contrib.RecyclerViewActions;
+import androidx.test.espresso.intent.Checks;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.espresso.matcher.ViewMatchers;
 
@@ -73,7 +77,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -83,6 +89,10 @@ public class MainActivityTest {
 
     @Rule
     public GrantPermissionRule permissionCamera = GrantPermissionRule.grant(Manifest.permission.CAMERA);
+    @Rule
+    public GrantPermissionRule permissionCoarse = GrantPermissionRule.grant(Manifest.permission.ACCESS_COARSE_LOCATION);
+    @Rule
+    public GrantPermissionRule permissionFine = GrantPermissionRule.grant(Manifest.permission.ACCESS_FINE_LOCATION);
 
     @Rule
     public ActivityScenarioRule<MainActivity> scenario = new ActivityScenarioRule<MainActivity>(MainActivity.class);
@@ -496,6 +506,107 @@ public class MainActivityTest {
             });
         }
 
+    }
+
+    /**
+     * This test requires a valid CHECKIN qr loaded into the scanner
+     * This test also requires android location be enabled in the settings before running.
+     */
+    @Test
+    public void testUS03_02_01Geolocation(){
+        // test that when checking in with User bool disabled, event stored checkin but no location
+        // default for a test is a new user, which has location disabled in user
+        onView(isRoot()).perform(waitFor(7000)); // Wait for scanning of checkin
+        // check that we are in event details fragment
+        onView(withId(R.id.event_title)).check(matches(isDisplayed()));
+
+        // get the id of the user, the displayed event from eventdetails, and check the database has a checkin from them
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        String userId = user.getUserId();
+
+        EventDetailsFragment fragment = (EventDetailsFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventDetailsFragment");
+        String eventId = fragment.event.getId();
+
+        DatabaseService databaseService = new DatabaseService();
+        final boolean[] continueTest = {false};
+        String finalUserId = userId;
+        EventDetailsFragment finalFragment = fragment;
+        String finalEventId = eventId;
+        DatabaseService finalDatabaseService = databaseService;
+        databaseService.getEvent(eventId, event -> {
+            try {
+                assertNotNull(event);
+                ArrayList<CheckIn> checkins = event.getCheckIns();
+                assertNotNull(checkins);
+                CheckIn foundCheckin = null;
+                for (CheckIn checkin: checkins) {
+                    if (Objects.equals(finalUserId, checkin.getUserId())) {
+                        foundCheckin = checkin;
+                        break;
+                    }
+                }
+                assertNotNull(foundCheckin);
+                continueTest[0] = true;
+                // test that when checking in with User bool enabled, event stored checkin WITH a location
+            } finally {
+                Log.d("geotest",String.valueOf(finalFragment.event.getCheckIns()));
+                finalDatabaseService.clearEventCheckins(finalEventId);
+            }
+        });
+
+        while(!continueTest[0]) {
+            // wait until the previous test is done :/
+        }
+
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.geolocationSwitch)).perform(scrollTo(), click());
+        onView(isRoot()).perform(waitFor(10000)); // Wait for location grab
+        try {
+            onView(withId(R.id.geolocationSwitch)).check(matches(isEnabled()));
+        } catch (Exception e) {
+            onView(isRoot()).perform(waitFor(10000)); // Wait for location longer
+            onView(withId(R.id.geolocationSwitch)).check(matches(isEnabled()));
+        }
+
+        onView(withId(R.id.navigation_qr_scanner)).perform(click());
+        onView(isRoot()).perform(waitFor(7000)); // Wait for navigation and scan
+        // check that we are in event details fragment
+        onView(withId(R.id.event_title)).check(matches(isDisplayed()));
+        // get the id of the user, the displayed event from eventdetails, and check the database has a checkin from them
+        mainActivity = getActivityFromScenario(scenario);
+        user = mainActivity.getUser();
+        userId = user.getUserId();
+
+        fragment = (EventDetailsFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventDetailsFragment");
+        eventId = fragment.event.getId();
+
+        databaseService = new DatabaseService();
+        String finalUserId2 = userId;
+        EventDetailsFragment finalFragment2 = fragment;
+        String finalEventId2 = eventId;
+        DatabaseService finalDatabaseService2 = databaseService;
+        databaseService.getEvent(eventId, event -> {
+            try {
+                assertNotNull(event);
+                ArrayList<CheckIn> checkins = event.getCheckIns();
+                assertNotNull(checkins);
+                CheckIn foundCheckin = null;
+                for (CheckIn checkin: checkins) {
+                    if (Objects.equals(finalUserId2, checkin.getUserId())) {
+                        foundCheckin = checkin;
+                        break;
+                    }
+                }
+                assertNotNull(foundCheckin);
+                assertNotNull(foundCheckin.getCheckInLocation());
+                assertNotEquals(foundCheckin.getCheckInLocation(), "");
+            } finally {
+                Log.d("geotest",String.valueOf(finalFragment2.event.getCheckIns()));
+                finalDatabaseService2.clearEventCheckins(finalEventId2);
+            }
+        });
 
     }
 

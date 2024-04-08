@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ProfileFragment">
 
     <RelativeLayout
@@ -11,36 +12,36 @@
         android:padding="16dp">
 
 
-    <ImageButton
-        android:id="@+id/backButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_arrow_back"
-        android:contentDescription="@string/back"
-        android:layout_alignParentTop="true"
-        android:clickable="true"/>
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_back"
+            android:contentDescription="@string/back"
+            android:layout_alignParentTop="true"
+            android:clickable="true"/>
 
-    <TextView
-        android:id="@+id/editProfileTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Edit Profile"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_toEndOf="@id/backButton"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="16dp"/>
+        <TextView
+            android:id="@+id/editProfileTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edit Profile"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_toEndOf="@id/backButton"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="16dp"/>
 
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/profilePicturePlaceholder"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
-        android:layout_below="@id/editProfileTitle"
-        android:layout_marginTop="24dp"
-        android:layout_centerHorizontal="true"
-        android:src="@drawable/ic_profile_picture_placeholder"
-        android:scaleType="centerCrop"/>
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/profilePicturePlaceholder"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_below="@id/editProfileTitle"
+            android:layout_marginTop="24dp"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/ic_profile_picture_placeholder"
+            android:scaleType="centerCrop"/>
 
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/progressIndicator"
@@ -52,15 +53,15 @@
             android:indeterminate="false"
             android:visibility="gone"/>
 
-    <Button
-        android:id="@+id/uploadProfilePictureButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignEnd="@id/profilePicturePlaceholder"
-        android:layout_alignBottom="@id/profilePicturePlaceholder"
-        android:layout_margin="10dp"
-        android:text="+"
-        android:contentDescription="@string/upload_picture"/>
+        <Button
+            android:id="@+id/uploadProfilePictureButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@id/profilePicturePlaceholder"
+            android:layout_alignBottom="@id/profilePicturePlaceholder"
+            android:layout_margin="10dp"
+            android:text="+"
+            android:contentDescription="@string/upload_picture"/>
 
         <ImageView
             android:id="@+id/deleteProfilePictureButton"
@@ -71,59 +72,59 @@
             android:layout_alignStart="@id/profilePicturePlaceholder"/>
 
 
-    <EditText
-        android:id="@+id/fullNameInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/profilePicturePlaceholder"
-        android:layout_marginTop="24dp"
-        android:hint="Full Name"
-        android:inputType="textPersonName"/>
+        <EditText
+            android:id="@+id/fullNameInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/profilePicturePlaceholder"
+            android:layout_marginTop="24dp"
+            android:hint="Full Name"
+            android:inputType="textPersonName"/>
 
-    <EditText
-        android:id="@+id/homepageInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/fullNameInput"
-        android:layout_marginTop="16dp"
-        android:hint="Homepage"
-        android:inputType="textUri"/>
+        <EditText
+            android:id="@+id/homepageInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/fullNameInput"
+            android:layout_marginTop="16dp"
+            android:hint="Homepage"
+            android:inputType="textUri"/>
 
-    <TextView
-        android:id="@+id/contactInfoText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/homepageInput"
-        android:layout_marginTop="16dp"
-        android:text="Contact Information"
-        android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/contactInfoText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/homepageInput"
+            android:layout_marginTop="16dp"
+            android:text="Contact Information"
+            android:textStyle="bold"/>
 
-    <EditText
-        android:id="@+id/mobileNumberInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/contactInfoText"
-        android:layout_marginTop="16dp"
-        android:hint="Mobile Number"
-        android:inputType="phone"/>
+        <EditText
+            android:id="@+id/mobileNumberInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/contactInfoText"
+            android:layout_marginTop="16dp"
+            android:hint="Mobile Number"
+            android:inputType="phone"/>
 
-    <EditText
-        android:id="@+id/emailAddressInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/mobileNumberInput"
-        android:layout_marginTop="16dp"
-        android:hint="Email Address"
-        android:inputType="textEmailAddress"/>
+        <EditText
+            android:id="@+id/emailAddressInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/mobileNumberInput"
+            android:layout_marginTop="16dp"
+            android:hint="Email Address"
+            android:inputType="textEmailAddress"/>
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/geolocationSwitch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/emailAddressInput"
-        android:layout_marginTop="16dp"
-        android:layout_alignParentStart="true"
-        android:text=" Geolocation"/>
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/geolocationSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/emailAddressInput"
+            android:layout_marginTop="16dp"
+            android:layout_alignParentStart="true"
+            android:text=" Geolocation"/>
 
         <Switch
             android:id="@+id/alert_switch"
@@ -134,6 +135,45 @@
             android:layout_marginTop="29dp"
             android:layout_marginEnd="36dp"
             android:text="Notifications" />
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/event_dashboard_admin_expand_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:src="@drawable/admin_panel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- FAB for the first action -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/event_dashboard_admin_image_search_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/event_dashboard_admin_expand_button"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            android:src="@drawable/baseline_image_search_24" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/event_dashboard_admin_event_search_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/event_dashboard_admin_image_search_button"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            android:src="@drawable/baseline_checklist_rtl_24" />
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/event_dashboard_admin_profile_user_search_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/event_dashboard_admin_event_search_button"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            android:src="@drawable/baseline_person_search_24" />
 
     </RelativeLayout>
 

@@ -59,3 +59,11 @@ Let the device reboot and run the test.
 ***IMPORTANT***
 The device needs to have a cold boot every time a change is made in Toren1BD.poster
 Make sure the pngs for checkin and promo qrs are in the same directory(resources) as the Toren1BD.poster
+
+	Setting up for REUSE QR Test:
+	•	You must load a qr code into the scanner as above (you can just replace the file, no need to change the poster) that is not currently used by an event in a databse (use a QR code that is like, a link to a website or something)
+
+	Setting up for LOCATION tests:
+	•	You must enable location services in the android emulator before running tests that require location.
+	•	In the running devices view, click the 3 dots above the emulator (Extended Controls)
+	•	In the location tab, at the bottom, toggle on "enable gps signal"

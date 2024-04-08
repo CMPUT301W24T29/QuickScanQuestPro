@@ -207,8 +207,9 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
                 // make sure user is not null before giving admin access
                 if(mainActivity.getUser()!=null){
                     databaseService.enableAdmin(mainActivity.getUser().getUserId());
+                    mainActivity.getUser().setAdmin(true);
                     Toast.makeText(mainActivity.getApplicationContext(), "Congratulations, you are now an Admin!!", Toast.LENGTH_SHORT).show();
-                    mainActivity.transitionFragment(new AdminDashboardFragment(), "AdminDashboardFragment");
+                    mainActivity.transitionFragment(new ProfileFragment(), "AdminProfileFragment");
                 } else {
                     Toast.makeText(mainActivity.getApplicationContext(), "User not logged in", Toast.LENGTH_SHORT).show();
                     Log.e("QRCodeScanner", "User not logged in");
