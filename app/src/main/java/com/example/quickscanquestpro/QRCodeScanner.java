@@ -326,7 +326,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
 
                         if(event.getCheckIns().size() == 1) {
                             if (uniqueAttendees.size() == 1) {
-                                sendAlert(event.getOrganizerId(), "Congratulations, one attendee has checked in");
+                                sendAlert(event.getOrganizerId(), "Congratulations, one attendee has checked in!");
                             }
                         }
 
@@ -366,15 +366,37 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
         databaseService.updateLastCheckIn(currentUser.getUserId(), locationGettingEvent.getId());
         locationGettingEvent.checkIn();
 
-        // transition to the new event
-        mainActivity.transitionFragment(new EventDetailsFragment(locationGettingEvent), "EventDetailsFragment");
-        NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
-        // Sets navbar selection to the event dashboard
-        MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
-        item.setChecked(true);
+        databaseService.getEvent(locationGettingEvent.getId(), new DatabaseService.OnEventDataLoaded() {
+            @Override
+            public void onEventLoaded(Event event) {
+                if (event != null) {
+                    // get all unique attendees
+                    for(CheckIn info : event.getCheckIns())
+                    {
+                        if(!uniqueAttendees.contains(info.getUserId()))
+                        {
+                            uniqueAttendees.add(info.getUserId());
+                        }
+                    }
+                    Log.d("CheckIn", "Unique attendees: " + uniqueAttendees.size());
 
-        shutdown();
+                    if(event.getCheckIns().size() == 1) {
+                        if (uniqueAttendees.size() == 1) {
+                            sendAlert(event.getOrganizerId(), "Congratulations, one attendee has checked in!");
+                        }
+                    }
 
+                    // transition to the new event
+                    mainActivity.transitionFragment(new EventDetailsFragment(locationGettingEvent), "EventDetailsFragment");
+                    NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
+                    // Sets navbar selection to the event dashboard
+                    MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
+                    item.setChecked(true);
+
+                    shutdown();
+                }
+            }
+        });
     }
 
 
@@ -435,7 +457,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
                 .url(url)
                 .post(body)
                 // add the api key after bearer with a space
-                .header("Authorization", "Bearer AAAA-z98YP0:APA91bEoBWfmJI7JHaV87puPVmZhDNv-4m0cxhjYXjsD5mAiPoTuhGbC6xfV0rVBt9qXj59n3TPCRe2QnwlZFXb96DvtoxYvyT5tCNqgaR0m8PapWiWHFVWbNpChm37VzNImEXL5T_iu")
+                .header("Authorization", "Bearer AAAAtAdV94Q:APA91bFgztgBaZWV36ToL1EfavCu_To_gzBuRztq8tLqdqRErCGyHptvOeVNiiAmtIB7LG1QE6SQlW7Fo4bwtdPxQKsJHtrrjUSE_10Iz_4xJGe7B8Ue9ZtDEspPEbpvg0pGwIEFhw-5")
                 .build();
         client.newCall(request).enqueue(new okhttp3.Callback() {
             @Override
@@ -445,7 +467,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
 
             @Override
             public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
-                Log.d("Notification", "Notification sent successfully");
+                Log.d("Notification", "Notification sent successfully" + response.toString());
             }
         });
     }

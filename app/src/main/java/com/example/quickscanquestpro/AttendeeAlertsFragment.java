@@ -176,7 +176,7 @@ public class AttendeeAlertsFragment extends DialogFragment {
 
             @Override
             public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
-                Log.d("Notification", "Notification sent successfully");
+                Log.d("Notification", "Notification sent successfully" + response.toString());
             }
         });
     }
