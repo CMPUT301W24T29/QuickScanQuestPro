@@ -126,10 +126,13 @@ public class MainActivityTest {
 
         onView(withId(R.id.create_event_confirm_button)).perform(click());
 
-        // if it successfully returns to the event list, the createQR function has run and generated a qr code for the event
-        onView(withId(R.id.event_dashboard_list)).check(matches(isDisplayed()));
-        // may fail once the event dashboard is properly created
-        onData(is(instanceOf(String.class))).inAdapterView(withId(R.id.event_dashboard_list)).atPosition(0).check(matches(withSubstring("My Event Title")));
+        onView(withId(R.id.event_dashboard_list))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(2, click()));
+        onView(isRoot()).perform(waitFor(3000));
+
+        onView(withText("My Event Title"))
+                .check(matches(isDisplayed()));
+        onView(isRoot()).perform(waitFor(2000));
     }
 
     @Test
