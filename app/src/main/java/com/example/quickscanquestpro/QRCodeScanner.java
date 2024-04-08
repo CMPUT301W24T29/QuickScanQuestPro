@@ -39,6 +39,7 @@ import com.google.mlkit.vision.common.InputImage;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +75,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
     private GeolocationService geolocationService;
     private Event locationGettingEvent;
 
+    private ArrayList<Object> uniqueAttendees = new ArrayList<>();
     /**
      * Interface for callbacks when a QRCode is scanned that returns the scanned code instead.
      */
@@ -310,12 +312,22 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
                 @Override
                 public void onEventLoaded(Event event) {
                     if (event != null) {
-                        Log.d("The event is this", event.toString());
-                        Log.d("The event attendees", event.getCheckIns().toString());
-                        if(event.getCheckIns().size() == 1)
+                        // get all unique attendees
+                        for(CheckIn info : event.getCheckIns())
                         {
-                            sendAlert(event.getOrganizerId(), "Congratulations, one attendee has checked in");
+                            if(!uniqueAttendees.contains(info.getUserId()))
+                            {
+                                uniqueAttendees.add(info.getUserId());
+                            }
                         }
+                        Log.d("CheckIn", "Unique attendees: " + uniqueAttendees.size());
+
+                        if(event.getCheckIns().size() == 1) {
+                            if (uniqueAttendees.size() == 1) {
+                                sendAlert(event.getOrganizerId(), "Congratulations, one attendee has checked in");
+                            }
+                        }
+
                         // transition to the new event
                         mainActivity.transitionFragment(new EventDetailsFragment(event), "EventDetailsFragment");
                         NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);

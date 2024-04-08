@@ -140,6 +140,7 @@ public class AttendeesListFragment extends Fragment {
                 checkInList = getAttendees();
 
             } else {
+
                 Log.e("AttendeesListFragment", "Event is null. Cannot fetch details.");
                 FragmentManager fragmentManager = getParentFragmentManager();
                 fragmentManager.popBackStack();

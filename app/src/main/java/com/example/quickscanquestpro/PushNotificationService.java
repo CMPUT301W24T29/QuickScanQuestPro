@@ -50,6 +50,4 @@ public class PushNotificationService extends FirebaseMessagingService {
         // Show notification
         notificationManager.notify(0, builder.build());
     }
-
-
 }
