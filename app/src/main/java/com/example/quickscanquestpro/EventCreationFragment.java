@@ -251,7 +251,7 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
     }
 
     /**
-     * Checks if all the required entry fields (title, description, location, start/end date/time) are valid, and enables/disables the button based on this.
+     * Checks if all the required entry fields (title, description, signup limit, location, start/end date/time) are valid, and enables/disables the button based on this.
      * @return returns true if all valid, or false if not.
      */
     public Boolean validateEntryFields() {
@@ -320,13 +320,6 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
         } else {
             endTimeText.setError(null);
         }
-
-//        if (progressIndicator.getVisibility()==View.VISIBLE) {
-//            if (progressIndicator.getProgress()!=100) {
-//                Toast.makeText(getContext(), "Please wait until the event banner is uploaded and try again", Toast.LENGTH_SHORT).show();
-//                valid = false;
-//            }
-//        }
 
         if (!valid) {
             createButton.setEnabled(false);
