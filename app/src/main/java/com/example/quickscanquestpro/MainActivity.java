@@ -13,9 +13,6 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.FirebaseApp;
 
@@ -283,7 +280,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
                 fragment1 = new EventDashboardFragment();
             } else if (Objects.equals(pressedTitle, profileTitle)) {
                 if (this.user != null && this.user.isAdmin()){
-                    fragment1 = new AdminDashboardFragment();
+                    fragment1 = new ProfileFragment();
                 }
                 else{
                     fragment1 = new ProfileFragment();

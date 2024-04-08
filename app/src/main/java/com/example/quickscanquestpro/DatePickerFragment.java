@@ -69,7 +69,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
         if (eventDate != null) {
             // the event has previously been passed a date
             year = eventDate.getYear();
-            month = eventDate.getMonthValue();
+            month = eventDate.getMonthValue()-1;
             day = eventDate.getDayOfMonth();
         } else {
             // Use the current date as the default date in the picker.
@@ -92,19 +92,8 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
      * @param day int day selected
      */
     public void onDateSet(DatePicker view, int year, int month, int day) {
-        LocalDate eventDate;
-        if (dateText.getId() == R.id.text_event_start_date) {
-            // we are passing in the start date
-            eventDate = creatingEvent.getStartDate();
-        } else {
-            // otherwise its the end time
-            eventDate = creatingEvent.getEndDate();
-        }
-
-        if (eventDate == null) {
-            // Adjust month value by adding 1 to it because DatePickerDialog uses 0-based indexing
-            month = month + 1;
-        }
+        // Increment month by 1 since the date picker uses 0 indexing
+        month = month + 1;
         // Do something with the time the user picks.
         LocalDate newDate = LocalDate.of(year, month, day);
         if (dateText.getId() == R.id.text_event_start_date) {

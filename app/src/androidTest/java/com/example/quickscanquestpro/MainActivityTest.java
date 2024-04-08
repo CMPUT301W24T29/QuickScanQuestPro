@@ -4,6 +4,7 @@ import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.pressKey;
+import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
@@ -14,6 +15,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
@@ -29,6 +31,7 @@ import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import android.Manifest;
@@ -57,9 +60,11 @@ import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.contrib.PickerActions;
 
 import androidx.test.espresso.contrib.RecyclerViewActions;
+import androidx.test.espresso.intent.Checks;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.espresso.matcher.ViewMatchers;
 
+import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
@@ -72,7 +77,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -82,6 +89,10 @@ public class MainActivityTest {
 
     @Rule
     public GrantPermissionRule permissionCamera = GrantPermissionRule.grant(Manifest.permission.CAMERA);
+    @Rule
+    public GrantPermissionRule permissionCoarse = GrantPermissionRule.grant(Manifest.permission.ACCESS_COARSE_LOCATION);
+    @Rule
+    public GrantPermissionRule permissionFine = GrantPermissionRule.grant(Manifest.permission.ACCESS_FINE_LOCATION);
 
     @Rule
     public ActivityScenarioRule<MainActivity> scenario = new ActivityScenarioRule<MainActivity>(MainActivity.class);
@@ -211,31 +222,31 @@ public class MainActivityTest {
         setTime(R.id.text_event_end_time, 19, 36);
         Espresso.closeSoftKeyboard();
 
-        onView(withId(R.id.create_event_confirm_button)).perform(click());
-        onView(isRoot()).perform(waitFor(1000));
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        EventCreationFragment fragment = (EventCreationFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventCreation");
+        Event creatingEvent = fragment.creatingEvent;
 
-        onView(withId(R.id.navigation_profile)).perform(click());
-        onView(withId(R.id.admin_button_manage_events)).perform(click());
-        onView(isRoot()).perform(waitFor(2000));
+        try {
+            onView(withId(R.id.create_event_confirm_button)).perform(click());
+            onView(isRoot()).perform(waitFor(2000));
 
-        while (true) {
-            onView(isRoot()).perform(waitFor(3000));
-            try {
-                onView(allOf(withText(eventTitle), isDescendantOfA(withId(R.id.browse_events_dashboard_list))))
-                        .perform(click());
-                break;
-            } catch (Exception e) {
-                onView(withId(R.id.browse_events_dashboard_list)).perform(ViewActions.swipeUp());
-            }
+            // look at organized events to find newly created event
+            onView(withId(R.id.event_dashboard_list)).perform(actionOnItemAtPosition(2, click()));
+            onView(isRoot()).perform(waitFor(2000));
+
+            // click on newly made event
+            onView(allOf(withId(R.id.events_rv), hasDescendant(withText("testUS02_04_01ViewEventDetails")))).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            onView(isRoot()).perform(waitFor(4000));
+            onView(withId(R.id.event_title)).check(matches(withText("testUS02_04_01ViewEventDetails")));
+            onView(withId(R.id.event_description)).check(matches(withText("My Event Description")));
+            onView(withId(R.id.event_location)).check(matches(withText("My Event Location")));
+            onView(withId(R.id.event_date)).check(matches(withText("2024-08-18 at 12:30 until 2024-08-19 at 19:36")));
+        } finally {
+            DatabaseService databaseService = new DatabaseService();
+            databaseService.deleteEvent(creatingEvent);
         }
-
-
-        onView(isRoot()).perform(waitFor(4000));
-        onView(withId(R.id.event_title)).check(matches(withText(eventTitle)));
-        onView(withId(R.id.event_description)).check(matches(withText("My Event Description")));
-        onView(withId(R.id.event_location)).check(matches(withText("My Event Location")));
-        onView(withId(R.id.event_date)).check(matches(withText("2024-08-18 at 12:30 until 2024-08-19 at 19:36")));
-
     }
 
     @Test
@@ -647,5 +658,237 @@ public class MainActivityTest {
         onView(isRoot()).perform(waitFor(5000));
         onView(withText("My Test Event Title"))
                 .check(matches(isDisplayed()));
+    }
+    /**
+     * This test requires a valid CHECKIN qr loaded into the scanner
+     * This test also requires android location be enabled in the settings before running.
+     */
+    @Test
+    public void testUS03_02_01Geolocation(){
+        // test that when checking in with User bool disabled, event stored checkin but no location
+        // default for a test is a new user, which has location disabled in user
+        onView(isRoot()).perform(waitFor(7000)); // Wait for scanning of checkin
+        // check that we are in event details fragment
+        onView(withId(R.id.event_title)).check(matches(isDisplayed()));
+
+        // get the id of the user, the displayed event from eventdetails, and check the database has a checkin from them
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        String userId = user.getUserId();
+
+        EventDetailsFragment fragment = (EventDetailsFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventDetailsFragment");
+        String eventId = fragment.event.getId();
+
+        DatabaseService databaseService = new DatabaseService();
+        final boolean[] continueTest = {false};
+        String finalUserId = userId;
+        EventDetailsFragment finalFragment = fragment;
+        String finalEventId = eventId;
+        DatabaseService finalDatabaseService = databaseService;
+        databaseService.getEvent(eventId, event -> {
+            try {
+                assertNotNull(event);
+                ArrayList<CheckIn> checkins = event.getCheckIns();
+                assertNotNull(checkins);
+                CheckIn foundCheckin = null;
+                for (CheckIn checkin: checkins) {
+                    if (Objects.equals(finalUserId, checkin.getUserId())) {
+                        foundCheckin = checkin;
+                        break;
+                    }
+                }
+                assertNotNull(foundCheckin);
+                continueTest[0] = true;
+                // test that when checking in with User bool enabled, event stored checkin WITH a location
+            } finally {
+                Log.d("geotest",String.valueOf(finalFragment.event.getCheckIns()));
+                finalDatabaseService.clearEventCheckins(finalEventId);
+            }
+        });
+
+        while(!continueTest[0]) {
+            // wait until the previous test is done :/
+        }
+
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.geolocationSwitch)).perform(scrollTo(), click());
+        onView(isRoot()).perform(waitFor(10000)); // Wait for location grab
+        try {
+            onView(withId(R.id.geolocationSwitch)).check(matches(isEnabled()));
+        } catch (Exception e) {
+            onView(isRoot()).perform(waitFor(10000)); // Wait for location longer
+            onView(withId(R.id.geolocationSwitch)).check(matches(isEnabled()));
+        }
+
+        onView(withId(R.id.navigation_qr_scanner)).perform(click());
+        onView(isRoot()).perform(waitFor(7000)); // Wait for navigation and scan
+        // check that we are in event details fragment
+        onView(withId(R.id.event_title)).check(matches(isDisplayed()));
+        // get the id of the user, the displayed event from eventdetails, and check the database has a checkin from them
+        mainActivity = getActivityFromScenario(scenario);
+        user = mainActivity.getUser();
+        userId = user.getUserId();
+
+        fragment = (EventDetailsFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventDetailsFragment");
+        eventId = fragment.event.getId();
+
+        databaseService = new DatabaseService();
+        String finalUserId2 = userId;
+        EventDetailsFragment finalFragment2 = fragment;
+        String finalEventId2 = eventId;
+        DatabaseService finalDatabaseService2 = databaseService;
+        databaseService.getEvent(eventId, event -> {
+            try {
+                assertNotNull(event);
+                ArrayList<CheckIn> checkins = event.getCheckIns();
+                assertNotNull(checkins);
+                CheckIn foundCheckin = null;
+                for (CheckIn checkin: checkins) {
+                    if (Objects.equals(finalUserId2, checkin.getUserId())) {
+                        foundCheckin = checkin;
+                        break;
+                    }
+                }
+                assertNotNull(foundCheckin);
+                assertNotNull(foundCheckin.getCheckInLocation());
+                assertNotEquals(foundCheckin.getCheckInLocation(), "");
+            } finally {
+                Log.d("geotest",String.valueOf(finalFragment2.event.getCheckIns()));
+                finalDatabaseService2.clearEventCheckins(finalEventId2);
+            }
+        });
+
+    }
+
+    @Test
+    public void testUS01_02_01ViewAttendees() {
+
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+
+        // create new event
+        onView(withId(R.id.event_dashboard_create_button)).perform(click());
+
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("Test US01_02_01ViewAttendees"));
+        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
+        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
+        Espresso.closeSoftKeyboard();
+
+        setDate(R.id.text_event_start_date, 2024, 8, 18);
+        Espresso.closeSoftKeyboard();
+        setDate(R.id.text_event_end_date, 2024, 8, 19);
+        Espresso.closeSoftKeyboard();
+
+        setTime(R.id.text_event_start_time, 12, 30);
+        Espresso.closeSoftKeyboard();
+        setTime(R.id.text_event_end_time, 19, 36);
+        Espresso.closeSoftKeyboard();
+
+        DatabaseService databaseService = new DatabaseService();
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        EventCreationFragment fragment = (EventCreationFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventCreation");
+        Event event = fragment.creatingEvent;
+        String eventId = event.getId();
+
+        try {
+            onView(withId(R.id.create_event_confirm_button)).perform(click());
+            onView(isRoot()).perform(waitFor(3000));
+
+            // look at organized events to find newly created event
+            onView(withId(R.id.event_dashboard_list)).perform(actionOnItemAtPosition(2, click()));
+            onView(isRoot()).perform(waitFor(2000));
+
+            // click on newly made event
+            onView(allOf(withId(R.id.events_rv), hasDescendant(withText("Test US01_02_01ViewAttendees")))).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            // check in an attendee
+            databaseService.recordCheckIn(eventId, "9b4dd42c-7de3-4d76-a96d-fde4958e7104", "location");
+            onView(isRoot()).perform(waitFor(4000));
+            // click on view attendees
+            onView(withId(R.id.expand_button)).perform(click());
+            onView(withId(R.id.view_attendees_button)).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            // test to see if attendees are shown correctly
+            onView(withText("Attendee test user")).check(matches(isDisplayed()));
+            onView(withText("Check-ins: 1")).check(matches(isDisplayed()));
+
+        } finally {
+            // delete event
+            databaseService.deleteEvent(event);
+        }
+    }
+
+    @Test
+    public void testUS01_09_01ViewAttendeeCheckInCount() {
+
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+
+        // create new event
+        onView(withId(R.id.event_dashboard_create_button)).perform(click());
+
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("Test US01_09_01AttendeeCount"));
+        onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
+        onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
+        Espresso.closeSoftKeyboard();
+
+        setDate(R.id.text_event_start_date, 2024, 8, 18);
+        Espresso.closeSoftKeyboard();
+        setDate(R.id.text_event_end_date, 2024, 8, 19);
+        Espresso.closeSoftKeyboard();
+
+        setTime(R.id.text_event_start_time, 12, 30);
+        Espresso.closeSoftKeyboard();
+        setTime(R.id.text_event_end_time, 19, 36);
+        Espresso.closeSoftKeyboard();
+
+        DatabaseService databaseService = new DatabaseService();
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        EventCreationFragment fragment = (EventCreationFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventCreation");
+        Event event = fragment.creatingEvent;
+        String eventId = event.getId();
+
+        try {
+            onView(withId(R.id.create_event_confirm_button)).perform(click());
+            onView(isRoot()).perform(waitFor(3000));
+
+            // look at organized events to find newly created event
+            onView(withId(R.id.event_dashboard_list)).perform(actionOnItemAtPosition(2, click()));
+            onView(isRoot()).perform(waitFor(2000));
+
+            // click on newly made event
+            onView(allOf(withId(R.id.events_rv), hasDescendant(withText("Test US01_09_01AttendeeCount")))).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            // check in an attendee
+            databaseService.recordCheckIn(eventId, "9b4dd42c-7de3-4d76-a96d-fde4958e7104", "location");
+            onView(isRoot()).perform(waitFor(1000));
+            databaseService.recordCheckIn(eventId, "9b4dd42c-7de3-4d76-a96d-fde4958e7104", "location");
+            onView(isRoot()).perform(waitFor(4000));
+            // click on view attendees
+            onView(withId(R.id.expand_button)).perform(click());
+            onView(withId(R.id.view_attendees_button)).perform(click());
+            onView(isRoot()).perform(waitFor(4000));
+
+            // test to see if attendees are shown correctly
+            onView(withText("Attendee test user")).check(matches(isDisplayed()));
+            onView(withText("Check-ins: 2")).check(matches(isDisplayed()));
+
+        } finally {
+            // delete new event
+            databaseService.deleteEvent(event);
+        }
     }
 }

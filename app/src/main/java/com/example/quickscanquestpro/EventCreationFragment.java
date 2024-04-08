@@ -29,6 +29,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -38,6 +39,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -319,13 +321,6 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
             endTimeText.setError(null);
         }
 
-//        if (progressIndicator.getVisibility()==View.VISIBLE) {
-//            if (progressIndicator.getProgress()!=100) {
-//                Toast.makeText(getContext(), "Please wait until the event banner is uploaded and try again", Toast.LENGTH_SHORT).show();
-//                valid = false;
-//            }
-//        }
-
         if (!valid) {
             createButton.setEnabled(false);
         } else {
@@ -412,6 +407,10 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
             Log.d("EventCreationFragment", "Attempting to reuse code " + scannedCode);
             //transition back to the edit screen
             mainActivity.getSupportFragmentManager().popBackStackImmediate();
+            NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
+            // Sets navbar selection to the profile dashboard
+            MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
+            item.setChecked(true);
             // verify the qr code is not already in use in the database
             databaseService.getEventWithCustomQR(scannedCode, event -> {
                 Button reuseButton;
@@ -471,6 +470,10 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
         } else {
             // scanned code was somehow null
             mainActivity.getSupportFragmentManager().popBackStackImmediate();
+            NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
+            // Sets navbar selection to the profile dashboard
+            MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
+            item.setChecked(true);
         }
     }
 }

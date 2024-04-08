@@ -148,12 +148,18 @@ public class EventDetailsFragment extends Fragment {
             FloatingActionButton expandButton = view.findViewById(R.id.expand_button);
             progressIndicator = view.findViewById(R.id.event_banner_progress_indicator);
 
+            // Signup and Signup List buttons
+            FloatingActionButton signupButton = view.findViewById(R.id.signup_button);
+            signupButton.setVisibility(View.GONE);
+            FloatingActionButton signupListButton = view.findViewById(R.id.signup_list);
+
             // Set the tag of the expand button to false
             expandButton.setTag("false");
 
             // Hide the upload image button and the share button by default
             uploadImageButton.setVisibility(View.GONE);
             attendeesButton.setVisibility(View.GONE);
+            signupListButton.setVisibility(View.GONE);
 
             // If there is no event passed in, create a test event
             if (this.event == null) {
@@ -164,7 +170,8 @@ public class EventDetailsFragment extends Fragment {
             if (event.getEventBannerUrl() != null) {
                 Glide.with(this).load(event.getEventBannerUrl()).into(eventImage);
             } else {
-                eventImage.setVisibility(View.GONE);
+//                eventImage.setVisibility(View.GONE);
+                eventImage.setImageResource(R.drawable.ic_launcher_background);
             }
 
             // Set the text of the event details to the event details
@@ -239,12 +246,16 @@ public class EventDetailsFragment extends Fragment {
                         expandButton.setImageResource(R.drawable.baseline_close_24);
                         uploadImageButton.setVisibility(View.VISIBLE);
                         attendeesButton.setVisibility(View.VISIBLE);
+                        signupListButton.setVisibility(View.VISIBLE);
+                        signupButton.setVisibility(View.VISIBLE);
                         expandButton.setTag("true");
 
                     } else {
                         expandButton.setImageResource(R.drawable.baseline_menu_24);
                         uploadImageButton.setVisibility(View.GONE);
                         attendeesButton.setVisibility(View.GONE);
+                        signupListButton.setVisibility(View.GONE);
+                        signupButton.setVisibility(View.GONE);
                         expandButton.setTag("false");
                     }
                 });
@@ -253,15 +264,9 @@ public class EventDetailsFragment extends Fragment {
             else {
                 expandButton.setVisibility(View.GONE);
                 shareButton.setVisibility(View.GONE);
+                signupButton.setVisibility(View.VISIBLE);
             }
             setShareButton(shareButton);
-
-
-
-            // Signup and Signup List buttons
-
-            Button signupButton = view.findViewById(R.id.signup_button);
-            Button signupListButton = view.findViewById(R.id.signup_list_button);
 
             signupButton.setOnClickListener(new View.OnClickListener() {
                 @Override
