@@ -97,7 +97,7 @@ public class EventDashboardFragment extends Fragment {
         List<Event> checked_in_events = new ArrayList<>();
         List<Event> signed_up_events = new ArrayList<>();
         List<Event> organized_events = new ArrayList<>();
-        List<Event> other_events = new ArrayList<>();  //TODO: Remove before final submission (Stores all past events)
+//        List<Event> other_events = new ArrayList<>();
         LocalDateTime currentDateTime = LocalDateTime.now();
 
         if(user.getLastCheckIn()!=null){
@@ -123,9 +123,9 @@ public class EventDashboardFragment extends Fragment {
                     LocalDateTime endDateTime = endDate.atTime(endTime);
                     if (endDateTime.compareTo(currentDateTime)>=0 && event.getOrganizerId().equals(user.getUserId())){
                             organized_events.add(event);
-                    } else {  //TODO: Remove this before submitting
-                        other_events.add(event);
-                    }
+                    } //else {
+                        //other_events.add(event);
+                    //}
                 }
 
                 // Signed up events
@@ -149,7 +149,7 @@ public class EventDashboardFragment extends Fragment {
                 modelList.add(new EventDashboardModel(checked_in_events, "Checked In Event"));
                 modelList.add(new EventDashboardModel(signed_up_events, "Signed Up Events"));
                 modelList.add(new EventDashboardModel(organized_events, "Organized Events"));
-                modelList.add(new EventDashboardModel(other_events, "Other Events"));   //TODO: Remove before submitting
+//                modelList.add(new EventDashboardModel(other_events, "Other Events"));  
 
                 adapter = new EventTypeAdapter(getContext(), modelList);
                 eventRecyclerView.setAdapter(adapter);
