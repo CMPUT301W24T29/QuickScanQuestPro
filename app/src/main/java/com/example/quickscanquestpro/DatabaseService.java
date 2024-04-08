@@ -130,6 +130,11 @@ public class DatabaseService {
                 .addOnFailureListener(e -> Log.e("DatabaseService", "Error adding new check-in.", e));
     }
 
+    /**
+     * Updates the lastCheckIn field with the event the user checked into
+     * @param userId The ID of the user checking in
+     * @param eventId he ID of the event the user checked into
+     */
     public void updateLastCheckIn(String userId, String eventId){
         DocumentReference userRef = db.collection("users").document(userId);
         User user = new User(userId);
@@ -139,6 +144,11 @@ public class DatabaseService {
                 .addOnFailureListener(e -> Log.e("DatabaseService", "Error updating last checked in event", e));
     }
 
+    /**
+     * Sets admin field of user to true
+     * Allows user to access admin functions
+     * @param userId The ID of the current user
+     */
     public void enableAdmin(String userId){
         DocumentReference userRef = db.collection("users").document(userId);
         User user = new User(userId);
