@@ -39,7 +39,6 @@ public class AttendeesListFragment extends Fragment {
     private boolean firstrun = true;
     private ArrayList<String> UserIds = new ArrayList<>();
 
-
     /**
      * This is the constructor for the AttendeesListFragment class.
      * It expects a list of check-ins for the event in the form of an ArrayList of ArrayLists,
@@ -65,8 +64,11 @@ public class AttendeesListFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         FloatingActionButton backButton = view.findViewById(R.id.back_button);
+        FloatingActionButton expandButton = view.findViewById(R.id.expand_attendee_button);
+        expandButton.setTag("false");
+        FloatingActionButton mapButton = view.findViewById(R.id.heatmap_button);
+        mapButton.setVisibility(View.GONE);
         attendeesListView = view.findViewById(R.id.event_attendee_list);
-        checkInTotal = view.findViewById(R.id.live_count_number);
         attendeeTotal = view.findViewById(R.id.attendee_count_number);
 
         backButton.setOnClickListener(v -> {
@@ -82,6 +84,7 @@ public class AttendeesListFragment extends Fragment {
 
         startFetchingData();
         FloatingActionButton alertButton = view.findViewById(R.id.announcement_button);
+        alertButton.setVisibility(View.GONE);
         alertButton.setOnClickListener(v -> {
             // Create a new AttendeeAlertsFragment
             firstrun = true;
@@ -91,6 +94,21 @@ public class AttendeesListFragment extends Fragment {
             fragmentTransaction.replace(R.id.content, attendeeAlertsFragment);
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
+        });
+
+        expandButton.setOnClickListener(v -> {
+            if (expandButton.getTag() == "false") {
+                expandButton.setImageResource(R.drawable.baseline_close_24);
+                alertButton.setVisibility(View.VISIBLE);
+                mapButton.setVisibility(View.VISIBLE);
+                expandButton.setTag("true");
+
+            } else {
+                expandButton.setImageResource(R.drawable.baseline_menu_24);
+                alertButton.setVisibility(View.GONE);
+                mapButton.setVisibility(View.GONE);
+                expandButton.setTag("false");
+            }
         });
     }
 
@@ -142,10 +160,8 @@ public class AttendeesListFragment extends Fragment {
 
         // Update only if data has changed
         if (dataChanged || firstrun) {
-            //checkInList = newCheckInList;
             AtomicInteger totalAttendees = new AtomicInteger(0);
             int size = newCheckInList.size(); // Size of checkInList to compare with the count
-            int unknownUserCount = 0;
 
             for (ArrayList<Object> attendee : newCheckInList) {
                 String userId = (String) attendee.get(0);
@@ -159,9 +175,13 @@ public class AttendeesListFragment extends Fragment {
                         }
                         // Update the user's name in the list
                         if (user == null) {
-                            attendee.set(0, "Unknown User");
+                            attendee.set(0, "Deleted User");
                         } else {
-                            attendee.set(0, user.getName());
+                            if (user.getName().equals("")) {
+                                attendee.set(0, "Unnamed User");
+                            } else {
+                                attendee.set(0, user.getName());
+                            }
                         }
                         // Increment the totalAttendees count
                         if (totalAttendees.incrementAndGet() == size) {
@@ -178,7 +198,6 @@ public class AttendeesListFragment extends Fragment {
                                     for (ArrayList<Object> checkIn : newCheckInList) {
                                         totalAttendees += (int) checkIn.get(1);
                                     }
-                                    checkInTotal.setText(String.valueOf(totalAttendees));
                                 }
                             });
                         }

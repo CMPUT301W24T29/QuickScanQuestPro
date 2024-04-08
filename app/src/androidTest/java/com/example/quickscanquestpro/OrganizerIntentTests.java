@@ -4,10 +4,12 @@ package com.example.quickscanquestpro;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.Intents.intending;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasExtra;
+import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
@@ -49,6 +51,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -60,6 +63,7 @@ public class OrganizerIntentTests {
     @Rule
     public ActivityScenarioRule<MainActivity> mActivityScenarioRule =
             new ActivityScenarioRule<>(MainActivity.class);
+
 
     @Before
     public void setUp() {
@@ -133,14 +137,23 @@ public class OrganizerIntentTests {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        onView(isRoot()).perform(waitFor(1000));
+        onView(isRoot()).perform(waitFor(2000));
 
-        onView(withId(R.id.create_event_poster)).check(matches(isDisplayed()));
+        MainActivity mainActivity = getActivityFromScenario(mActivityScenarioRule);
+        EventCreationFragment fragment = (EventCreationFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventCreation");
+        Event creatingEvent = fragment.creatingEvent;
 
-        onView(withId(R.id.create_Event_Fragment_Scrollview)).perform(ViewActions.swipeUp());
-
-        // Confirm creation of event
-        onView(withId(R.id.create_event_confirm_button)).perform(click());
+        try {
+            // Confirm creation of event
+            onView(withId(R.id.create_event_poster)).check(matches(isDisplayed()));
+            onView(withId(R.id.create_Event_Fragment_Scrollview)).perform(ViewActions.swipeUp());
+            onView(withId(R.id.create_event_confirm_button)).perform(click());
+        }
+        finally {
+            // delete new event
+            DatabaseService databaseService = new DatabaseService();
+            databaseService.deleteEvent(creatingEvent);
+        }
 
     }
 
@@ -155,9 +168,8 @@ public class OrganizerIntentTests {
 
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
 
-        String eventTitle = UUID.randomUUID().toString();
         onView(isRoot()).perform(waitFor(4000));
-        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText(eventTitle), ViewActions.closeSoftKeyboard());
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("testUS01_06_01ShareEventQR"), ViewActions.closeSoftKeyboard());
         onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"), ViewActions.closeSoftKeyboard());
         onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"), ViewActions.closeSoftKeyboard());
 
@@ -167,26 +179,43 @@ public class OrganizerIntentTests {
         setTime(R.id.text_event_start_time, 12, 30);
         setTime(R.id.text_event_end_time, 19, 36);
 
-        onView(withId(R.id.create_event_confirm_button)).perform(click());
+        MainActivity mainActivity = getActivityFromScenario(mActivityScenarioRule);
+        EventCreationFragment fragment = (EventCreationFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventCreation");
+        Event creatingEvent = fragment.creatingEvent;
 
-        onView(withId(R.id.navigation_profile)).perform(click());
-        onView(withId(R.id.admin_button_manage_events)).perform(click());
+        try {
+            // Confirm creation of event
+            onView(withId(R.id.create_Event_Fragment_Scrollview)).perform(ViewActions.swipeUp());
+            onView(withId(R.id.create_event_confirm_button)).perform(click());
 
-        // Scroll to the event with the specific title and click on it
-        // Replace this scrolling mechanism with a more reliable way if available
-        onView(allOf(withText(eventTitle), isDescendantOfA(withId(R.id.browse_events_dashboard_list))))
-                .perform(click());
+            onView(isRoot()).perform(waitFor(3000));
 
-        // Assert that the sharing intent is triggered
-        onView(withId(R.id.share_event_button)).perform(click());
+            // look at organized events to find newly created event
+            onView(withId(R.id.event_dashboard_list)).perform(actionOnItemAtPosition(2, click()));
+            onView(isRoot()).perform(waitFor(2000));
 
-        // Stubbing the Intent to prevent the chooser from actually launching
-        intending(hasAction(Intent.ACTION_CHOOSER)).respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, null));
+            // click on newly made event
+            onView(allOf(withId(R.id.events_rv), hasDescendant(withText("testUS01_06_01ShareEventQR")))).perform(click());
+            onView(isRoot()).perform(waitFor(3000));
 
-        onView(withId(R.id.share_promo_button)).perform(click());
+            // Assert that the sharing intent is triggered
+            onView(withId(R.id.expand_button)).perform(click());
+            onView(withId(R.id.share_event_button)).perform(click());
 
-        // Verify the chooser intent was triggered
-        intended(hasAction(Intent.ACTION_CHOOSER));
+            // Stubbing the Intent to prevent the chooser from actually launching
+            intending(hasAction(Intent.ACTION_CHOOSER)).respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, null));
+
+            onView(withId(R.id.share_promo_button)).perform(click());
+
+            // Verify the chooser intent was triggered
+            intended(hasAction(Intent.ACTION_CHOOSER));
+        }
+        finally {
+            // delete new event
+            DatabaseService databaseService = new DatabaseService();
+            databaseService.deleteEvent(creatingEvent);
+        }
+
     }
 
     public static void setDate(int datePickerLaunchViewId, int year, int monthOfYear, int dayOfMonth) {
@@ -218,6 +247,12 @@ public class OrganizerIntentTests {
                 uiController.loopMainThreadForAtLeast(delay);
             }
         };
+    }
+
+    private <T extends Activity> T getActivityFromScenario(ActivityScenarioRule<T> activityScenarioRule) {
+        AtomicReference<T> activityRef = new AtomicReference<>();
+        activityScenarioRule.getScenario().onActivity(activityRef::set);
+        return activityRef.get();
     }
 
 }
