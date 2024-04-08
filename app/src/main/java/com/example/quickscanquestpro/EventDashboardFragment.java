@@ -145,6 +145,7 @@ public class EventDashboardFragment extends Fragment {
                     }
                 });
 
+                // Add all models to the model list
                 modelList.add(new EventDashboardModel(checked_in_events, "Checked In Event"));
                 modelList.add(new EventDashboardModel(signed_up_events, "Signed Up Events"));
                 modelList.add(new EventDashboardModel(organized_events, "Organized Events"));
