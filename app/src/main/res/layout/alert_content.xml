@@ -5,7 +5,7 @@
     tools:context=".AttendeeAlertsFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/create_Event_Fragment_Scrollview">
+    android:id="@+id/alert_sending">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

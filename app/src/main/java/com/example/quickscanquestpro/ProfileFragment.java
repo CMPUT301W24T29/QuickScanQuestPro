@@ -85,12 +85,15 @@ public class ProfileFragment extends Fragment implements GeolocationService.Geol
         public void onActivityResult(Boolean o) {
             if (o) {
                 notificationSwitch.setChecked(true);
+                user.setGetNotification(true);
                 Toast.makeText(getContext(), "Notifications Permission granted", Toast.LENGTH_LONG).show();
             }
             else {
                 notificationSwitch.setChecked(false);
+                user.setGetNotification(false);
                 Toast.makeText(getContext(), "Notifications Permission denied", Toast.LENGTH_LONG).show();
             }
+            databaseService.addUser(user);
         }
     });
     private GeolocationService geolocationService = new GeolocationService(this, this);

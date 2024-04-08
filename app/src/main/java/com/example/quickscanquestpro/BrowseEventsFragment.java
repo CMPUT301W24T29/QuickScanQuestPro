@@ -84,9 +84,9 @@ public class BrowseEventsFragment extends Fragment {
                         filteredEvents.add(event);
                     }
                 }
-                //TODO: Uncomment the next line to display only current and future events
-//                eventAdapter.updateEvents(filteredEvents);
-                eventAdapter.updateEvents(updatedEvents);  //TODO: Delete this line before submission
+                // Display only current and future events
+                eventAdapter.updateEvents(filteredEvents);
+//                eventAdapter.updateEvents(updatedEvents);
             }
         });
 

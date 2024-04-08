@@ -14,8 +14,8 @@ import android.widget.ListView;
 // Answer by: Parteek Singh Bedi
 //          : https://stackoverflow.com/users/1000000/parteek-singh-bedi
 public class ListViewHelper {
-    public static void getListViewSize(ListView listView){
-        ListAdapter adapter = listView.getAdapter();
+    public static void getListViewSize(ListView listView, ListAdapter listAdapter){
+        ListAdapter adapter = listAdapter;
         if(adapter!=null){
             int totalHeight = 0;
 
