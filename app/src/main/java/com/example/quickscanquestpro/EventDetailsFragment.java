@@ -161,10 +161,10 @@ public class EventDetailsFragment extends Fragment {
             attendeesButton.setVisibility(View.GONE);
             signupListButton.setVisibility(View.GONE);
 
-            // If there is no event passed in, create a test event
-            if (this.event == null) {
-                event = Event.createTestEvent(mainActivity.getNewEventID());
-            }
+//            // If there is no event passed in, create a test event
+//            if (this.event == null) {
+//                event = Event.createTestEvent(mainActivity.getNewEventID());
+//            }
 
             // Set the image of the event to the event banner if it exists, otherwise hide the imageview
             if (event.getEventBannerUrl() != null) {
@@ -180,6 +180,7 @@ public class EventDetailsFragment extends Fragment {
             eventDate.setText(eventDateString);
             eventLocation.setText(event.getLocation());
             ArrayList<String> announcementList = event.getAnnouncements();
+            Log.d("YOOOOO", "Announcement list: " + announcementList);
 
 
             // set the text of sign up limit depending on if there is a limit
@@ -189,13 +190,16 @@ public class EventDetailsFragment extends Fragment {
                 signupLimit.setText("No limit");
             }
 
+            if(announcementList != null)
+            {
+                // Set the listview of announcements to the announcements of the event and set the height of the listview
+                ArrayAdapter<String> announcementAdapter =
+                        new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, announcementList);
+                ListView announcementListView = view.findViewById(R.id.event_announcements_list);
+                announcementListView.setAdapter(announcementAdapter);
+                ListViewHelper.getListViewSize(announcementListView, announcementAdapter);
+            }
 
-            // Set the listview of announcements to the announcements of the event and set the height of the listview
-            ArrayAdapter<String> announcementAdapter =
-                    new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, announcementList);
-            ListView announcementListView = view.findViewById(R.id.event_announcements_list);
-            announcementListView.setAdapter(announcementAdapter);
-            ListViewHelper.getListViewSize(announcementListView);
 
             // Set an on click listener for the back button
             backButton.setOnClickListener(v -> {

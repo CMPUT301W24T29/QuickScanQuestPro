@@ -2,6 +2,7 @@ package com.example.quickscanquestpro;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 
@@ -29,7 +30,6 @@ public class PushNotificationService extends FirebaseMessagingService {
     }
 
     private void showNotification(String title, String message) {
-        // this will show notification if the user is in the app
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         // Create notification channel (for Android Oreo and higher)
@@ -45,10 +45,11 @@ public class PushNotificationService extends FirebaseMessagingService {
                 .setAutoCancel(true)
                 .setSmallIcon(R.drawable.ic_launcher_background)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                .setPriority(NotificationCompat.PRIORITY_MAX);
 
         // Show notification
         notificationManager.notify(0, builder.build());
     }
+
 
 }

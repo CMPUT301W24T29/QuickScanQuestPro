@@ -88,7 +88,7 @@ public class AttendeesListFragment extends Fragment {
         alertButton.setOnClickListener(v -> {
             // Create a new AttendeeAlertsFragment
             firstrun = true;
-            AttendeeAlertsFragment attendeeAlertsFragment = new AttendeeAlertsFragment(UserIds);
+            AttendeeAlertsFragment attendeeAlertsFragment = new AttendeeAlertsFragment(UserIds, event.getId());
             FragmentManager fragmentManager = getParentFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.replace(R.id.content, attendeeAlertsFragment);

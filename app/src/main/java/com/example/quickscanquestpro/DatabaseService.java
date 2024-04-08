@@ -165,6 +165,7 @@ public class DatabaseService {
         eventData.put("eventPicturePath", event.getEventBannerPath());
         eventData.put("customCheckin", event.getCustomCheckin());
         eventData.put("customPromo", event.getCustomPromo());
+        eventData.put("announcements", event.getAnnouncements());
 
 
 
@@ -231,6 +232,7 @@ public class DatabaseService {
                 event.setEndTime(LocalTime.parse(document.getString("End-time")));
                 event.setEventBannerUrl(document.getString("eventPictureUrl"));
                 event.setEventBannerPath(document.getString("eventPicturePath"));
+                event.setAnnouncements((ArrayList<String>) document.get("announcements"));
 
                 // Retrieve check-ins for this event
                 ArrayList<Map<String, Object>> checkInsArray = (ArrayList<Map<String, Object>>) document.get("checkins");
@@ -336,6 +338,7 @@ public class DatabaseService {
         event.setEventBannerPath(queryDocumentSnapshot.getString("eventPicturePath"));
         event.setCustomCheckin(queryDocumentSnapshot.getString("customCheckin"));
         event.setCustomPromo(queryDocumentSnapshot.getString("customPromo"));
+        event.setAnnouncements((ArrayList<String>) queryDocumentSnapshot.get("announcements"));
 
         //update optional signuplimit
         Number signupLimitNumber = queryDocumentSnapshot.getLong("signupLimit"); // Using getLong for a more direct approach

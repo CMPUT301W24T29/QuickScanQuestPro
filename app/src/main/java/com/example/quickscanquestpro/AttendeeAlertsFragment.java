@@ -37,15 +37,19 @@ public class AttendeeAlertsFragment extends DialogFragment {
         // Required empty public constructor
     }
 
-    private DatabaseService databaseService;
+    private DatabaseService databaseService = new DatabaseService();
     private ArrayList<String> uniqueAttendees;
+
+    private ArrayList<String> announcements;
+    private String eventID;
 
     /**
      *  this is the list of unique attendees attending the event
      * @param uniqueAttendees
      */
-    public AttendeeAlertsFragment(ArrayList<String> uniqueAttendees) {
+    public AttendeeAlertsFragment(ArrayList<String> uniqueAttendees, String eventID) {
         this.uniqueAttendees = uniqueAttendees;
+        this.eventID = eventID;
         Log.d("Notification", "Unique attendees: " + uniqueAttendees);
     }
 
@@ -58,25 +62,37 @@ public class AttendeeAlertsFragment extends DialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        databaseService = new DatabaseService();
         MainActivity mainActivity = (MainActivity) getActivity();
-        // get the title and body from the alert_content.xml
-        EditText title = view.findViewById(R.id.edit_notification_title);
-        EditText body = view.findViewById(R.id.edit_notification_body);
-        // get the send button from the alert_content.xml
-        view.findViewById(R.id.create_notification_confirm_button).setOnClickListener(v -> {
-            // send the alert
-            sendAlert(title.getText().toString(), body.getText().toString());
-            Log.d("Got till here", "Got till here");
-            // go back to event attendees fragment
-            FragmentManager fragmentManager = getParentFragmentManager();
-            fragmentManager.popBackStack();
-        });
+        databaseService.getEvent(eventID, new DatabaseService.OnEventDataLoaded() {
+            @Override
+            public void onEventLoaded(Event event) {
+                if (event == null) {
+                    Log.d("Notification", "Event not found");
+                    return;
+                }
+                announcements = event.getAnnouncements();
+                // get the title and body from the alert_content.xml
+                EditText title = view.findViewById(R.id.edit_notification_title);
+                EditText body = view.findViewById(R.id.edit_notification_body);
+                // get the send button from the alert_content.xml
+                view.findViewById(R.id.create_notification_confirm_button).setOnClickListener(v -> {
+                    // send the alert
+                    sendAlert(title.getText().toString(), body.getText().toString());
+                    announcements.add(title.getText().toString() + ": " + body.getText().toString());
+                    event.setAnnouncements(announcements);
+                    databaseService.addEvent(event);
+                    Log.d("Got till here", "Got till here");
+                    // go back to event attendees fragment
+                    FragmentManager fragmentManager = getParentFragmentManager();
+                    fragmentManager.popBackStack();
+                });
 
-        FloatingActionButton fab = view.findViewById(R.id.send_alert_back_button);
-        fab.setOnClickListener(v -> {
-            FragmentManager fragmentManager = getParentFragmentManager();
-            fragmentManager.popBackStack();
+                FloatingActionButton fab = view.findViewById(R.id.send_alert_back_button);
+                fab.setOnClickListener(v -> {
+                    FragmentManager fragmentManager = getParentFragmentManager();
+                    fragmentManager.popBackStack();
+                });
+            }
         });
     }
 
