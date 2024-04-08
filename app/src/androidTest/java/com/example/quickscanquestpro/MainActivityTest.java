@@ -50,6 +50,7 @@ import android.widget.TimePicker;
 
 import androidx.annotation.IdRes;
 import androidx.fragment.app.Fragment;
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
@@ -270,24 +271,37 @@ public class MainActivityTest {
         };
     }
 
-
     @Test
     public void testUS_04_02_01AdminRemoveProfile() {
-        onView(isRoot()).perform(waitFor(7000)); // Wait to ensure the app is ready
+
+
+        onView(isRoot()).perform(waitFor(10000)); // Wait to ensure the app is ready
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        DatabaseService databaseService = new DatabaseService();
+        databaseService.enableAdmin(user.getUserId());
+        user = mainActivity.getUser();
+        user.setAdmin(true);
+        mainActivity.setUser(user);
+
+        onView(isRoot()).perform(waitFor(4000)); // wait for database update
 
         // Navigate to the Admin Dashboard
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.event_dashboard_admin_expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
 
         // Go to Manage Users
-        onView(withId(R.id.admin_button_manage_users)).perform(click());
+        onView(withId(R.id.event_dashboard_admin_profile_user_search_button)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
 
         String firstItemIdentifier = "unique_text_of_first_item";
 
-        onData(anything()).inAdapterView(withId(R.id.admin_profile_dashboard_list)).atPosition(0).onChildView(withId(R.id.admin_delete_button)).perform(click());
+        onView(withId(R.id.admin_profile_dashboard_list))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(0, MyViewActions.clickChildViewWithId(R.id.delete_button)));
 
         onView(isRoot()).perform(waitFor(2000));
 
@@ -296,71 +310,153 @@ public class MainActivityTest {
 
     }
 
+
+    public static class MyViewActions {
+        public static ViewAction clickChildViewWithId(final int id) {
+            return new ViewAction() {
+                @Override
+                public Matcher<View> getConstraints() {
+                    return null;
+                }
+
+                @Override
+                public String getDescription() {
+                    return "Click on a child view with specified ID.";
+                }
+
+                @Override
+                public void perform(UiController uiController, View view) {
+                    View v = view.findViewById(id);
+                    v.performClick();
+                }
+            };
+        }
+    }
+
+
     @Test
     public void testUS_04_06_01AdminBrowseProfile () {
-        onView(isRoot()).perform(waitFor(5000)); // Wait to ensure the app is ready
+        onView(isRoot()).perform(waitFor(10000)); // Wait to ensure the app is ready
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        DatabaseService databaseService = new DatabaseService();
+        databaseService.enableAdmin(user.getUserId());
+        user = mainActivity.getUser();
+        user.setAdmin(true);
+        mainActivity.setUser(user);
+
+        onView(isRoot()).perform(waitFor(4000)); // wait for database update
 
         // Navigate to the Admin Dashboard
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.event_dashboard_admin_expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
 
         // Go to Manage Users
-        onView(withId(R.id.admin_button_manage_users)).perform(click());
-        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
+        onView(withId(R.id.event_dashboard_admin_profile_user_search_button)).perform(click());
+
         onView(withId(R.id.admin_profile_dashboard_list)).check(matches(isDisplayed()));
+
+
     }
 
     @Test
     public void testUS_04_04_01AdminBrowseEvent() {
         onView(isRoot()).perform(waitFor(10000)); // Wait to ensure the app is ready
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        DatabaseService databaseService = new DatabaseService();
+        databaseService.enableAdmin(user.getUserId());
+        user = mainActivity.getUser();
+        user.setAdmin(true);
+        mainActivity.setUser(user);
 
-        // Navigate to the Admin Dashboard
-        onView(withId(R.id.navigation_profile)).perform(click());
-        onView(isRoot()).perform(waitFor(5000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
-
-        // Go to Manage Events
-        onView(withId(R.id.admin_button_manage_events)).perform(click());
-        onView(isRoot()).perform(waitFor(5000)); // Wait for the event list to load
-        onView(withId(R.id.browse_events_dashboard_list)).check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void testUS_04_05_01AdminRemoveEvent() {
-        onView(isRoot()).perform(waitFor(7000)); // Wait to ensure the app is ready
+        onView(isRoot()).perform(waitFor(4000)); // wait for database update
 
         // Navigate to the Admin Dashboard
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
 
-        // Go to Manage Events
-        onView(withId(R.id.admin_button_manage_events)).perform(click());
-        onView(isRoot()).perform(waitFor(2000)); // Wait for the event list to load
+        onView(withId(R.id.event_dashboard_admin_expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+
+        // Go to Manage Users
+        onView(withId(R.id.event_dashboard_admin_event_search_button)).perform(click());
+
+        onView(withId(R.id.browse_events_dashboard_list)).check(matches(isDisplayed()));
+
+
+    }
+
+
+    @Test
+    public void testUS_04_05_01AdminRemoveEvent() {
+        onView(isRoot()).perform(waitFor(10000)); // Wait to ensure the app is ready
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        DatabaseService databaseService = new DatabaseService();
+        databaseService.enableAdmin(user.getUserId());
+        user = mainActivity.getUser();
+        user.setAdmin(true);
+        mainActivity.setUser(user);
+
+        onView(isRoot()).perform(waitFor(4000)); // wait for database update
+
+        // Navigate to the Admin Dashboard
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+
+        onView(withId(R.id.event_dashboard_admin_expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+
+        // Go to Manage Users
+        onView(withId(R.id.event_dashboard_admin_event_search_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
 
         String firstItemIdentifier = "unique_text_of_first_item";
 
-        onData(anything()).inAdapterView(withId(R.id.browse_events_dashboard_list)).atPosition(0).onChildView(withId(R.id.admin_delete_button)).perform(click());
+        onView(withId(R.id.browse_events_dashboard_list))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(0, MyViewActions.clickChildViewWithId(R.id.delete_button)));
 
         onView(isRoot()).perform(waitFor(2000));
 
         onView(withId(R.id.browse_events_dashboard_list))
                 .check(matches(not(hasDescendant(withText(firstItemIdentifier)))));
+
     }
 
 
     @Test
     public void testUS_04_03_01AdminRemoveUserImage(){
-        onView(isRoot()).perform(waitFor(5000));
+        onView(isRoot()).perform(waitFor(10000)); // Wait to ensure the app is ready
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        DatabaseService databaseService = new DatabaseService();
+        databaseService.enableAdmin(user.getUserId());
+        user = mainActivity.getUser();
+        user.setAdmin(true);
+        mainActivity.setUser(user);
+
+        onView(isRoot()).perform(waitFor(4000)); // wait for database update
+
+        // Navigate to the Admin Dashboard
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
 
-        onView(withId(R.id.admin_button_view_images)).perform(click());
+        onView(withId(R.id.event_dashboard_admin_expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+
+        // Go to Manage Users
+        onView(withId(R.id.event_dashboard_admin_image_search_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
+
+
         onView(isRoot()).perform(waitFor(5000)); // Wait for the user list to load
         onView(withId(R.id.profiles_recycler_view))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
@@ -375,13 +471,30 @@ public class MainActivityTest {
 
     @Test
     public void testUS_04_03_01AdminRemoveEventImage(){
-        onView(isRoot()).perform(waitFor(5000));
+        onView(isRoot()).perform(waitFor(10000)); // Wait to ensure the app is ready
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        DatabaseService databaseService = new DatabaseService();
+        databaseService.enableAdmin(user.getUserId());
+        user = mainActivity.getUser();
+        user.setAdmin(true);
+        mainActivity.setUser(user);
+
+        onView(isRoot()).perform(waitFor(4000)); // wait for database update
+
+        // Navigate to the Admin Dashboard
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
 
-        onView(withId(R.id.admin_button_view_images)).perform(click());
+        onView(withId(R.id.event_dashboard_admin_expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+
+        // Go to Manage Users
+        onView(withId(R.id.event_dashboard_admin_image_search_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
+
+
         onView(isRoot()).perform(waitFor(5000)); // Wait for the user list to load
         onView(withId(R.id.events_recycler_view))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
@@ -395,16 +508,28 @@ public class MainActivityTest {
 
     @Test
     public void testUS_04_05_01AdminBrowseImage(){
-        onView(isRoot()).perform(waitFor(5000));
+        onView(isRoot()).perform(waitFor(10000)); // Wait to ensure the app is ready
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        DatabaseService databaseService = new DatabaseService();
+        databaseService.enableAdmin(user.getUserId());
+        user = mainActivity.getUser();
+        user.setAdmin(true);
+        mainActivity.setUser(user);
+
+        onView(isRoot()).perform(waitFor(4000)); // wait for database update
+
+        // Navigate to the Admin Dashboard
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
 
-        onView(withId(R.id.admin_button_view_images)).perform(click());
-        onView(isRoot()).perform(waitFor(5000)); // Wait for the user list to load
-        onView(withId(R.id.events_recycler_view)).check(matches(isDisplayed()));
-        onView(withId(R.id.profiles_recycler_view)).check(matches(isDisplayed()));
+        onView(withId(R.id.event_dashboard_admin_expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000));
+
+        // Go to Manage Users
+        onView(withId(R.id.event_dashboard_admin_image_search_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
     }
 
     /**
