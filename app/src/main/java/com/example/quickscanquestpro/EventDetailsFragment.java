@@ -181,7 +181,6 @@ public class EventDetailsFragment extends Fragment {
             eventDate.setText(eventDateString);
             eventLocation.setText(event.getLocation());
             ArrayList<String> announcementList = event.getAnnouncements();
-            Log.d("YOOOOO", "Announcement list: " + announcementList);
 
 
             // set the text of sign up limit depending on if there is a limit
