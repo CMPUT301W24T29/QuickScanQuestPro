@@ -115,7 +115,7 @@ public class AttendeeAlertsFragment extends DialogFragment {
                             Log.d("Notification", "User not found");
                             return;
                         }
-                        if(user.getGetNotification() == false)
+                        if(user.getGetNotification() == false || user.getGetNotification() == null)
                         {
                             // skip this iteration
                             Log.d("Notification", "User: " + user.getName() + " has notifications turned off");
