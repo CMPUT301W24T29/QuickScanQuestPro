@@ -2,6 +2,7 @@ package com.example.quickscanquestpro;
 
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -19,6 +20,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
@@ -84,12 +86,12 @@ public class AttendeesHeatmapFragment extends Fragment implements OnMapReadyCall
 
             Geocoder coder = new Geocoder(getContext());
             List<Address> address;
-            LatLng p1 = null;
+            LatLng p1;
 
             try {
                 // May throw an IOException
                 address = coder.getFromLocationName(event.getLocation(), 1);
-                if (address == null) {
+                if (address == null || address.isEmpty()) {
                     p1 = new LatLng(Double.parseDouble("53.52676800331974"), Double.parseDouble("-113.52714795529633") );
                 } else {
                     Address location = address.get(0);
@@ -100,27 +102,50 @@ public class AttendeesHeatmapFragment extends Fragment implements OnMapReadyCall
                 throw new RuntimeException(e);
             }
 
-            // address is here now in p1
-
-            map.animateCamera(CameraUpdateFactory.newLatLng(p1), 1000, null);
-
             ArrayList<CheckIn> checkinList = event.getCheckIns();
             List<LatLng> latLngList =  new ArrayList<>();
             for (CheckIn checkin : checkinList) {
                 String locSting = checkin.getCheckInLocation();
+                if (locSting == null || locSting.equals("")) {
+                    continue;
+                }
                 String[] arrOfStr = locSting.split(",", 2);
 
                 double lat = Double.parseDouble(arrOfStr[0]);
                 double lng = Double.parseDouble(arrOfStr[1]);
                 latLngList.add(new LatLng(lat, lng));
             }
-            HeatmapTileProvider provider = new HeatmapTileProvider.Builder()
-                    .data(latLngList)
-                    .build();
 
-            TileOverlay overlay = map.addTileOverlay(new TileOverlayOptions().tileProvider(provider));
+            if (!latLngList.isEmpty()) {
+                HeatmapTileProvider provider = new HeatmapTileProvider.Builder()
+                        .data(latLngList)
+                        .radius(50)
+                        .build();
+
+                TileOverlay overlay = map.addTileOverlay(new TileOverlayOptions().tileProvider(provider));
+
+                LatLngBounds.Builder bounds = new LatLngBounds.Builder().include(latLngList.get(0));
+                for (int i = 0; i < latLngList.size(); i++) {
+                    bounds.include(latLngList.get(i));
+                }
+
+                if (areBoundsTooSmall(bounds.build(), 300)) {
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(bounds.build().getCenter(), 17), 1000, null);
+                } else {
+                    map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 120), 1000, null);
+                }
+            } else {
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(p1, 16), 1000, null);
+            }
+
         }
 
+    }
+
+    private boolean areBoundsTooSmall(LatLngBounds bounds, int minDistanceInMeter) {
+        float[] result = new float[1];
+        Location.distanceBetween(bounds.southwest.latitude, bounds.southwest.longitude, bounds.northeast.latitude, bounds.northeast.longitude, result);
+        return result[0] < minDistanceInMeter;
     }
 
 }

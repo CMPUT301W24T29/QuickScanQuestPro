@@ -23,11 +23,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         map:mapType="normal"
-        map:uiCompass="false"
+        map:uiCompass="true"
         map:uiRotateGestures="true"
-        map:uiScrollGestures="false"
+        map:uiScrollGestures="true"
         map:uiTiltGestures="true"
-        map:uiZoomControls="false"
+        map:uiZoomControls="true"
         map:uiZoomGestures="true"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
