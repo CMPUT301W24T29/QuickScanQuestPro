@@ -170,7 +170,8 @@ public class EventDetailsFragment extends Fragment {
             if (event.getEventBannerUrl() != null) {
                 Glide.with(this).load(event.getEventBannerUrl()).into(eventImage);
             } else {
-                eventImage.setVisibility(View.GONE);
+//                eventImage.setVisibility(View.GONE);
+                eventImage.setImageResource(R.drawable.ic_launcher_background);
             }
 
             // Set the text of the event details to the event details
