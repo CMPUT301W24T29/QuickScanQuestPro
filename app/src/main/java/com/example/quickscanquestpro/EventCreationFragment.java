@@ -321,13 +321,6 @@ public class EventCreationFragment extends Fragment implements QRCodeScanner.OnQ
             endTimeText.setError(null);
         }
 
-//        if (progressIndicator.getVisibility()==View.VISIBLE) {
-//            if (progressIndicator.getProgress()!=100) {
-//                Toast.makeText(getContext(), "Please wait until the event banner is uploaded and try again", Toast.LENGTH_SHORT).show();
-//                valid = false;
-//            }
-//        }
-
         if (!valid) {
             createButton.setEnabled(false);
         } else {
