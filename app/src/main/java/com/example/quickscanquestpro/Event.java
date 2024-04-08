@@ -75,9 +75,8 @@ public class Event {
     private Bitmap eventBanner = null;
     private ArrayList<CheckIn> checkIns;
 
-
+    // signup attributes
     private ArrayList<User> signUps = new ArrayList<>();
-
     private Integer signupLimit;
 
 
@@ -399,7 +398,7 @@ public class Event {
     }
 
     public ArrayList<User> getSignUps() {
-        return new ArrayList<>(signUps); // Return a copy
+        return new ArrayList<>(signUps);
     }
 
     public void addSignup(User user) {
