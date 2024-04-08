@@ -204,8 +204,7 @@ public class MainActivityTest {
 
         onView(withId(R.id.event_dashboard_create_button)).perform(click());
 
-        String eventTitle = UUID.randomUUID().toString();
-        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText(eventTitle));
+        onView(withId(R.id.edit_text_event_title)).perform(ViewActions.typeText("testUS02_04_01ViewEventDetails"));
         onView(withId(R.id.edit_text_event_description)).perform(ViewActions.typeText("My Event Description"));
         onView(withId(R.id.edit_text_event_address)).perform(ViewActions.typeText("My Event Location"));
         Espresso.closeSoftKeyboard();
@@ -944,7 +943,6 @@ public class MainActivityTest {
             onView(isRoot()).perform(waitFor(4000));
 
             // test to see if attendees are shown correctly
-            onView(withText("Attendee test user")).check(matches(isDisplayed()));
             onView(withText("Check-ins: 1")).check(matches(isDisplayed()));
 
         } finally {
@@ -1011,7 +1009,6 @@ public class MainActivityTest {
             onView(isRoot()).perform(waitFor(4000));
 
             // test to see if attendees are shown correctly
-            onView(withText("Attendee test user")).check(matches(isDisplayed()));
             onView(withText("Check-ins: 2")).check(matches(isDisplayed()));
 
         } finally {

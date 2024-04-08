@@ -193,18 +193,19 @@ public class EventDetailsFragment extends Fragment {
                         // If clicked, this button brings the user to the attendees list fragment. If there
                         // is no attendees in the current event, it will instead show the user a message
                         attendeesButton.setOnClickListener(v -> {
-                            if (event.getCheckIns() != null) {
-                                this.event = event;
-                                AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.event);
-                                FragmentManager fragmentManager = getParentFragmentManager();
-                                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                                fragmentTransaction.replace(R.id.content, attendeesListFragment, "AttendeesList");
-                                fragmentTransaction.addToBackStack(null);
-                                fragmentTransaction.commit();
-                            }
-                            else {
-                                Toast.makeText(getContext(), "No attendees found", Toast.LENGTH_SHORT).show();
-                            }
+                            databaseService.getEvent(this.event.getId(), event2 -> {
+                                if (event2.getCheckIns() != null) {
+                                    this.event = event2;
+                                    AttendeesListFragment attendeesListFragment = new AttendeesListFragment(this.event);
+                                    FragmentManager fragmentManager = getParentFragmentManager();
+                                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                                    fragmentTransaction.replace(R.id.content, attendeesListFragment, "AttendeesList");
+                                    fragmentTransaction.addToBackStack(null);
+                                    fragmentTransaction.commit();
+                                } else {
+                                    Toast.makeText(getContext(), "No attendees found", Toast.LENGTH_SHORT).show();
+                                }
+                            });
                         });
 
                         expandButton.setOnClickListener(v -> {
