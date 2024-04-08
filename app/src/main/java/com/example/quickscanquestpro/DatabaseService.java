@@ -648,17 +648,17 @@ public class DatabaseService {
 
 
     /**
-     * This interface is implemented by getUserSignedupEvents
-     * functions as a callback function
+     * This interface is implemented by getUserSignedupEvents as a callback function
      */
     public interface OnSignedUpEventsLoaded {
         void onSignedUpEventsLoaded(List<Event> events);
     }
 
     /**
-     * This method is called in EventDashboardFragment
-     * @param user
-     * @param callback
+     * This method is called in EventDashboardFragment to get all the events the User is sign up to
+     * populate the dropdown list in the dashboard
+     * @param user A User object representing the user that will get the signed up events
+     * @param callback A callback function to show to status of signup list fetch
      */
     public void getUserSignedupEvents(User user, OnSignedUpEventsLoaded callback) {
         DocumentReference userRef = usersRef.document(user.getUserId());
@@ -696,10 +696,19 @@ public class DatabaseService {
         });
     }
 
+    /**
+     * An interface implemented by get EventSignups as a callback function
+     */
     public interface OnEventSignUpsLoaded {
         void onSignUpsLoaded(List<User> users);
     }
 
+    /**
+     * This method is called by signupList() in EventDetailsFragment.
+     * It gets the users that have signed up to the passed in event.
+     * @param eventId Is the event Id of event that should have its users that have signed up returned
+     * @param callback A callback function to return the status
+     */
     public void getEventSignUps(String eventId, OnEventSignUpsLoaded callback) {
         DocumentReference eventRef = eventsRef.document(eventId);
 
