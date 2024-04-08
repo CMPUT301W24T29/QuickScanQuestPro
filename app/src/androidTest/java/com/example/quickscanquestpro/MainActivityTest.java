@@ -542,10 +542,13 @@ public class MainActivityTest {
         onView(withText("My Test Event Title")).perform(click());
         onView(isRoot()).perform(waitFor(5000));
 
+        onView(withId(R.id.expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
         onView(withId(R.id.signup_button)).perform(click());
         onView(isRoot()).perform(waitFor(5000));
 
-        onView(withId(R.id.signup_list_button)).perform(click());
+        onView(withId(R.id.signup_list)).perform(click());
         onView(isRoot()).perform(waitFor(5000));
 
         onView(withId(R.id.signup_list_title)).check(matches(isDisplayed()));
@@ -644,6 +647,9 @@ public class MainActivityTest {
         onView(isRoot()).perform(waitFor(3000));
 
         onView(withText("My Test Event Title")).perform(click());
+        onView(isRoot()).perform(waitFor(5000));
+
+        onView(withId(R.id.expand_button)).perform(click());
         onView(isRoot()).perform(waitFor(5000));
 
         onView(withId(R.id.signup_button)).perform(click());
