@@ -1224,6 +1224,18 @@ public class MainActivityTest {
     }
 
     @Test
+    public void US020101scanCheckInQRTest()
+    {
+        // Wait for EventDetails to fully load
+        try {
+            Thread.sleep(7000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        onView(withId(R.id.event_title)).check(matches(isDisplayed()));
+    }
+
+    @Test
     public void testUS01_05_01LiveCount() {
         onView(isRoot()).perform(waitFor(4000)); // Wait for navigation
         onView(withId(R.id.navigation_dashboard)).perform(click());
