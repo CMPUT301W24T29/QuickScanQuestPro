@@ -1303,4 +1303,67 @@ public class MainActivityTest {
         }
     }
 
+
+    @Test
+    public void testUS01_08_01Heatmap() {
+        onView(isRoot()).perform(waitFor(7000)); // Wait for scanning of checkin
+        onView(withId(R.id.navigation_profile)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.geolocationSwitch)).perform(scrollTo(), click());
+        onView(isRoot()).perform(waitFor(10000)); // Wait for location grab
+        try {
+            onView(withId(R.id.geolocationSwitch)).check(matches(isEnabled()));
+        } catch (Exception e) {
+            onView(isRoot()).perform(waitFor(10000)); // Wait for location longer
+            onView(withId(R.id.geolocationSwitch)).check(matches(isEnabled()));
+        }
+
+        onView(withId(R.id.navigation_qr_scanner)).perform(click());
+        onView(isRoot()).perform(waitFor(7000)); // Wait for navigation and scan
+        // check that we are in event details fragment
+        onView(withId(R.id.event_title)).check(matches(isDisplayed()));
+        onView(withId(R.id.expand_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.view_attendees_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.expand_attendee_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.heatmap_button)).perform(click());
+        onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
+        onView(withId(R.id.map)).check(matches(isDisplayed()));
+
+        // get the id of the user, the displayed event from eventdetails, and check the database has a checkin from them
+        MainActivity mainActivity = getActivityFromScenario(scenario);
+        User user = mainActivity.getUser();
+        String userId = user.getUserId();
+
+        EventDetailsFragment fragment = (EventDetailsFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("EventDetailsFragment");
+        String eventId = fragment.event.getId();
+
+        DatabaseService databaseService = new DatabaseService();
+        String finalUserId = userId;
+        EventDetailsFragment finalFragment = fragment;
+        String finalEventId = eventId;
+        DatabaseService finalDatabaseService = databaseService;
+        databaseService.getEvent(eventId, event -> {
+            try {
+                assertNotNull(event);
+                ArrayList<CheckIn> checkins = event.getCheckIns();
+                assertNotNull(checkins);
+                CheckIn foundCheckin = null;
+                for (CheckIn checkin: checkins) {
+                    if (Objects.equals(finalUserId, checkin.getUserId())) {
+                        foundCheckin = checkin;
+                        break;
+                    }
+                }
+                assertNotNull(foundCheckin);
+                assertNotNull(foundCheckin.getCheckInLocation());
+                assertNotEquals(foundCheckin.getCheckInLocation(), "");
+            } finally {
+                Log.d("geotest",String.valueOf(finalFragment.event.getCheckIns()));
+                finalDatabaseService.clearEventCheckins(finalEventId);
+            }
+        });
+    }
 }
