@@ -1020,7 +1020,7 @@ public class MainActivityTest {
 
     @Test
     public void testUS_01_03_01SendNotificationsToAttendees(){
-        onView(isRoot()).perform(waitFor(400)); // Wait for navigation
+        onView(isRoot()).perform(waitFor(4000)); // Wait for navigation
         onView(withId(R.id.navigation_dashboard)).perform(click());
         onView(isRoot()).perform(waitFor(4000)); // Wait for navigation
         onView(withId(R.id.navigation_dashboard)).perform(click());
@@ -1123,7 +1123,7 @@ public class MainActivityTest {
 
     @Test
     public void testUS_02_03_01ReceiveAlert(){
-        onView(isRoot()).perform(waitFor(400)); // Wait for navigation
+        onView(isRoot()).perform(waitFor(4000)); // Wait for navigation
         onView(withId(R.id.navigation_dashboard)).perform(click());
         onView(isRoot()).perform(waitFor(4000)); // Wait for navigation
         onView(withId(R.id.navigation_dashboard)).perform(click());
