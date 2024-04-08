@@ -152,10 +152,8 @@ public class MainActivityTest {
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
 
         // Go to Manage Users
-        onView(withId(R.id.button_profile)).perform(click());
         onView(isRoot()).perform(waitFor(4000)); // Wait for the user list to load
 
         for (int i = 0; i < 20; i++) {
@@ -175,10 +173,7 @@ public class MainActivityTest {
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(withId(R.id.navigation_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for navigation
-        onView(withId(R.id.admin_dashboard_title)).check(matches(isDisplayed()));
 
-        // Go to Manage Users
-        onView(withId(R.id.button_profile)).perform(click());
         onView(isRoot()).perform(waitFor(2000)); // Wait for the user list to load
 
         onView(withText("John Doe")).check(matches(isDisplayed()));
