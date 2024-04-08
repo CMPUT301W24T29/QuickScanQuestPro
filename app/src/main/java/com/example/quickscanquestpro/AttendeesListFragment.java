@@ -109,6 +109,11 @@ public class AttendeesListFragment extends Fragment {
                 expandButton.setTag("false");
             }
         });
+
+        mapButton.setOnClickListener(view1 -> {
+            MainActivity mainActivity = (MainActivity) this.getActivity();
+            mainActivity.transitionFragment(new AttendeesHeatmapFragment(event), "Heatmap");
+        });
     }
 
     /**

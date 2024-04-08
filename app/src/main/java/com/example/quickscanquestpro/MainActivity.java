@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
 
     private DatabaseService databaseService = new DatabaseService();
 
-    private Boolean foundUser = false;
+    private User foundUser;
 
     private Boolean foundUserList = false;
 
@@ -151,10 +151,10 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
     /**
      * This method calls the constructor to create a the user object if the user already
      * exists in the database.
-     * @param userId A string for userId to pass to the constructor
+     * @param user the user that was existing lol
      */
-    private void existingUser(String userId) {
-        user = new User(userId);
+    private void existingUser(User user) {
+        this.user = user;
         Toast.makeText(getApplicationContext(), "Welcome Back!", Toast.LENGTH_SHORT).show();
     }
 
@@ -229,12 +229,12 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
             // Handle the list of users
             for (User user : usersList) {
                 if (user.getUserId().equals(userId)) {
-                    foundUser = true;
+                    foundUser = user;
                     break;
                 }
             }
-            if (foundUser) {
-                existingUser(userId);
+            if (foundUser != null) {
+                existingUser(foundUser);
             } else {
                 userId = UUID.randomUUID().toString();
                 prefs.edit().putString(USER_ID_KEY, userId).apply();
@@ -250,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseService.O
         if(user == null)
         {
             Toast.makeText(getApplicationContext(), "There was no such user", Toast.LENGTH_SHORT).show();
-            foundUser = false;
+            foundUser = null;
         }
         else
         {
