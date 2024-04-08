@@ -35,6 +35,11 @@ import com.google.mlkit.vision.barcode.BarcodeScanner;
 import com.google.mlkit.vision.barcode.BarcodeScanning;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
+
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +47,11 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 
 
 /**
@@ -65,6 +75,7 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
     private GeolocationService geolocationService;
     private Event locationGettingEvent;
 
+    private ArrayList<Object> uniqueAttendees = new ArrayList<>();
     /**
      * Interface for callbacks when a QRCode is scanned that returns the scanned code instead.
      */
@@ -299,14 +310,37 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
                 Toast.makeText(mainActivity.getApplicationContext(), "Promotion code scanned!", Toast.LENGTH_SHORT).show();
             }
 
-            // transition to the new event
-            mainActivity.transitionFragment(new EventDetailsFragment(event), "EventDetailsFragment");
-            NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
-            // Sets navbar selection to the event dashboard
-            MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
-            item.setChecked(true);
+            databaseService.getEvent(event.getId(), new DatabaseService.OnEventDataLoaded() {
+                @Override
+                public void onEventLoaded(Event event) {
+                    if (event != null) {
+                        // get all unique attendees
+                        for(CheckIn info : event.getCheckIns())
+                        {
+                            if(!uniqueAttendees.contains(info.getUserId()))
+                            {
+                                uniqueAttendees.add(info.getUserId());
+                            }
+                        }
+                        Log.d("CheckIn", "Unique attendees: " + uniqueAttendees.size());
 
-            shutdown();
+                        if(event.getCheckIns().size() == 1) {
+                            if (uniqueAttendees.size() == 1) {
+                                sendAlert(event.getOrganizerId(), "Congratulations, one attendee has checked in");
+                            }
+                        }
+
+                        // transition to the new event
+                        mainActivity.transitionFragment(new EventDetailsFragment(event), "EventDetailsFragment");
+                        NavigationBarView navBarView = mainActivity.findViewById(R.id.bottom_navigation);
+                        // Sets navbar selection to the event dashboard
+                        MenuItem item = navBarView.getMenu().findItem(R.id.navigation_dashboard);
+                        item.setChecked(true);
+
+                        shutdown();
+                    }
+                }
+            });
         }
     }
 
@@ -341,6 +375,79 @@ public class QRCodeScanner implements DatabaseService.OnEventDataLoaded {
 
         shutdown();
 
+    }
+
+
+    public void sendAlert(String userId, String messageBody) {
+
+        // get specific user details form databaseService and use onUserLoaded to send notification
+        databaseService.getSpecificUserDetails(userId, new DatabaseService.OnUserDataLoaded() {
+            @Override
+            public void onUserLoaded(User user) {
+                if(user == null)
+                {
+                    Log.d("Notification", "User not found");
+                    return;
+                }
+                if(user.getGetNotification() == false)
+                {
+                    // skip this iteration
+                    Log.d("Notification", "User: " + user.getName() + " has notifications turned off");
+                }
+                else{
+                    JSONObject jsonObject = new JSONObject();
+                    try {
+                        Log.d("Notification", "Sending notification to user: " + user.getName());
+
+                        JSONObject notification = new JSONObject();
+                        notification.put("title", "Milestone Reached");
+                        notification.put("body", messageBody);
+
+                        JSONObject dataObj = new JSONObject();
+                        dataObj.put("userID", user.getUserId());
+
+                        jsonObject.put("notification", notification);
+                        jsonObject.put("data", dataObj);
+                        jsonObject.put("to", user.getNotificationToken());
+
+                        callApi(jsonObject);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+        });
+    }
+
+
+    /**
+     *  this calls the API to send a request FCM to send a notification to all attendees that have notifications turned on
+     * @param jsonObject
+     */
+    private void callApi(JSONObject jsonObject)
+    {
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        OkHttpClient client = new OkHttpClient();
+        String url = "https://fcm.googleapis.com/fcm/send";
+        RequestBody body = RequestBody.create(jsonObject.toString(), JSON);
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                // add the api key after bearer with a space
+                .header("Authorization", "Bearer AAAA-z98YP0:APA91bEoBWfmJI7JHaV87puPVmZhDNv-4m0cxhjYXjsD5mAiPoTuhGbC6xfV0rVBt9qXj59n3TPCRe2QnwlZFXb96DvtoxYvyT5tCNqgaR0m8PapWiWHFVWbNpChm37VzNImEXL5T_iu")
+                .build();
+        client.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(okhttp3.Call call, IOException e) {
+                Log.d("Notification", "Failed to send notification");
+            }
+
+            @Override
+            public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
+                Log.d("Notification", "Notification sent successfully");
+            }
+        });
     }
 
 }

@@ -65,7 +65,7 @@ public class Event {
 
     private String eventBannerUrl;
     private String eventBannerPath;
-    private static ArrayList<String> announcements = new ArrayList<String>();
+    private ArrayList<String> announcements = new ArrayList<String>();
 
     private String customCheckin;
     private String customPromo;
@@ -75,9 +75,8 @@ public class Event {
     private Bitmap eventBanner = null;
     private ArrayList<CheckIn> checkIns;
 
-
+    // signup attributes
     private ArrayList<User> signUps = new ArrayList<>();
-
     private Integer signupLimit;
 
 
@@ -334,7 +333,7 @@ public class Event {
      * @param eventID the ID to use during event creation
      * @return returns an Event with pre-filled attributes
      */
-    public static Event createTestEvent(String eventID) {
+    public Event createTestEvent(String eventID) {
         String testTitle = "Old Strathcona Summer Rib Fest";
         String testDescription = "Come join us for the 2021 Old Strathcona Summer Rib Fest! Enjoy a variety of delicious ribs, live music, and more!";
 
@@ -399,7 +398,7 @@ public class Event {
     }
 
     public ArrayList<User> getSignUps() {
-        return new ArrayList<>(signUps); // Return a copy
+        return new ArrayList<>(signUps);
     }
 
     public void addSignup(User user) {
